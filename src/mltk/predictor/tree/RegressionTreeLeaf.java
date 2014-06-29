@@ -7,23 +7,24 @@ import java.io.PrintWriter;
  * Class for regression tree leaves.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class RegressionTreeLeaf extends RegressionTreeNode {
-	
+
 	protected double prediction;
-	
+
 	/**
 	 * Constructor.
 	 */
 	public RegressionTreeLeaf() {
-		
+
 	}
-	
+
 	/**
 	 * Constructs a leaf node with a constant prediction.
 	 * 
-	 * @param prediction the prediction for this leaf node.
+	 * @param prediction
+	 *            the prediction for this leaf node.
 	 */
 	public RegressionTreeLeaf(double prediction) {
 		this.prediction = prediction;
@@ -33,16 +34,17 @@ public class RegressionTreeLeaf extends RegressionTreeNode {
 	public boolean isLeaf() {
 		return true;
 	}
-	
+
 	/**
 	 * Sets the prediction for this leaf node.
 	 * 
-	 * @param prediction the prediction for this leaf node.
+	 * @param prediction
+	 *            the prediction for this leaf node.
 	 */
 	public void setPrediction(double prediction) {
 		this.prediction = prediction;
 	}
-	
+
 	/**
 	 * Returns the prediction for this leaf node.
 	 * 

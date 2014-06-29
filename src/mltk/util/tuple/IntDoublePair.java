@@ -4,18 +4,20 @@ package mltk.util.tuple;
  * Class for <int, double> pairs.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class IntDoublePair {
 
 	public int v1;
 	public double v2;
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param v1 the <code>int</code> value.
-	 * @param v2 the <code>double</code> value.
+	 * @param v1
+	 *            the <code>int</code> value.
+	 * @param v2
+	 *            the <code>double</code> value.
 	 */
 	public IntDoublePair(int v1, double v2) {
 		this.v1 = v1;
@@ -48,5 +50,5 @@ public class IntDoublePair {
 			return false;
 		return true;
 	}
-	
+
 }

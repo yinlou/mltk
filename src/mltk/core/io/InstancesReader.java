@@ -19,27 +19,32 @@ import mltk.util.tuple.Pair;
  * Class for reading instances.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class InstancesReader {
 
 	/**
-	 * Reads a set of instances from attribute file and data file. Default parser
-	 * is for dense format. When attribute file is null, sparse format is expected. 
+	 * Reads a set of instances from attribute file and data file. Default
+	 * parser is for dense format. When attribute file is null, sparse format is
+	 * expected.
 	 * 
-	 * @param attFile the attribute file.
-	 * @param dataFile the data file.
+	 * @param attFile
+	 *            the attribute file.
+	 * @param dataFile
+	 *            the data file.
 	 * @return a set of instances.
 	 * @throws IOException
 	 */
-	public static Instances read(String attFile, String dataFile) 
+	public static Instances read(String attFile, String dataFile)
 			throws IOException {
 		if (attFile != null) {
-			Pair<List<Attribute>, Attribute> pair = AttributesReader.read(attFile);
+			Pair<List<Attribute>, Attribute> pair = AttributesReader
+					.read(attFile);
 			int classIndex = pair.v2.getIndex();
 			pair.v2.setIndex(-1);
 			Instances instances = new Instances(pair.v1, pair.v2);
-			BufferedReader br = new BufferedReader(new FileReader(dataFile), 65535);
+			BufferedReader br = new BufferedReader(new FileReader(dataFile),
+					65535);
 			for (;;) {
 				String line = br.readLine();
 				if (line == null) {
@@ -50,21 +55,23 @@ public class InstancesReader {
 				instances.add(instance);
 			}
 			br.close();
-			return instances; 
+			return instances;
 		} else {
 			return read(dataFile);
 		}
 	}
-	
+
 	/**
 	 * Reads a set of dense instances from data file.
 	 * 
-	 * @param file the data file.
-	 * @param classIndex the index of the class attribute, -1 if no class attribute.
+	 * @param file
+	 *            the data file.
+	 * @param classIndex
+	 *            the index of the class attribute, -1 if no class attribute.
 	 * @return a set of dense instances.
 	 * @throws IOException
 	 */
-	public static Instances read(String file, int classIndex) 
+	public static Instances read(String file, int classIndex)
 			throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(file), 65535);
 		List<Attribute> attributes = new ArrayList<>();
@@ -79,32 +86,33 @@ public class InstancesReader {
 			instances.add(instance);
 		}
 		br.close();
-		
+
 		int numAttributes = instances.get(0).getValues().length;
 		for (int i = 0; i < numAttributes; i++) {
 			Attribute att = new NumericalAttribute("f" + i);
 			att.setIndex(i);
 			attributes.add(att);
 		}
-		
+
 		if (classIndex >= 0) {
 			assignTargetAttribute(instances);
 		}
-		
+
 		return instances;
 	}
-	
+
 	/**
 	 * Reads a set of sparse instances from data file.
 	 * 
-	 * @param file the data file.
+	 * @param file
+	 *            the data file.
 	 * @return a set of sparse instances.
 	 * @throws IOException
 	 */
 	public static Instances read(String file) throws IOException {
 		List<Attribute> attributes = new ArrayList<>();
 		Instances instances = new Instances(attributes);
-		
+
 		TreeSet<Integer> attrSet = new TreeSet<>();
 		BufferedReader br = new BufferedReader(new FileReader(file), 65535);
 		for (;;) {
@@ -117,22 +125,24 @@ public class InstancesReader {
 			instances.add(instance);
 		}
 		br.close();
-		
+
 		for (Integer attIndex : attrSet) {
 			Attribute att = new NumericalAttribute("f" + attIndex);
 			att.setIndex(attIndex);
 			attributes.add(att);
 		}
-		
+
 		assignTargetAttribute(instances);
 		return instances;
 	}
-	
+
 	/**
 	 * Parses a dense instance from strings.
 	 * 
-	 * @param data the string array.
-	 * @param classIndex the class index.
+	 * @param data
+	 *            the string array.
+	 * @param classIndex
+	 *            the class index.
 	 * @return a dense instance from strings.
 	 */
 	private static Instance parseDenseInstance(String[] data, int classIndex) {
@@ -159,15 +169,17 @@ public class InstancesReader {
 			return new Instance(vector, classValue);
 		}
 	}
-	
+
 	/**
 	 * Parses a sparse instance from strings.
 	 * 
-	 * @param data the string array.
-	 * @param attrSet the attributes set.
+	 * @param data
+	 *            the string array.
+	 * @param attrSet
+	 *            the attributes set.
 	 * @return a sparse instance from strings.
 	 */
-	private static Instance parseSparseInstance(String[] data, 
+	private static Instance parseSparseInstance(String[] data,
 			TreeSet<Integer> attrSet) {
 		double classValue = Double.parseDouble(data[0]);
 		int[] indices = new int[data.length - 1];
@@ -180,11 +192,12 @@ public class InstancesReader {
 		}
 		return new Instance(indices, values, classValue);
 	}
-	
+
 	/**
 	 * Assigns target attribute for a dataset.
 	 * 
-	 * @param instances the data set.
+	 * @param instances
+	 *            the data set.
 	 */
 	private static void assignTargetAttribute(Instances instances) {
 		boolean isInteger = true;
@@ -205,10 +218,11 @@ public class InstancesReader {
 			for (Integer v : set) {
 				states[i++] = v.toString();
 			}
-			instances.setTargetAttribute(new NominalAttribute("target", states));
+			instances
+					.setTargetAttribute(new NominalAttribute("target", states));
 		} else {
 			instances.setTargetAttribute(new NumericalAttribute("target"));
 		}
 	}
-	
+
 }

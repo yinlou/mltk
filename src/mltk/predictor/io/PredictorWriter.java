@@ -8,15 +8,17 @@ import mltk.predictor.Predictor;
  * Class for writing predictors.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class PredictorWriter {
 
 	/**
 	 * Writes a predictor to file.
 	 * 
-	 * @param predictor the predictor to write.
-	 * @param path the file path.
+	 * @param predictor
+	 *            the predictor to write.
+	 * @param path
+	 *            the file path.
 	 * @throws Exception
 	 */
 	public static void write(Predictor predictor, String path) throws Exception {
@@ -25,5 +27,5 @@ public class PredictorWriter {
 		out.flush();
 		out.close();
 	}
-	
+
 }

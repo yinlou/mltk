@@ -10,28 +10,29 @@ import java.util.Map;
  * Class for command line parser.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class CmdLineParser {
-	
+
 	private String name;
 	private Object obj;
-	
+
 	private List<Argument> argList;
 	private List<Field> fieldList;
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param obj the object.
+	 * @param obj
+	 *            the object.
 	 */
 	public CmdLineParser(Class<?> clazz, Object obj) {
 		this.name = clazz.getSimpleName();
 		this.obj = obj;
-		
+
 		argList = new ArrayList<>();
 		fieldList = new ArrayList<>();
-		
+
 		Field[] fields = obj.getClass().getDeclaredFields();
 		for (Field field : fields) {
 			Argument argument = field.getAnnotation(Argument.class);
@@ -45,12 +46,13 @@ public class CmdLineParser {
 	/**
 	 * Parses the command line arguments.
 	 * 
-	 * @param args the command line arguments.
+	 * @param args
+	 *            the command line arguments.
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 */
-	public void parse(String[] args) 
-			throws IllegalArgumentException, IllegalAccessException {
+	public void parse(String[] args) throws IllegalArgumentException,
+			IllegalAccessException {
 		if (args.length % 2 != 0) {
 			throw new IllegalArgumentException();
 		}
@@ -79,33 +81,35 @@ public class CmdLineParser {
 					field.setLong(obj, Long.parseLong(value));
 				} else if (fclass == char.class) {
 					field.setChar(obj, value.charAt(0));
-				} 
+				}
 			} else if (arg.required()) {
 				throw new IllegalArgumentException();
 			}
 		}
 	}
-	
+
 	/**
 	 * Prints the generated usage.
 	 */
 	public void printUsage() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Usage: ").append(name).append("\n");
-		
+
 		StringBuilder required = new StringBuilder();
 		StringBuilder optional = new StringBuilder();
-		
+
 		for (Argument arg : argList) {
 			if (arg.required()) {
-				required.append(arg.name()).append("\t").append(arg.description()).append("\n");
+				required.append(arg.name()).append("\t")
+						.append(arg.description()).append("\n");
 			} else {
-				optional.append("[").append(arg.name()).append("]\t").append(arg.description()).append("\n");
+				optional.append("[").append(arg.name()).append("]\t")
+						.append(arg.description()).append("\n");
 			}
 		}
-		
+
 		sb.append(required).append(optional);
 		System.err.println(sb.toString());
 	}
-	
+
 }

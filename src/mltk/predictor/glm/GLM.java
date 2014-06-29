@@ -15,60 +15,67 @@ import mltk.util.StatUtils;
  * Class for generalized linear models (GLMs).
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class GLM implements ProbabilisticClassifier, Regressor {
-	
+
 	/**
-	 * The coefficient vectors. 
+	 * The coefficient vectors.
 	 */
 	protected double[][] w;
-	
+
 	/**
 	 * The intercept vector.
 	 */
 	protected double[] intercept;
-	
+
 	/**
 	 * Constructor.
 	 */
 	public GLM() {
-		
+
 	}
-	
+
 	/**
 	 * Constructs a GLM with the specified dimension.
 	 * 
-	 * @param dimension the dimension.
+	 * @param dimension
+	 *            the dimension.
 	 */
 	public GLM(int dimension) {
 		this(1, dimension);
 	}
-	
+
 	/**
 	 * Constructs a GLM with the specified dimension.
 	 * 
-	 * @param numClasses the number of classes.
-	 * @param dimension the dimension.
+	 * @param numClasses
+	 *            the number of classes.
+	 * @param dimension
+	 *            the dimension.
 	 */
 	public GLM(int numClasses, int dimension) {
 		w = new double[numClasses][dimension];
 		intercept = new double[numClasses];
 	}
-	
+
 	/**
 	 * Constructs a GLM with the intercept vector and the coefficient vectors.
-	 * @param intercept the intercept vector.
-	 * @param w the coefficient vectors.
+	 * 
+	 * @param intercept
+	 *            the intercept vector.
+	 * @param w
+	 *            the coefficient vectors.
 	 */
 	public GLM(double[] intercept, double[][] w) {
 		if (intercept.length != w.length) {
-			throw new IllegalArgumentException("Dimensions of intercept and w must match.");
+			throw new IllegalArgumentException(
+					"Dimensions of intercept and w must match.");
 		}
 		this.intercept = intercept;
 		this.w = w;
 	}
-	
+
 	/**
 	 * Returns the coefficient vectors.
 	 * 
@@ -77,17 +84,18 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	public double[][] coefficients() {
 		return w;
 	}
-	
+
 	/**
 	 * Returns the coefficient vectors for class k.
 	 * 
-	 * @param k the index of the class.
+	 * @param k
+	 *            the index of the class.
 	 * @return the coefficient vectors for class k.
 	 */
 	public double[] coefficients(int k) {
 		return w[k];
 	}
-	
+
 	/**
 	 * Returns the intercept vector.
 	 * 
@@ -96,11 +104,12 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	public double[] intercept() {
 		return intercept;
 	}
-	
+
 	/**
 	 * Returns the intercept for class k.
 	 * 
-	 * @param k the index of the class.
+	 * @param k
+	 *            the index of the class.
 	 * @return the intercept for class k.
 	 */
 	public double intercept(int k) {
@@ -180,7 +189,7 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 		}
 		return new GLM(intercept, copyW);
 	}
-	
+
 	protected double regress(double intercept, double[] coef, Instance instance) {
 		if (!instance.isSparse()) {
 			double pred = intercept;

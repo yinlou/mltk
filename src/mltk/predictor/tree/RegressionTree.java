@@ -10,10 +10,10 @@ import mltk.predictor.Regressor;
  * Class for regression trees.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class RegressionTree implements Regressor {
-	
+
 	/**
 	 * The root of a tree.
 	 */
@@ -25,16 +25,17 @@ public class RegressionTree implements Regressor {
 	public RegressionTree() {
 		root = null;
 	}
-	
+
 	/**
 	 * Constructs a regression tree with specified root.
 	 * 
-	 * @param root the root.
+	 * @param root
+	 *            the root.
 	 */
 	public RegressionTree(RegressionTreeNode root) {
 		this.root = root;
 	}
-	
+
 	/**
 	 * Returns the root of this regression tree.
 	 * 
@@ -43,20 +44,22 @@ public class RegressionTree implements Regressor {
 	public RegressionTreeNode getRoot() {
 		return root;
 	}
-	
+
 	/**
 	 * Sets the root for this regression tree.
 	 * 
-	 * @param root the new root.
+	 * @param root
+	 *            the new root.
 	 */
 	public void setRoot(RegressionTreeNode root) {
 		this.root = root;
 	}
-	
+
 	/**
 	 * Returns the leaf node.
 	 * 
-	 * @param instance the data point.
+	 * @param instance
+	 *            the data point.
 	 * @return the leaf node.
 	 */
 	public RegressionTreeLeaf getLeafNode(Instance instance) {
@@ -71,21 +74,24 @@ public class RegressionTree implements Regressor {
 		}
 		return (RegressionTreeLeaf) node;
 	}
-	
+
 	/**
 	 * Multiplies this regression tree with a constant.
 	 * 
-	 * @param c the constant.
+	 * @param c
+	 *            the constant.
 	 */
 	public void multiply(double c) {
 		multiply(root, c);
 	}
-	
+
 	/**
 	 * Multiplies this subtree with a constant.
-	 *  
-	 * @param node the root of the subtree.
-	 * @param c the constant.
+	 * 
+	 * @param node
+	 *            the root of the subtree.
+	 * @param c
+	 *            the constant.
 	 */
 	protected void multiply(RegressionTreeNode node, double c) {
 		if (node.isLeaf()) {
@@ -97,7 +103,7 @@ public class RegressionTree implements Regressor {
 			multiply(interiorNode.right, c);
 		}
 	}
-	
+
 	@Override
 	public double regress(Instance instance) {
 		return getLeafNode(instance).getPrediction();

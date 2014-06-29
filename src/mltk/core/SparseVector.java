@@ -6,18 +6,20 @@ import java.util.Arrays;
  * Class for sparse vectors.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class SparseVector implements Vector {
-	
+
 	protected int[] indices;
 	protected double[] values;
-	
+
 	/**
 	 * Constructs a sparse vector from sparse-format arrays.
 	 * 
-	 * @param indices the indices array.
-	 * @param values the values array.
+	 * @param indices
+	 *            the indices array.
+	 * @param values
+	 *            the values array.
 	 */
 	public SparseVector(int[] indices, double[] values) {
 		this.indices = indices;
@@ -45,7 +47,7 @@ public class SparseVector implements Vector {
 	public double[] getValues() {
 		return values;
 	}
-	
+
 	/**
 	 * Returns the internal representation of indices.
 	 * 

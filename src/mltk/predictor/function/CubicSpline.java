@@ -9,70 +9,81 @@ import mltk.predictor.Regressor;
 import mltk.util.ArrayUtils;
 
 /**
- * Class for cubic splines. Given knots k, the cubic spline uses the following 
- * basis: 1, x, x^2, x^3, (x - k[i])_+^3. 
+ * Class for cubic splines. Given knots k, the cubic spline uses the following
+ * basis: 1, x, x^2, x^3, (x - k[i])_+^3.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class CubicSpline implements Regressor, UnivariateFunction {
-	
+
 	protected int attIndex;
 	protected double intercept;
 	protected double[] knots;
 	protected double[] w;
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param attIndex the attribute index.
-	 * @param intercept the intercept.
-	 * @param knots the knots.
-	 * @param w the coefficient vector.
+	 * @param attIndex
+	 *            the attribute index.
+	 * @param intercept
+	 *            the intercept.
+	 * @param knots
+	 *            the knots.
+	 * @param w
+	 *            the coefficient vector.
 	 */
-	public CubicSpline(int attIndex, double intercept, double[] knots, double[] w) {
+	public CubicSpline(int attIndex, double intercept, double[] knots,
+			double[] w) {
 		this.attIndex = attIndex;
 		this.intercept = intercept;
 		this.knots = knots;
 		this.w = w;
 	}
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param intercept the intercept.
-	 * @param knots the knots.
-	 * @param w the coefficient vector.
+	 * @param intercept
+	 *            the intercept.
+	 * @param knots
+	 *            the knots.
+	 * @param w
+	 *            the coefficient vector.
 	 */
 	public CubicSpline(double intercept, double[] knots, double[] w) {
 		this(-1, intercept, knots, w);
 	}
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param knots the knots.
-	 * @param w the coefficient vector.
+	 * @param knots
+	 *            the knots.
+	 * @param w
+	 *            the coefficient vector.
 	 */
 	public CubicSpline(double[] knots, double[] w) {
 		this(-1, 0, knots, w);
 	}
-	
+
 	/**
-	 * Construct a cubic spline with specified knots and all coefficients set
-	 * to zero.
+	 * Construct a cubic spline with specified knots and all coefficients set to
+	 * zero.
 	 * 
-	 * @param knots the knots.
+	 * @param knots
+	 *            the knots.
 	 */
 	public CubicSpline(double[] knots) {
 		this(-1, 0, knots, new double[knots.length + 3]);
 	}
-	
+
 	/**
 	 * Constructor.
 	 */
 	public CubicSpline() {
-		
+
 	}
 
 	@Override
@@ -104,12 +115,14 @@ public class CubicSpline implements Regressor, UnivariateFunction {
 		}
 		return pred;
 	}
-	
+
 	/**
 	 * Calculate the basis.
 	 * 
-	 * @param x a real.
-	 * @param k a knot.
+	 * @param x
+	 *            a real.
+	 * @param k
+	 *            a knot.
 	 * @return h(x, z), a basis in cubic spline.
 	 */
 	public static double h(double x, double k) {
@@ -133,16 +146,17 @@ public class CubicSpline implements Regressor, UnivariateFunction {
 	public int getAttributeIndex() {
 		return attIndex;
 	}
-	
+
 	/**
 	 * Sets the attribute index.
 	 * 
-	 * @param attIndex the new attribute index.
+	 * @param attIndex
+	 *            the new attribute index.
 	 */
 	public void setAttributeIndex(int attIndex) {
 		this.attIndex = attIndex;
 	}
-	
+
 	/**
 	 * Returns the coefficient vector.
 	 * 
@@ -151,7 +165,7 @@ public class CubicSpline implements Regressor, UnivariateFunction {
 	public double[] getCoefficients() {
 		return w;
 	}
-	
+
 	/**
 	 * Returns the knot vector.
 	 * 
@@ -160,7 +174,7 @@ public class CubicSpline implements Regressor, UnivariateFunction {
 	public double[] getKnots() {
 		return knots;
 	}
-	
+
 	/**
 	 * Returns the intercept.
 	 * 

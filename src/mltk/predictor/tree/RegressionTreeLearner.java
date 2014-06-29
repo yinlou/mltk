@@ -26,9 +26,9 @@ import mltk.util.tuple.IntDoublePair;
 
 /**
  * Class for learning regression trees.
- *
+ * 
  * @author Yin Lou
- *
+ * 
  */
 public class RegressionTreeLearner extends Learner {
 
@@ -39,9 +39,9 @@ public class RegressionTreeLearner extends Learner {
 
 	/**
 	 * Enumeration of construction mode.
-	 *
+	 * 
 	 * @author Yin Lou
-	 *
+	 * 
 	 */
 	public enum Mode {
 
@@ -58,7 +58,7 @@ public class RegressionTreeLearner extends Learner {
 
 	/**
 	 * Returns the alpha.
-	 *
+	 * 
 	 * @return the alpha.
 	 */
 	public double getAlpha() {
@@ -68,8 +68,9 @@ public class RegressionTreeLearner extends Learner {
 	/**
 	 * Sets the alpha. Alpha is the maximum proportion of the training set in
 	 * the leaf node.
-	 *
-	 * @param alpha the alpha.
+	 * 
+	 * @param alpha
+	 *            the alpha.
 	 */
 	public void setAlpha(double alpha) {
 		this.alpha = alpha;
@@ -77,7 +78,7 @@ public class RegressionTreeLearner extends Learner {
 
 	/**
 	 * Returns the maximum number of leaves.
-	 *
+	 * 
 	 * @return the maximum number of leaves.
 	 */
 	public int getMaxNumLeaves() {
@@ -86,8 +87,9 @@ public class RegressionTreeLearner extends Learner {
 
 	/**
 	 * Sets the maximum number of leaves.
-	 *
-	 * @param maxNumLeaves the maximum number of leaves.
+	 * 
+	 * @param maxNumLeaves
+	 *            the maximum number of leaves.
 	 */
 	public void setMaxNumLeaves(int maxNumLeaves) {
 		this.maxNumLeaves = maxNumLeaves;
@@ -95,7 +97,7 @@ public class RegressionTreeLearner extends Learner {
 
 	/**
 	 * Returns the maximum depth.
-	 *
+	 * 
 	 * @return the maximum depth.
 	 */
 	public int getMaxDepth() {
@@ -104,8 +106,9 @@ public class RegressionTreeLearner extends Learner {
 
 	/**
 	 * Sets the maximum depth.
-	 *
-	 * @param maxDepth the maximum depth.
+	 * 
+	 * @param maxDepth
+	 *            the maximum depth.
 	 */
 	public void setMaxDepth(int maxDepth) {
 		this.maxDepth = maxDepth;
@@ -113,7 +116,7 @@ public class RegressionTreeLearner extends Learner {
 
 	/**
 	 * Returns the construction mode.
-	 *
+	 * 
 	 * @return the construction mode.
 	 */
 	public Mode getConstructionMode() {
@@ -122,8 +125,9 @@ public class RegressionTreeLearner extends Learner {
 
 	/**
 	 * Sets the construction mode.
-	 *
-	 * @param mode the construction mode.
+	 * 
+	 * @param mode
+	 *            the construction mode.
 	 */
 	public void setConstructionMode(Mode mode) {
 		this.mode = mode;
@@ -133,22 +137,23 @@ public class RegressionTreeLearner extends Learner {
 	public RegressionTree build(Instances instances) {
 		RegressionTree rt = null;
 		switch (mode) {
-			case ALPHA_LIMITED:
-				rt = buildAlphaLimitedTree(instances, alpha);
-				break;
-			case NUM_LEAVES_LIMITED:
-				rt = buildNumLeafLimitedTree(instances, maxNumLeaves);
-				break;
-			case DEPTH_LIMITED:
-				rt = buildDepthLimitedTree(instances, maxDepth);
-				break;
-			default:
-				break;
+		case ALPHA_LIMITED:
+			rt = buildAlphaLimitedTree(instances, alpha);
+			break;
+		case NUM_LEAVES_LIMITED:
+			rt = buildNumLeafLimitedTree(instances, maxNumLeaves);
+			break;
+		case DEPTH_LIMITED:
+			rt = buildDepthLimitedTree(instances, maxDepth);
+			break;
+		default:
+			break;
 		}
 		return rt;
 	}
 
-	protected RegressionTree buildNumLeafLimitedTree(Instances instances, int maxNumLeaves) {
+	protected RegressionTree buildNumLeafLimitedTree(Instances instances,
+			int maxNumLeaves) {
 		RegressionTree tree = new RegressionTree();
 		final int limit = 5;
 		// stats[0]: totalWeights
@@ -178,8 +183,8 @@ public class RegressionTreeLearner extends Learner {
 				interiorNode.left = createNode(left, limit, stats);
 				if (!interiorNode.left.isLeaf()) {
 					nodePred.put(interiorNode.left, stats[1]);
-					q.add(new Element<RegressionTreeNode>(
-							interiorNode.left, stats[2]));
+					q.add(new Element<RegressionTreeNode>(interiorNode.left,
+							stats[2]));
 					datasets.put(interiorNode.left, left);
 				} else {
 					numLeaves++;
@@ -187,8 +192,8 @@ public class RegressionTreeLearner extends Learner {
 				interiorNode.right = createNode(right, limit, stats);
 				if (!interiorNode.right.isLeaf()) {
 					nodePred.put(interiorNode.right, stats[1]);
-					q.add(new Element<RegressionTreeNode>(
-							interiorNode.right, stats[2]));
+					q.add(new Element<RegressionTreeNode>(interiorNode.right,
+							stats[2]));
 					datasets.put(interiorNode.right, right);
 				} else {
 					numLeaves++;
@@ -208,8 +213,8 @@ public class RegressionTreeLearner extends Learner {
 			RegressionTreeNode node = elemt.element;
 
 			double prediction = nodePred.get(node);
-			RegressionTreeInteriorNode interiorNode =
-					(RegressionTreeInteriorNode) parent.get(node);
+			RegressionTreeInteriorNode interiorNode = (RegressionTreeInteriorNode) parent
+					.get(node);
 			if (interiorNode.left == node) {
 				interiorNode.left = new RegressionTreeLeaf(prediction);
 			} else {
@@ -220,7 +225,8 @@ public class RegressionTreeLearner extends Learner {
 		return tree;
 	}
 
-	protected RegressionTree buildDepthLimitedTree(Instances instances, int maxDepth) {
+	protected RegressionTree buildDepthLimitedTree(Instances instances,
+			int maxDepth) {
 		RegressionTree tree = new RegressionTree();
 		final int limit = 5;
 		// stats[0]: totalWeights
@@ -279,7 +285,8 @@ public class RegressionTreeLearner extends Learner {
 		return tree;
 	}
 
-	protected RegressionTree buildAlphaLimitedTree(Instances instances, double alpha) {
+	protected RegressionTree buildAlphaLimitedTree(Instances instances,
+			double alpha) {
 		RegressionTree tree = new RegressionTree();
 		double[] stats = new double[3];
 		Dataset dataset = Dataset.create(instances);
@@ -410,18 +417,22 @@ public class RegressionTreeLearner extends Learner {
 				int capacity = dataset.instances.size();
 				uniqueValues = new ArrayList<>(capacity);
 				histogram = new ArrayList<>(capacity);
-				getHistogram(dataset.instances, sortedList, uniqueValues, histogram);
+				getHistogram(dataset.instances, sortedList, uniqueValues,
+						histogram);
 				System.out.println("Histogram for " + attribute.getName());
-        for (int k = 0; k < uniqueValues.size(); k++) {
-          DoublePair pair = histogram.get(k);
-          System.out.println(uniqueValues.get(k) + " " + pair.v1 + " " + pair.v2);
-        }
+				for (int k = 0; k < uniqueValues.size(); k++) {
+					DoublePair pair = histogram.get(k);
+					System.out.println(uniqueValues.get(k) + " " + pair.v1
+							+ " " + pair.v2);
+				}
 			}
 
 			if (uniqueValues.size() > 1) {
-				DoublePair split = split(uniqueValues, histogram, totalWeights, sum);
+				DoublePair split = split(uniqueValues, histogram, totalWeights,
+						sum);
 				if (split.v2 <= bestEval) {
-					IntDoublePair splitPoint = new IntDoublePair(attIndex, split.v1);
+					IntDoublePair splitPoint = new IntDoublePair(attIndex,
+							split.v1);
 					if (split.v2 < bestEval) {
 						splits.clear();
 						bestEval = split.v2;
@@ -437,7 +448,8 @@ public class RegressionTreeLearner extends Learner {
 			RegressionTreeNode node = new RegressionTreeInteriorNode(attIndex,
 					splitPoint.v2);
 			if (stats.length > 2) {
-				stats[2] = bestEval + totalWeights * weightedMean * weightedMean;
+				stats[2] = bestEval + totalWeights * weightedMean
+						* weightedMean;
 			}
 			return node;
 		} else {
@@ -446,8 +458,8 @@ public class RegressionTreeLearner extends Learner {
 		}
 	}
 
-	protected DoublePair split(List<Double> uniqueValues, List<DoublePair> stats,
-			double totalWeights, double sum) {
+	protected DoublePair split(List<Double> uniqueValues,
+			List<DoublePair> stats, double totalWeights, double sum) {
 		double weight1 = stats.get(0).v1;
 		double weight2 = totalWeights - weight1;
 		double sum1 = stats.get(0).v2;
@@ -526,14 +538,15 @@ public class RegressionTreeLearner extends Learner {
 		String mode = "a:0.01";
 
 		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
-    long seed = 0L;
+		long seed = 0L;
 
 	}
 
 	/**
 	 * Trains a regression tree.
-	 *
+	 * 
 	 * <p>
+	 * 
 	 * <pre>
 	 * Usage: RegressionTreeLearner
 	 * -r	attribute file path
@@ -541,13 +554,16 @@ public class RegressionTreeLearner extends Learner {
 	 * [-o]	output model path
 	 * [-m]	construction mode:parameter. Construction mode can be alpha limited (a), depth limited (d), and number of leaves limited (l) (default: a:0.001)
 	 * </pre>
+	 * 
 	 * </p>
+	 * 
 	 * @param args
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
 		Options opts = new Options();
-		CmdLineParser parser = new CmdLineParser(RegressionTreeLearner.class, opts);
+		CmdLineParser parser = new CmdLineParser(RegressionTreeLearner.class,
+				opts);
 		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
 		try {
 			parser.parse(args);
@@ -556,20 +572,20 @@ public class RegressionTreeLearner extends Learner {
 				throw new IllegalArgumentException();
 			}
 			switch (data[0]) {
-				case "a":
-					rtLearner.setConstructionMode(Mode.ALPHA_LIMITED);
-					rtLearner.setAlpha(Double.parseDouble(data[1]));
-					break;
-				case "d":
-					rtLearner.setConstructionMode(Mode.DEPTH_LIMITED);
-					rtLearner.setMaxDepth(Integer.parseInt(data[1]));
-					break;
-				case "l":
-					rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
-					rtLearner.setMaxNumLeaves(Integer.parseInt(data[1]));
-					break;
-				default:
-					throw new IllegalArgumentException();
+			case "a":
+				rtLearner.setConstructionMode(Mode.ALPHA_LIMITED);
+				rtLearner.setAlpha(Double.parseDouble(data[1]));
+				break;
+			case "d":
+				rtLearner.setConstructionMode(Mode.DEPTH_LIMITED);
+				rtLearner.setMaxDepth(Integer.parseInt(data[1]));
+				break;
+			case "l":
+				rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
+				rtLearner.setMaxNumLeaves(Integer.parseInt(data[1]));
+				break;
+			default:
+				throw new IllegalArgumentException();
 			}
 		} catch (IllegalArgumentException e) {
 			parser.printUsage();

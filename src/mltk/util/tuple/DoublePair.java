@@ -4,18 +4,20 @@ package mltk.util.tuple;
  * CLass for <double, double> pair.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class DoublePair {
 
 	public double v1;
 	public double v2;
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param v1 the 1st <code>double</code>.
-	 * @param v2 the 2nd <code>double</code>.
+	 * @param v1
+	 *            the 1st <code>double</code>.
+	 * @param v2
+	 *            the 2nd <code>double</code>.
 	 */
 	public DoublePair(double v1, double v2) {
 		this.v1 = v1;

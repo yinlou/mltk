@@ -11,18 +11,19 @@ import mltk.util.Random;
  * Class for handling an ordered set of instances.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class Instances implements Iterable<Instance>, Copyable<Instances> {
-	
+
 	protected List<Attribute> attributes;
 	protected List<Instance> instances;
 	protected Attribute targetAtt;
-	
+
 	/**
 	 * Constructs a dataset from attributes.
 	 * 
-	 * @param attributes the attributes.
+	 * @param attributes
+	 *            the attributes.
 	 */
 	public Instances(List<Attribute> attributes) {
 		this(attributes, null);
@@ -31,67 +32,78 @@ public class Instances implements Iterable<Instance>, Copyable<Instances> {
 	/**
 	 * Constructs a dataset from attributes, with specified capacity.
 	 * 
-	 * @param attributes the attributes.
-	 * @param capacity the capacity.
+	 * @param attributes
+	 *            the attributes.
+	 * @param capacity
+	 *            the capacity.
 	 */
 	public Instances(List<Attribute> attributes, int capacity) {
 		this(attributes, null, capacity);
 	}
-	
+
 	/**
 	 * Constructs a dataset from attributes and target attribute.
 	 * 
-	 * @param attributes the attributes.
-	 * @param targetAtt the target attribute.
+	 * @param attributes
+	 *            the attributes.
+	 * @param targetAtt
+	 *            the target attribute.
 	 */
 	public Instances(List<Attribute> attributes, Attribute targetAtt) {
 		this(attributes, targetAtt, 1000);
 	}
-	
+
 	/**
-	 * Constructs a dataset from attributes and target attribute, with specified 
+	 * Constructs a dataset from attributes and target attribute, with specified
 	 * capacity.
 	 * 
-	 * @param attributes the attributes.
-	 * @param targetAtt the target attribute.
-	 * @param capacity the capacity.
+	 * @param attributes
+	 *            the attributes.
+	 * @param targetAtt
+	 *            the target attribute.
+	 * @param capacity
+	 *            the capacity.
 	 */
-	public Instances(List<Attribute> attributes, Attribute targetAtt, int capacity) {
+	public Instances(List<Attribute> attributes, Attribute targetAtt,
+			int capacity) {
 		this.attributes = attributes;
 		this.targetAtt = targetAtt;
 		this.instances = new ArrayList<>(capacity);
 	}
-	
+
 	/**
 	 * Copy constructor.
 	 * 
-	 * @param instances the instances to copy.
+	 * @param instances
+	 *            the instances to copy.
 	 */
 	public Instances(Instances instances) {
 		this.attributes = instances.attributes;
 		this.targetAtt = instances.targetAtt;
 		this.instances = new ArrayList<>(instances.instances);
 	}
-	
+
 	/**
 	 * Adds an instance to the end of the dataset.
 	 * 
-	 * @param instance the instance to add.
+	 * @param instance
+	 *            the instance to add.
 	 */
 	public void add(Instance instance) {
 		instances.add(instance);
 	}
-	
+
 	/**
 	 * Returns the instance at given index.
 	 * 
-	 * @param index the index.
+	 * @param index
+	 *            the index.
 	 * @return the instance at given index.
 	 */
 	public Instance get(int index) {
 		return instances.get(index);
 	}
-	
+
 	/**
 	 * Returns the target attribute.
 	 * 
@@ -100,11 +112,12 @@ public class Instances implements Iterable<Instance>, Copyable<Instances> {
 	public final Attribute getTargetAttribute() {
 		return targetAtt;
 	}
-	
+
 	/**
 	 * Sets the target attribute.
 	 * 
-	 * @param targetAtt the target attribute.
+	 * @param targetAtt
+	 *            the target attribute.
 	 */
 	public final void setTargetAttribute(Attribute targetAtt) {
 		this.targetAtt = targetAtt;
@@ -123,7 +136,7 @@ public class Instances implements Iterable<Instance>, Copyable<Instances> {
 	public final int size() {
 		return instances.size();
 	}
-	
+
 	/**
 	 * Returns the dimension of this dataset, i.e., the number of attributes.
 	 * Note that class attribute does not count.
@@ -133,7 +146,7 @@ public class Instances implements Iterable<Instance>, Copyable<Instances> {
 	public final int dimension() {
 		return attributes.size();
 	}
-	
+
 	/**
 	 * Returns the list of attributes.
 	 * 
@@ -142,48 +155,51 @@ public class Instances implements Iterable<Instance>, Copyable<Instances> {
 	public List<Attribute> getAttributes() {
 		return attributes;
 	}
-	
+
 	/**
 	 * Returns the list of attributes at given locations.
 	 * 
-	 * @param indices the indices.
+	 * @param indices
+	 *            the indices.
 	 * @return the list of attributes at given locations.
 	 */
-	public List<Attribute> getAttributes(int ... indices) {
+	public List<Attribute> getAttributes(int... indices) {
 		List<Attribute> attributes = new ArrayList<>(indices.length);
 		for (int index : indices) {
 			attributes.add(this.attributes.get(index));
 		}
 		return attributes;
 	}
-	
+
 	/**
 	 * Sets the attributes.
 	 * 
-	 * @param attributes the attributes to set.
+	 * @param attributes
+	 *            the attributes to set.
 	 */
 	public void setAttributes(List<Attribute> attributes) {
 		this.attributes = attributes;
 	}
-	
+
 	/**
 	 * Resets this dataset.
 	 */
 	public void clear() {
 		instances.clear();
 	}
-	
+
 	/**
-	 * Randomly permutes this dataset. 
+	 * Randomly permutes this dataset.
 	 */
 	public void shuffle() {
 		Collections.shuffle(instances, Random.getInstance().getRandom());
 	}
-	
+
 	/**
 	 * Randomly permutes this dataset.
 	 * 
-	 * @param rand  the source of randomness to use to shuffle the dataset.
+	 * @param rand
+	 *            the source of randomness to use to shuffle the dataset.
 	 */
 	public void shuffle(java.util.Random rand) {
 		Collections.shuffle(instances, rand);
@@ -198,5 +214,5 @@ public class Instances implements Iterable<Instance>, Copyable<Instances> {
 		}
 		return copy;
 	}
-	
+
 }

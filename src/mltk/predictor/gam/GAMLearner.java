@@ -31,15 +31,16 @@ import mltk.util.StatUtils;
  * 
  * <p>
  * Reference:<br>
- * Y. Lou, R. Caruana and J. Gehrke. Intelligible models for classification and 
- * regression. In <i>Proceedings of the 18th ACM SIGKDD International Conference 
+ * Y. Lou, R. Caruana and J. Gehrke. Intelligible models for classification and
+ * regression. In <i>Proceedings of the 18th ACM SIGKDD International Conference
  * on Knowledge Discovery and Data Mining (KDD)</i>, Beijing, China, 2012.
  * </p>
+ * 
  * @author Yin Lou
- *
+ * 
  */
 public class GAMLearner extends Learner {
-	
+
 	private boolean verbose;
 	private int baggingIters;
 	private int maxNumIters;
@@ -47,7 +48,7 @@ public class GAMLearner extends Learner {
 	private Task task;
 	private double learningRate;
 	private Instances validSet;
-	
+
 	/**
 	 * Constructor.
 	 */
@@ -72,7 +73,8 @@ public class GAMLearner extends Learner {
 	/**
 	 * Sets whether we output something during the training.
 	 * 
-	 * @param verbose the switch if we output things during training.
+	 * @param verbose
+	 *            the switch if we output things during training.
 	 */
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
@@ -90,7 +92,8 @@ public class GAMLearner extends Learner {
 	/**
 	 * Sets the number of bagging iterations.
 	 * 
-	 * @param baggingIters the bagging iterations.
+	 * @param baggingIters
+	 *            the bagging iterations.
 	 */
 	public void setBaggingIters(int baggingIters) {
 		this.baggingIters = baggingIters;
@@ -104,16 +107,17 @@ public class GAMLearner extends Learner {
 	public int getMaxNumIters() {
 		return maxNumIters;
 	}
-	
+
 	/**
 	 * Sets the maximum number of iterations.
 	 * 
-	 * @param maxNumIters the maximum number of iterations.
+	 * @param maxNumIters
+	 *            the maximum number of iterations.
 	 */
 	public void setMaxNumIters(int maxNumIters) {
 		this.maxNumIters = maxNumIters;
 	}
-	
+
 	/**
 	 * Returns the maximum number of leaves.
 	 * 
@@ -126,12 +130,13 @@ public class GAMLearner extends Learner {
 	/**
 	 * Sets the maximum number of leaves.
 	 * 
-	 * @param maxNumLeaves the maximum number of leaves.
+	 * @param maxNumLeaves
+	 *            the maximum number of leaves.
 	 */
 	public void setMaxNumLeaves(int maxNumLeaves) {
 		this.maxNumLeaves = maxNumLeaves;
 	}
-	
+
 	/**
 	 * Returns the learning rate.
 	 * 
@@ -144,12 +149,13 @@ public class GAMLearner extends Learner {
 	/**
 	 * Sets the learning rate.
 	 * 
-	 * @param learningRate the learning rate.
+	 * @param learningRate
+	 *            the learning rate.
 	 */
 	public void setLearningRate(double learningRate) {
 		this.learningRate = learningRate;
 	}
-	
+
 	/**
 	 * Returns the task of this learner.
 	 * 
@@ -158,16 +164,17 @@ public class GAMLearner extends Learner {
 	public Task getTask() {
 		return task;
 	}
-	
+
 	/**
 	 * Sets the task of this learner.
 	 * 
-	 * @param task the task of this learner.
+	 * @param task
+	 *            the task of this learner.
 	 */
 	public void setTask(Task task) {
 		this.task = task;
 	}
-	
+
 	/**
 	 * Returns the validation set.
 	 * 
@@ -176,47 +183,53 @@ public class GAMLearner extends Learner {
 	public Instances getValidSet() {
 		return validSet;
 	}
-	
+
 	/**
 	 * Sets the validation set.
 	 * 
-	 * @param validSet the validation set.
+	 * @param validSet
+	 *            the validation set.
 	 */
 	public void setValidSet(Instances validSet) {
 		this.validSet = validSet;
 	}
-	
+
 	/**
 	 * Sets the base learner.<br>
 	 * 
-	 * @param option the option string.
+	 * @param option
+	 *            the option string.
 	 */
 	public void setBaseLearner(String option) {
 		String[] opts = option.split(":");
 		switch (opts[0]) {
-			case "tr":
-				int maxNumLeaves = Integer.parseInt(opts[1]);
-				int baggingIters = Integer.parseInt(opts[2]);
-				setMaxNumLeaves(maxNumLeaves);
-				setBaggingIters(baggingIters);
-				break;
-			case "cs":
-				break;
-			default:
-				break;
+		case "tr":
+			int maxNumLeaves = Integer.parseInt(opts[1]);
+			int baggingIters = Integer.parseInt(opts[2]);
+			setMaxNumLeaves(maxNumLeaves);
+			setBaggingIters(baggingIters);
+			break;
+		case "cs":
+			break;
+		default:
+			break;
 		}
 	}
 
 	/**
 	 * Builds a classifier.
 	 * 
-	 * @param trainSet the training set.
-	 * @param validSet the validation set.
-	 * @param maxNumIters the maximum number of iterations.
-	 * @param maxNumLeaves the maximum number of leaves.
+	 * @param trainSet
+	 *            the training set.
+	 * @param validSet
+	 *            the validation set.
+	 * @param maxNumIters
+	 *            the maximum number of iterations.
+	 * @param maxNumLeaves
+	 *            the maximum number of leaves.
 	 * @return a classifier.
 	 */
-	public GAM buildClassifier(Instances trainSet, Instances validSet, 
+	public GAM buildClassifier(Instances trainSet, Instances validSet,
 			int maxNumIters, int maxNumLeaves) {
 		GAM gam = new GAM();
 
@@ -231,19 +244,19 @@ public class GAMLearner extends Learner {
 		for (int i = 0; i < attributes.size(); i++) {
 			regressors.add(new BoostedEnsemble());
 		}
-		
+
 		// Create bags
 		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
-		
+
 		LineCutter lineCutter = new LineCutter(true);
 		lineCutter.setNumIntervals(maxNumLeaves);
-		BaggedEnsembleLearner learner = 
-				new BaggedEnsembleLearner(bags.length, lineCutter);
+		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(bags.length,
+				lineCutter);
 
 		// Initialize predictions
 		double[] predictionTrain = new double[trainSet.size()];
 		double[] predictionValid = new double[validSet.size()];
-		
+
 		List<Double> errorList = new ArrayList<>(maxNumIters);
 
 		// Gradient boosting
@@ -252,7 +265,8 @@ public class GAMLearner extends Learner {
 			// Derivitive to attribute k
 			// Minimizes the loss function: log(1 + exp(-yF))
 			for (int i = 0; i < trainSet.size(); i++) {
-				double r = OptimUtils.getPseudoResidual(predictionTrain[i], target[i]);
+				double r = OptimUtils.getPseudoResidual(predictionTrain[i],
+						target[i]);
 				trainSet.get(i).setTarget(r);
 			}
 
@@ -292,7 +306,8 @@ public class GAMLearner extends Learner {
 			error /= validSet.size();
 			errorList.add(error);
 			if (verbose) {
-				System.out.println("Iteration " + iter + " Feature " + k + ": " + error);
+				System.out.println("Iteration " + iter + " Feature " + k + ": "
+						+ error);
 			}
 		}
 
@@ -305,7 +320,7 @@ public class GAMLearner extends Learner {
 				idx = i;
 			}
 		}
-		
+
 		// Remove trees
 		int n = idx / attributes.size();
 		int m = idx % attributes.size();
@@ -318,18 +333,19 @@ public class GAMLearner extends Learner {
 				boostedEnsemble.removeLast();
 			}
 		}
-		
+
 		// Restore targets
 		for (int i = 0; i < target.length; i++) {
 			trainSet.get(i).setTarget(target[i]);
 		}
-		
+
 		// Compress model
 		for (int i = 0; i < regressors.size(); i++) {
 			BoostedEnsemble boostedEnsemble = regressors.get(i);
 			Attribute attribute = attributes.get(i);
 			int attIndex = attribute.getIndex();
-			Function1D function = CompressionUtils.compress(attIndex, boostedEnsemble);
+			Function1D function = CompressionUtils.compress(attIndex,
+					boostedEnsemble);
 			Regressor regressor = function;
 			if (attribute.getType() == Type.BINNED) {
 				int l = ((BinnedAttribute) attribute).getNumBins();
@@ -338,21 +354,25 @@ public class GAMLearner extends Learner {
 				int l = ((NominalAttribute) attribute).getCardinality();
 				regressor = CompressionUtils.convert(l, function);
 			}
-			gam.add(new int[] {attIndex}, regressor);
+			gam.add(new int[] { attIndex }, regressor);
 		}
-		
+
 		return gam;
 	}
-	
+
 	/**
 	 * Builds a classifier.
 	 * 
-	 * @param trainSet the training set.
-	 * @param maxNumIters the maximum number of iterations.
-	 * @param maxNumLeaves the maximum number of leaves.
+	 * @param trainSet
+	 *            the training set.
+	 * @param maxNumIters
+	 *            the maximum number of iterations.
+	 * @param maxNumLeaves
+	 *            the maximum number of leaves.
 	 * @return a classifier.
 	 */
-	public GAM buildClassifier(Instances trainSet, int maxNumIters, int maxNumLeaves) {
+	public GAM buildClassifier(Instances trainSet, int maxNumIters,
+			int maxNumLeaves) {
 		GAM gam = new GAM();
 
 		// Backup targets
@@ -366,14 +386,14 @@ public class GAMLearner extends Learner {
 		for (int i = 0; i < attributes.size(); i++) {
 			regressors.add(new BoostedEnsemble());
 		}
-		
+
 		// Create bags
 		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
-		
+
 		LineCutter lineCutter = new LineCutter(true);
 		lineCutter.setNumIntervals(maxNumLeaves);
-		BaggedEnsembleLearner learner = 
-				new BaggedEnsembleLearner(bags.length, lineCutter);
+		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(bags.length,
+				lineCutter);
 
 		// Initialize predictions
 		double[] predictionTrain = new double[trainSet.size()];
@@ -384,7 +404,8 @@ public class GAMLearner extends Learner {
 			// Derivitive to attribute k
 			// Minimizes the loss function: log(1 + exp(-2yF))
 			for (int i = 0; i < trainSet.size(); i++) {
-				double r = OptimUtils.getPseudoResidual(predictionTrain[i], target[i]);
+				double r = OptimUtils.getPseudoResidual(predictionTrain[i],
+						target[i]);
 				trainSet.get(i).setTarget(r);
 			}
 
@@ -418,21 +439,23 @@ public class GAMLearner extends Learner {
 			}
 			error /= trainSet.size();
 			if (verbose) {
-				System.out.println("Iteration " + iter + " Feature " + k + ": " + error);
+				System.out.println("Iteration " + iter + " Feature " + k + ": "
+						+ error);
 			}
 		}
-		
+
 		// Restore targets
 		for (int i = 0; i < target.length; i++) {
 			trainSet.get(i).setTarget(target[i]);
 		}
-		
+
 		// Compress model
 		for (int i = 0; i < regressors.size(); i++) {
 			BoostedEnsemble boostedEnsemble = regressors.get(i);
 			Attribute attribute = attributes.get(i);
 			int attIndex = attribute.getIndex();
-			Function1D function = CompressionUtils.compress(attIndex, boostedEnsemble);
+			Function1D function = CompressionUtils.compress(attIndex,
+					boostedEnsemble);
 			Regressor regressor = function;
 			if (attribute.getType() == Type.BINNED) {
 				int l = ((BinnedAttribute) attribute).getNumBins();
@@ -441,45 +464,49 @@ public class GAMLearner extends Learner {
 				int l = ((NominalAttribute) attribute).getCardinality();
 				regressor = CompressionUtils.convert(l, function);
 			}
-			gam.add(new int[] {attIndex}, regressor);
+			gam.add(new int[] { attIndex }, regressor);
 		}
-		
+
 		return gam;
 	}
 
 	/**
 	 * Builds a regressor.
-	 *  
-	 * @param trainSet the training set.
-	 * @param validSet the validation set.
-	 * @param maxNumIters the maximum number of iterations.
-	 * @param maxNumLeaves the maximum number of leaves.
+	 * 
+	 * @param trainSet
+	 *            the training set.
+	 * @param validSet
+	 *            the validation set.
+	 * @param maxNumIters
+	 *            the maximum number of iterations.
+	 * @param maxNumLeaves
+	 *            the maximum number of leaves.
 	 * @return a regressor.
 	 */
-	public GAM buildRegressor(Instances trainSet, Instances validSet, 
+	public GAM buildRegressor(Instances trainSet, Instances validSet,
 			int maxNumIters, int maxNumLeaves) {
 		GAM gam = new GAM();
-		
+
 		List<Attribute> attributes = trainSet.getAttributes();
 		List<BoostedEnsemble> regressors = new ArrayList<>(attributes.size());
 		for (int i = 0; i < attributes.size(); i++) {
 			regressors.add(new BoostedEnsemble());
 		}
-		
+
 		// Backup targets
 		double[] target = new double[trainSet.size()];
 		for (int i = 0; i < target.length; i++) {
 			target[i] = trainSet.get(i).getTarget();
 		}
-		
+
 		// Create bags
 		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
-		
+
 		LineCutter lineCutter = new LineCutter();
 		lineCutter.setNumIntervals(maxNumLeaves);
-		BaggedEnsembleLearner learner = 
-				new BaggedEnsembleLearner(bags.length, lineCutter);
-		
+		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(bags.length,
+				lineCutter);
+
 		// Initialize residuals
 		double[] residualTrain = new double[trainSet.size()];
 		double[] residualValid = new double[validSet.size()];
@@ -491,9 +518,9 @@ public class GAMLearner extends Learner {
 			Instance instance = validSet.get(i);
 			residualValid[i] = instance.getTarget();
 		}
-		
+
 		List<Double> rmseList = new ArrayList<>(maxNumIters);
-		
+
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			int k = iter % attributes.size();
@@ -514,7 +541,7 @@ public class GAMLearner extends Learner {
 				}
 			}
 			boostedEnsemble.add(baggedEnsemble);
-			
+
 			// Update residuals
 			for (int j = 0; j < residualTrain.length; j++) {
 				Instance instance = trainSet.get(j);
@@ -526,15 +553,15 @@ public class GAMLearner extends Learner {
 				double pred = baggedEnsemble.regress(instance);
 				residualValid[j] -= pred;
 			}
-			
+
 			double rmse = StatUtils.rms(residualValid);
 			rmseList.add(rmse);
 			if (verbose) {
-				System.out.println("Iteration " + iter + " Feature " + k + ": " 
-								+ StatUtils.rms(residualTrain) + " " + rmse);
+				System.out.println("Iteration " + iter + " Feature " + k + ": "
+						+ StatUtils.rms(residualTrain) + " " + rmse);
 			}
 		}
-	
+
 		// Search the best model on validation set
 		double min = Double.POSITIVE_INFINITY;
 		int idx = -1;
@@ -544,7 +571,7 @@ public class GAMLearner extends Learner {
 				idx = i;
 			}
 		}
-		
+
 		// Prune tree ensembles
 		int n = idx / attributes.size();
 		int m = idx % attributes.size();
@@ -557,18 +584,19 @@ public class GAMLearner extends Learner {
 				boostedEnsemble.removeLast();
 			}
 		}
-		
+
 		// Restore targets
 		for (int i = 0; i < target.length; i++) {
 			trainSet.get(i).setTarget(target[i]);
 		}
-		
+
 		// Compress model
 		for (int i = 0; i < regressors.size(); i++) {
 			BoostedEnsemble boostedEnsemble = regressors.get(i);
 			Attribute attribute = attributes.get(i);
 			int attIndex = attribute.getIndex();
-			Function1D function = CompressionUtils.compress(attIndex, boostedEnsemble);
+			Function1D function = CompressionUtils.compress(attIndex,
+					boostedEnsemble);
 			Regressor regressor = function;
 			if (attribute.getType() == Type.BINNED) {
 				int l = ((BinnedAttribute) attribute).getNumBins();
@@ -577,21 +605,25 @@ public class GAMLearner extends Learner {
 				int l = ((NominalAttribute) attribute).getCardinality();
 				regressor = CompressionUtils.convert(l, function);
 			}
-			gam.add(new int[] {attIndex}, regressor);
+			gam.add(new int[] { attIndex }, regressor);
 		}
-		
+
 		return gam;
 	}
-	
+
 	/**
 	 * Builds a regressor.
 	 * 
-	 * @param trainSet the training set.
-	 * @param maxNumIters the maximum number of iterations.
-	 * @param maxNumLeaves the maximum number of leaves.
+	 * @param trainSet
+	 *            the training set.
+	 * @param maxNumIters
+	 *            the maximum number of iterations.
+	 * @param maxNumLeaves
+	 *            the maximum number of leaves.
 	 * @return a regressor.
 	 */
-	public GAM buildRegressor(Instances trainSet, int maxNumIters, int maxNumLeaves) {
+	public GAM buildRegressor(Instances trainSet, int maxNumIters,
+			int maxNumLeaves) {
 		GAM gam = new GAM();
 
 		List<Attribute> attributes = trainSet.getAttributes();
@@ -605,22 +637,22 @@ public class GAMLearner extends Learner {
 		for (int i = 0; i < target.length; i++) {
 			target[i] = trainSet.get(i).getTarget();
 		}
-		
+
 		// Create bags
 		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
-		
+
 		LineCutter lineCutter = new LineCutter();
 		lineCutter.setNumIntervals(maxNumLeaves);
-		BaggedEnsembleLearner learner = 
-				new BaggedEnsembleLearner(bags.length, lineCutter);
-		
+		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(bags.length,
+				lineCutter);
+
 		// Initialize residuals
 		double[] residualTrain = new double[trainSet.size()];
 		for (int i = 0; i < trainSet.size(); i++) {
 			Instance instance = trainSet.get(i);
 			residualTrain[i] = instance.getTarget();
 		}
-		
+
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			int k = iter % attributes.size();
@@ -641,31 +673,33 @@ public class GAMLearner extends Learner {
 				}
 			}
 			boostedEnsemble.add(baggedEnsemble);
-			
+
 			// Update residuals
 			for (int i = 0; i < residualTrain.length; i++) {
 				Instance instance = trainSet.get(i);
 				double pred = baggedEnsemble.regress(instance);
-				residualTrain[i] -= pred;	
+				residualTrain[i] -= pred;
 			}
-			
+
 			double rmse = StatUtils.rms(residualTrain);
 			if (verbose) {
-				System.out.println("Iteration " + iter + " Feature " + k + ": " + rmse);
+				System.out.println("Iteration " + iter + " Feature " + k + ": "
+						+ rmse);
 			}
 		}
-		
+
 		// Restore targets
 		for (int i = 0; i < target.length; i++) {
 			trainSet.get(i).setTarget(target[i]);
 		}
-		
+
 		// Compress model
 		for (int i = 0; i < regressors.size(); i++) {
 			BoostedEnsemble boostedEnsemble = regressors.get(i);
 			Attribute attribute = attributes.get(i);
 			int attIndex = attribute.getIndex();
-			Function1D function = CompressionUtils.compress(attIndex, boostedEnsemble);
+			Function1D function = CompressionUtils.compress(attIndex,
+					boostedEnsemble);
 			Regressor regressor = function;
 			if (attribute.getType() == Type.BINNED) {
 				int l = ((BinnedAttribute) attribute).getNumBins();
@@ -674,9 +708,9 @@ public class GAMLearner extends Learner {
 				int l = ((NominalAttribute) attribute).getCardinality();
 				regressor = CompressionUtils.convert(l, function);
 			}
-			gam.add(new int[] {attIndex}, regressor);
+			gam.add(new int[] { attIndex }, regressor);
 		}
-		
+
 		return gam;
 	}
 
@@ -687,61 +721,62 @@ public class GAMLearner extends Learner {
 			maxNumIters = instances.getAttributes().size() * 20;
 		}
 		switch (task) {
-			case REGRESSION:
-				if (validSet != null) {
-					gam = buildRegressor(instances, validSet, maxNumIters, 
-							maxNumLeaves);
-				} else {
-					gam = buildRegressor(instances, maxNumIters, maxNumLeaves);
-				}
-				break;
-			case CLASSIFICATION:
-				if (validSet != null) {
-					gam = buildClassifier(instances, validSet, maxNumIters, 
-							maxNumLeaves);
-				} else {
-					gam = buildClassifier(instances, maxNumIters, maxNumLeaves);
-				}
-				break;
-			default:
-				break;
+		case REGRESSION:
+			if (validSet != null) {
+				gam = buildRegressor(instances, validSet, maxNumIters,
+						maxNumLeaves);
+			} else {
+				gam = buildRegressor(instances, maxNumIters, maxNumLeaves);
+			}
+			break;
+		case CLASSIFICATION:
+			if (validSet != null) {
+				gam = buildClassifier(instances, validSet, maxNumIters,
+						maxNumLeaves);
+			} else {
+				gam = buildClassifier(instances, maxNumIters, maxNumLeaves);
+			}
+			break;
+		default:
+			break;
 		}
 		return gam;
 	}
-	
+
 	static class Options {
-		
+
 		@Argument(name = "-r", description = "attribute file path")
 		String attPath = null;
-		
+
 		@Argument(name = "-t", description = "train set path", required = true)
 		String trainPath = null;
-		
+
 		@Argument(name = "-v", description = "valid set path")
 		String validPath = null;
-		
+
 		@Argument(name = "-o", description = "output model path")
 		String outputModelPath = null;
-		
+
 		@Argument(name = "-g", description = "task between classification (c) and regression (r) (default: r)")
 		String task = "r";
-		
+
 		@Argument(name = "-b", description = "base learner (default: tr:3:100)")
 		String baseLearner = "tr:3:100";
-		
+
 		@Argument(name = "-m", description = "maximum number of iterations", required = true)
 		int maxNumIters = -1;
-		
+
 		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
 		long seed = 0L;
-		
+
 		@Argument(name = "-l", description = "learning rate (default: 0.01)")
 		double learningRate = 0.01;
-		
+
 	}
-	
+
 	/**
 	 * <p>
+	 * 
 	 * <pre>
 	 * Usage: GAMLearner
 	 * -t	train set path
@@ -754,10 +789,12 @@ public class GAMLearner extends Learner {
 	 * [-s]	seed of the random number generator (default: 0)
 	 * [-l]	learning rate (default: 0.01)
 	 * </pre>
+	 * 
 	 * </p>
 	 * 
-	 * @param args the command line arguments.
-	 * @throws Exception 
+	 * @param args
+	 *            the command line arguments.
+	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
 		Options opts = new Options();
@@ -770,28 +807,29 @@ public class GAMLearner extends Learner {
 			parser.printUsage();
 			System.exit(1);
 		}
-		
+
 		Random.getInstance().setSeed(opts.seed);
 
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-		
+
 		GAMLearner gamLearner = new GAMLearner();
 		gamLearner.setBaseLearner(opts.baseLearner);
 		gamLearner.setMaxNumIters(opts.maxNumIters);
 		gamLearner.setLearningRate(opts.learningRate);
 		gamLearner.setTask(task);
 		gamLearner.setVerbose(true);
-		
+
 		if (opts.validPath != null) {
-			Instances validSet = InstancesReader.read(opts.attPath, opts.validPath);
+			Instances validSet = InstancesReader.read(opts.attPath,
+					opts.validPath);
 			gamLearner.setValidSet(validSet);
 		}
-		
+
 		long start = System.currentTimeMillis();
 		GAM gam = gamLearner.build(trainSet);
 		long end = System.currentTimeMillis();
 		System.out.println("Time: " + (end - start) / 1000.0);
-		
+
 		if (opts.outputModelPath != null) {
 			PredictorWriter.write(gam, opts.outputModelPath);
 		}

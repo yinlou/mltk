@@ -6,16 +6,17 @@ import java.util.Arrays;
  * Class for dense vectors.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class DenseVector implements Vector {
-	
+
 	protected double[] values;
-	
+
 	/**
 	 * Constructs a dense vector from a double array.
 	 * 
-	 * @param values the double array.
+	 * @param values
+	 *            the double array.
 	 */
 	public DenseVector(double[] values) {
 		this.values = values;
@@ -62,5 +63,5 @@ public class DenseVector implements Vector {
 	public boolean isSparse() {
 		return false;
 	}
-	
+
 }

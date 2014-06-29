@@ -15,23 +15,24 @@ import mltk.util.VectorUtils;
  * Class for boosted regression trees (BRTs).
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class BRT implements ProbabilisticClassifier, Regressor {
-	
+
 	protected RegressionTreeList[] trees;
-	
+
 	/**
 	 * Constructor.
 	 */
 	public BRT() {
-		
+
 	}
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param k the number of classes.
+	 * @param k
+	 *            the number of classes.
 	 */
 	public BRT(int k) {
 		trees = new RegressionTreeList[k];
@@ -39,11 +40,12 @@ public class BRT implements ProbabilisticClassifier, Regressor {
 			trees[i] = new RegressionTreeList();
 		}
 	}
-	
+
 	/**
 	 * Returns the tree list for class k.
 	 * 
-	 * @param k the class k.
+	 * @param k
+	 *            the class k.
 	 * @return the tree list for class k.
 	 */
 	public RegressionTreeList getRegressionTreeList(int k) {
@@ -67,7 +69,7 @@ public class BRT implements ProbabilisticClassifier, Regressor {
 				RegressionTree rt = new RegressionTree();
 				rt.read(in);
 				trees[i].add(rt);
-				
+
 				in.readLine();
 			}
 		}
@@ -107,7 +109,7 @@ public class BRT implements ProbabilisticClassifier, Regressor {
 		VectorUtils.divide(prob, sum);
 		return prob;
 	}
-	
+
 	protected double regress(RegressionTreeList trees, Instance instance) {
 		double pred = 0;
 		for (RegressionTree rt : trees) {

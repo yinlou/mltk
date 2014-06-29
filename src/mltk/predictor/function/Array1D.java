@@ -12,39 +12,42 @@ import mltk.util.ArrayUtils;
  * Class for 1D lookup tables.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class Array1D implements Regressor, UnivariateFunction {
-	
+
 	/**
-	 * Attribute index. Must be binned/nominal attribute; otherwise the 
-	 * behavior is not guaranteed.
+	 * Attribute index. Must be binned/nominal attribute; otherwise the behavior
+	 * is not guaranteed.
 	 */
 	protected int attIndex;
-	
+
 	/**
 	 * Predictions.
 	 */
 	protected double[] predictions;
-	
+
 	/**
 	 * Constructor.
 	 */
 	public Array1D() {
-		
+
 	}
-	
+
 	/**
 	 * Constructs a 1D lookup table.
 	 * 
-	 * @param attIndex the attribute index. The attribute must be discretized or nominal.
-	 * @param predictions the prediction array.
+	 * @param attIndex
+	 *            the attribute index. The attribute must be discretized or
+	 *            nominal.
+	 * @param predictions
+	 *            the prediction array.
 	 */
 	public Array1D(int attIndex, double[] predictions) {
 		this.attIndex = attIndex;
 		this.predictions = predictions;
 	}
-	
+
 	/**
 	 * Returns the attribute index.
 	 * 
@@ -53,16 +56,17 @@ public class Array1D implements Regressor, UnivariateFunction {
 	public int getAttributeIndex() {
 		return attIndex;
 	}
-	
+
 	/**
 	 * Sets the attribute index.
 	 * 
-	 * @param attIndex the new attribute index.
+	 * @param attIndex
+	 *            the new attribute index.
 	 */
 	public void setAttributeIndex(int attIndex) {
 		this.attIndex = attIndex;
 	}
-	
+
 	/**
 	 * Returns the internal prediction array.
 	 * 
@@ -71,11 +75,12 @@ public class Array1D implements Regressor, UnivariateFunction {
 	public double[] getPredictions() {
 		return predictions;
 	}
-	
+
 	/**
 	 * Sets the internal prediction array.
 	 * 
-	 * @param predictions the new prediction array.
+	 * @param predictions
+	 *            the new prediction array.
 	 */
 	public void setPredictions(double[] predictions) {
 		this.predictions = predictions;
@@ -86,7 +91,7 @@ public class Array1D implements Regressor, UnivariateFunction {
 		String line = in.readLine();
 		String[] data = line.split(": ");
 		attIndex = Integer.parseInt(data[1]);
-		
+
 		in.readLine();
 		line = in.readLine();
 		predictions = ArrayUtils.parseDoubleArray(line);
@@ -105,16 +110,18 @@ public class Array1D implements Regressor, UnivariateFunction {
 		int idx = (int) instance.getValue(attIndex);
 		return predictions[idx];
 	}
-	
+
 	/**
 	 * Adds this lookup table with another one.
 	 * 
-	 * @param ary the other lookup table.
+	 * @param ary
+	 *            the other lookup table.
 	 * @return this lookup table.
 	 */
 	public Array1D add(Array1D ary) {
 		if (attIndex != ary.attIndex) {
-			throw new IllegalArgumentException("Cannot add arrays on different terms");
+			throw new IllegalArgumentException(
+					"Cannot add arrays on different terms");
 		}
 		for (int i = 0; i < predictions.length; i++) {
 			predictions[i] += ary.predictions[i];
@@ -129,7 +136,8 @@ public class Array1D implements Regressor, UnivariateFunction {
 
 	@Override
 	public Array1D copy() {
-		double[] predictionsCopy = Arrays.copyOf(predictions, predictions.length);
+		double[] predictionsCopy = Arrays.copyOf(predictions,
+				predictions.length);
 		return new Array1D(attIndex, predictionsCopy);
 	}
 

@@ -8,29 +8,34 @@ import mltk.util.ArrayUtils;
  * Class for discretized attributes.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class BinnedAttribute extends Attribute {
-	
+
 	protected int numBins;
 	protected Bins bins;
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param name the name of this attribute.
-	 * @param numBins number of bins for this attribute.
+	 * @param name
+	 *            the name of this attribute.
+	 * @param numBins
+	 *            number of bins for this attribute.
 	 */
 	public BinnedAttribute(String name, int numBins) {
 		this(name, numBins, -1);
 	}
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param name the name of this attribute.
-	 * @param numBins number of bins for this attribute.
-	 * @param index the index of this attribute.
+	 * @param name
+	 *            the name of this attribute.
+	 * @param numBins
+	 *            number of bins for this attribute.
+	 * @param index
+	 *            the index of this attribute.
 	 */
 	public BinnedAttribute(String name, int numBins, int index) {
 		this.name = name;
@@ -39,23 +44,28 @@ public class BinnedAttribute extends Attribute {
 		this.index = index;
 		this.type = Type.BINNED;
 	}
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param name the name of this attribute.
-	 * @param bins bins for this attribute.
+	 * @param name
+	 *            the name of this attribute.
+	 * @param bins
+	 *            bins for this attribute.
 	 */
 	public BinnedAttribute(String name, Bins bins) {
 		this(name, bins, -1);
 	}
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param name the name of this attribute.
-	 * @param bins bins for this attribute.
-	 * @param index the index of this attribute.
+	 * @param name
+	 *            the name of this attribute.
+	 * @param bins
+	 *            bins for this attribute.
+	 * @param index
+	 *            the index of this attribute.
 	 */
 	public BinnedAttribute(String name, Bins bins, int index) {
 		this(name, bins.size());
@@ -70,7 +80,7 @@ public class BinnedAttribute extends Attribute {
 		copy.index = index;
 		return copy;
 	}
-	
+
 	/**
 	 * Returns the number of bins.
 	 * 
@@ -79,7 +89,7 @@ public class BinnedAttribute extends Attribute {
 	public int getNumBins() {
 		return numBins;
 	}
-	
+
 	/**
 	 * Returns the bins.
 	 * 
@@ -88,21 +98,22 @@ public class BinnedAttribute extends Attribute {
 	public Bins getBins() {
 		return bins;
 	}
-	
+
 	public String toString() {
 		if (bins == null) {
 			return name + ": binned (" + numBins + ")";
 		} else {
-			return name + ": binned (" + bins.size() + ";" 
-					+ Arrays.toString(bins.boundaries) 
-					+ ";" + Arrays.toString(bins.medians) + ")";
+			return name + ": binned (" + bins.size() + ";"
+					+ Arrays.toString(bins.boundaries) + ";"
+					+ Arrays.toString(bins.medians) + ")";
 		}
 	}
-	
+
 	/**
 	 * Parses a binned attribute object from a string.
 	 * 
-	 * @param str the string.
+	 * @param str
+	 *            the string.
 	 * @return a parsed binned attribute.
 	 */
 	public static BinnedAttribute parse(String str) {

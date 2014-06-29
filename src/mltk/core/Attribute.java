@@ -4,19 +4,20 @@ package mltk.core;
  * Abstract class for attributes.
  * 
  * @author Yin Lou
- *
+ * 
  */
-public abstract class Attribute implements Comparable<Attribute>, Copyable<Attribute> {
-	
+public abstract class Attribute implements Comparable<Attribute>,
+		Copyable<Attribute> {
+
 	public enum Type {
 		/**
 		 * Nominal type.
 		 */
-		NOMINAL, 
+		NOMINAL,
 		/**
 		 * Numeric type.
 		 */
-		NUMERIC, 
+		NUMERIC,
 		/**
 		 * Binned type.
 		 */
@@ -24,11 +25,11 @@ public abstract class Attribute implements Comparable<Attribute>, Copyable<Attri
 	}
 
 	protected Type type;
-	
+
 	protected int index;
-	
+
 	protected String name;
-	
+
 	/**
 	 * Returns the type of this attribute.
 	 * 
@@ -37,7 +38,7 @@ public abstract class Attribute implements Comparable<Attribute>, Copyable<Attri
 	public final Type getType() {
 		return type;
 	}
-	
+
 	/**
 	 * Returns the index of this attribute.
 	 * 
@@ -46,16 +47,17 @@ public abstract class Attribute implements Comparable<Attribute>, Copyable<Attri
 	public final int getIndex() {
 		return index;
 	}
-	
+
 	/**
 	 * Sets the index of this attribute.
 	 * 
-	 * @param index the new index.
+	 * @param index
+	 *            the new index.
 	 */
 	public final void setIndex(int index) {
 		this.index = index;
 	}
-	
+
 	/**
 	 * Returns the name of this attribute.
 	 * 
@@ -64,7 +66,7 @@ public abstract class Attribute implements Comparable<Attribute>, Copyable<Attri
 	public final String getName() {
 		return name;
 	}
-	
+
 	@Override
 	public int compareTo(Attribute att) {
 		return (this.index - att.index);
@@ -100,10 +102,10 @@ public abstract class Attribute implements Comparable<Attribute>, Copyable<Attri
 			return false;
 		return true;
 	}
-	
+
 	@Override
 	public String toString() {
 		return name;
 	}
-	
+
 }

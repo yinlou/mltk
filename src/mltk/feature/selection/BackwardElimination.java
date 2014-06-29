@@ -14,24 +14,28 @@ import mltk.util.tuple.Pair;
 
 /**
  * Class for feature selection using backward elimination.
- *  
+ * 
  * @author Yin Lou
- *
+ * 
  */
 public class BackwardElimination {
 
 	/**
 	 * Selects features using backward elimination.
 	 * 
-	 * @param trainSet the training set.
-	 * @param validSet the validation set.
-	 * @param learner the learner to use.
-	 * @param numIters the number of iterations to estimate the mean and std for
-	 * full complexity models.
-	 * @return the list of selected features and <mean, std> pair for full 
-	 * complexity models. 
+	 * @param trainSet
+	 *            the training set.
+	 * @param validSet
+	 *            the validation set.
+	 * @param learner
+	 *            the learner to use.
+	 * @param numIters
+	 *            the number of iterations to estimate the mean and std for full
+	 *            complexity models.
+	 * @return the list of selected features and <mean, std> pair for full
+	 *         complexity models.
 	 */
-	public static Pair<List<Attribute>, DoublePair> select(Instances trainSet, 
+	public static Pair<List<Attribute>, DoublePair> select(Instances trainSet,
 			Instances validSet, BaggedEnsembleLearner learner, int numIters) {
 		List<Attribute> attributes = trainSet.getAttributes();
 		List<Attribute> selected = new ArrayList<>(attributes);
@@ -45,15 +49,17 @@ public class BackwardElimination {
 			perf = evaluateModel(trainSet, validSet, learner, numIters);
 			System.out.println("Mean: " + perf.v1 + " Std: " + perf.v2);
 			int i;
-			for (i = 0; i < selected.size(); ) {
+			for (i = 0; i < selected.size();) {
 				List<Attribute> attList = new ArrayList<>(selected);
 				Attribute attr = attList.get(i);
 				attList.remove(i);
 				trainSet.setAttributes(attList);
 				Regressor regressor = (Regressor) learner.build(trainSet);
 				double rmse = Evaluator.evalRMSE(regressor, validSet);
-				System.out.println("Testing: " + attr.getName() + " RMSE: " + rmse);
-				if (perf.v1 - perf.v2 * 3 <= rmse && rmse <= perf.v1 + perf.v2 * 3) {
+				System.out.println("Testing: " + attr.getName() + " RMSE: "
+						+ rmse);
+				if (perf.v1 - perf.v2 * 3 <= rmse
+						&& rmse <= perf.v1 + perf.v2 * 3) {
 					// Eliminate feature
 					selected.remove(i);
 					changed = true;
@@ -69,9 +75,9 @@ public class BackwardElimination {
 		trainSet.setAttributes(attributes);
 		return new Pair<List<Attribute>, DoublePair>(selected, perf);
 	}
-	
-	private static DoublePair evaluateModel(Instances trainSet, Instances validSet, 
-			BaggedEnsembleLearner learner, int numIters) {
+
+	private static DoublePair evaluateModel(Instances trainSet,
+			Instances validSet, BaggedEnsembleLearner learner, int numIters) {
 		// Estimating std of full complexity model
 		double[] rmse = new double[numIters];
 		for (int i = 0; i < rmse.length; i++) {
@@ -82,5 +88,5 @@ public class BackwardElimination {
 		double std = StatUtils.std(rmse);
 		return new DoublePair(mean, std);
 	}
-	
+
 }

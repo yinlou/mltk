@@ -4,7 +4,7 @@ package mltk.util.tuple;
  * Class for generic pairs.
  * 
  * @author Yin Lou
- *
+ * 
  * @param <T1>
  * @param <T2>
  */
@@ -12,12 +12,14 @@ public class Pair<T1, T2> {
 
 	public T1 v1;
 	public T2 v2;
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param v1 the 1st element.
-	 * @param v2 the 2nd element.
+	 * @param v1
+	 *            the 1st element.
+	 * @param v2
+	 *            the 2nd element.
 	 */
 	public Pair(T1 v1, T2 v2) {
 		this.v1 = v1;
@@ -60,5 +62,5 @@ public class Pair<T1, T2> {
 		}
 		return true;
 	}
-	
+
 }

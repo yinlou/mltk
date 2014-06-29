@@ -9,26 +9,27 @@ import mltk.core.Instance;
  * Class for bagged ensembles.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class BaggedEnsemble extends Ensemble {
-	
+
 	/**
 	 * Constructor.
 	 */
 	public BaggedEnsemble() {
 		super();
 	}
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param capacity the capacity of this bagged ensemble.
+	 * @param capacity
+	 *            the capacity of this bagged ensemble.
 	 */
 	public BaggedEnsemble(int capacity) {
 		super(capacity);
 	}
-	
+
 	@Override
 	public double regress(Instance instance) {
 		if (predictors.size() == 0) {
@@ -42,7 +43,7 @@ public class BaggedEnsemble extends Ensemble {
 			return prediction / predictors.size();
 		}
 	}
-	
+
 	@Override
 	public int classify(Instance instance) {
 		if (predictors.size() == 0) {

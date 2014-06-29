@@ -9,7 +9,7 @@ import mltk.predictor.Predictor;
  * Class for reading predictors.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class PredictorReader {
 
@@ -17,9 +17,10 @@ public class PredictorReader {
 	 * Reads a predictor. The caller is responsible for converting the predictor
 	 * to correct type.
 	 * 
-	 * @param path the file path for the predictor.
+	 * @param path
+	 *            the file path for the predictor.
 	 * @return the parsed predictor.
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public static Predictor read(String path) throws Exception {
 		BufferedReader in = new BufferedReader(new FileReader(path));
@@ -31,28 +32,32 @@ public class PredictorReader {
 		in.close();
 		return predictor;
 	}
-	
+
 	/**
-	 * Reads a predictor. The caller is responsible for providing the correct 
+	 * Reads a predictor. The caller is responsible for providing the correct
 	 * predictor type.
 	 * 
-	 * @param path the file path for the predictor.
-	 * @param clazz the class of the predictor.
+	 * @param path
+	 *            the file path for the predictor.
+	 * @param clazz
+	 *            the class of the predictor.
 	 * @return the parsed predictor.
-	 * @throws Exception 
+	 * @throws Exception
 	 */
-	public static <T extends Predictor> T read(String path, Class<T> clazz) throws Exception {
+	public static <T extends Predictor> T read(String path, Class<T> clazz)
+			throws Exception {
 		Predictor predictor = read(path);
 		return clazz.cast(predictor);
 	}
-	
+
 	/**
-	 * Reads a predictor from an input reader. The caller is responsible for 
+	 * Reads a predictor from an input reader. The caller is responsible for
 	 * converting the predictor to correct type.
 	 * 
-	 * @param in the input reader.
+	 * @param in
+	 *            the input reader.
 	 * @return the parsed predictor.
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public static Predictor read(BufferedReader in) throws Exception {
 		String line = in.readLine();
@@ -62,5 +67,5 @@ public class PredictorReader {
 		predictor.read(in);
 		return predictor;
 	}
-	
+
 }

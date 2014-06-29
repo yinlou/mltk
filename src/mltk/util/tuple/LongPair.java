@@ -4,18 +4,20 @@ package mltk.util.tuple;
  * Class for <long, long> pairs.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class LongPair {
 
 	public long v1;
 	public long v2;
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param v1 the 1st <code>long</code>.
-	 * @param v2 the 2nd <code>long</code>.
+	 * @param v1
+	 *            the 1st <code>long</code>.
+	 * @param v2
+	 *            the 2nd <code>long</code>.
 	 */
 	public LongPair(long v1, long v2) {
 		this.v1 = v1;
@@ -46,5 +48,5 @@ public class LongPair {
 			return false;
 		return true;
 	}
-	
+
 }

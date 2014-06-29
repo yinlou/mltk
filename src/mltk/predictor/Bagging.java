@@ -12,14 +12,15 @@ import mltk.util.Random;
  * Class for creating bootstrap samples.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class Bagging {
-	
+
 	/**
 	 * Returns a bootstrap sample.
 	 * 
-	 * @param instances the data set.
+	 * @param instances
+	 *            the data set.
 	 * @return a bootstrap sample.
 	 */
 	public static Instances createBootstrapSample(Instances instances) {
@@ -32,7 +33,7 @@ public class Bagging {
 			}
 			map.put(idx, map.get(idx) + 1);
 		}
-		Instances bag = new Instances(instances.getAttributes(), 
+		Instances bag = new Instances(instances.getAttributes(),
 				instances.getTargetAttribute(), map.size());
 		for (Integer idx : map.keySet()) {
 			int weight = map.get(idx);
@@ -42,15 +43,16 @@ public class Bagging {
 		}
 		return bag;
 	}
-	
+
 	/**
 	 * Returns a bootstrap sample with out-of-bag samples.
 	 * 
-	 * @param instances the data set.
-	 * @param bagIndices 
+	 * @param instances
+	 *            the data set.
+	 * @param bagIndices
 	 * @param oobIndices
 	 */
-	public static void createBootstrapSample(Instances instances, 
+	public static void createBootstrapSample(Instances instances,
 			Map<Integer, Integer> bagIndices, List<Integer> oobIndices) {
 		Random rand = Random.getInstance();
 		for (;;) {
@@ -73,19 +75,21 @@ public class Bagging {
 			}
 		}
 	}
-	
+
 	/**
 	 * Returns a set of bags.
 	 * 
-	 * @param instances the dataset.
-	 * @param baggingIter the number of bagging iterations.
+	 * @param instances
+	 *            the dataset.
+	 * @param baggingIter
+	 *            the number of bagging iterations.
 	 * @return a set of bags.
 	 */
 	public static Instances[] createBags(Instances instances, int baggingIter) {
 		Instances[] bags = null;
 		if (baggingIter <= 0) {
 			// No bagging
-			bags = new Instances[] {instances};
+			bags = new Instances[] { instances };
 		} else {
 			bags = new Instances[baggingIter];
 			for (int i = 0; i < baggingIter; i++) {
@@ -94,5 +98,5 @@ public class Bagging {
 		}
 		return bags;
 	}
-	
+
 }

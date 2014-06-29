@@ -15,21 +15,22 @@ import mltk.util.tuple.IntDoublePairComparator;
 class Dataset {
 
 	Instances instances;
-	
+
 	List<List<IntDoublePair>> sortedLists;
-	
+
 	Dataset(Instances instances) {
-		this.instances = new Instances(instances.getAttributes(), 
+		this.instances = new Instances(instances.getAttributes(),
 				instances.getTargetAttribute());
 		sortedLists = new ArrayList<>(instances.dimension());
 	}
-	
+
 	static Dataset create(Instances instances) {
 		Dataset dataset = new Dataset(instances);
 		List<Attribute> attributes = instances.getAttributes();
 		for (int i = 0; i < attributes.size(); i++) {
 			Attribute attribute = attributes.get(i);
-			int capacity = attribute.getType() == Type.NUMERIC ? instances.size() : 0;
+			int capacity = attribute.getType() == Type.NUMERIC ? instances
+					.size() : 0;
 			dataset.sortedLists.add(new ArrayList<IntDoublePair>(capacity));
 		}
 		for (int i = 0; i < instances.size(); i++) {
@@ -38,8 +39,8 @@ class Dataset {
 			for (int j = 0; j < attributes.size(); j++) {
 				Attribute attribute = attributes.get(j);
 				if (attribute.getType() == Type.NUMERIC) {
-					dataset.sortedLists.get(j).add(new IntDoublePair(i, 
-							instance.getValue(attribute)));
+					dataset.sortedLists.get(j).add(
+							new IntDoublePair(i, instance.getValue(attribute)));
 				}
 			}
 		}
@@ -49,7 +50,7 @@ class Dataset {
 		}
 		return dataset;
 	}
-	
+
 	void split(RegressionTreeInteriorNode node, Dataset left, Dataset right) {
 		int[] leftHash = new int[instances.size()];
 		int[] rightHash = new int[instances.size()];
@@ -65,30 +66,34 @@ class Dataset {
 				rightHash[i] = right.instances.size() - 1;
 			}
 		}
-		
+
 		List<Attribute> attributes = instances.getAttributes();
 		for (int i = 0; i < sortedLists.size(); i++) {
 			Attribute attribute = attributes.get(i);
 			if (attribute.getType() == Type.NUMERIC) {
-				left.sortedLists.add(new ArrayList<IntDoublePair>(left.instances.size()));
-				right.sortedLists.add(new ArrayList<IntDoublePair>(right.instances.size()));
+				left.sortedLists.add(new ArrayList<IntDoublePair>(
+						left.instances.size()));
+				right.sortedLists.add(new ArrayList<IntDoublePair>(
+						right.instances.size()));
 			} else {
 				left.sortedLists.add(new ArrayList<IntDoublePair>(0));
 				right.sortedLists.add(new ArrayList<IntDoublePair>(0));
 			}
-			
+
 			List<IntDoublePair> sortedList = sortedLists.get(i);
 			for (IntDoublePair pair : sortedList) {
 				int leftIdx = leftHash[pair.v1];
 				int rightIdx = rightHash[pair.v1];
 				if (leftIdx != -1) {
-					left.sortedLists.get(i).add(new IntDoublePair(leftIdx, pair.v2));
+					left.sortedLists.get(i).add(
+							new IntDoublePair(leftIdx, pair.v2));
 				}
 				if (rightIdx != -1) {
-					right.sortedLists.get(i).add(new IntDoublePair(rightIdx, pair.v2));
+					right.sortedLists.get(i).add(
+							new IntDoublePair(rightIdx, pair.v2));
 				}
 			}
 		}
 	}
-	
+
 }

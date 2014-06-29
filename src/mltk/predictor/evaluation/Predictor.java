@@ -18,19 +18,23 @@ import mltk.util.OptimUtils;
 
 /**
  * Class for making predictions.
- *
+ * 
  * @author Yin Lou
- *
+ * 
  */
 public class Predictor {
 
 	/**
 	 * Makes predictions for a dataset.
-	 *
-	 * @param regressor the model.
-	 * @param instances the dataset.
-	 * @param path the output path.
-	 * @param residual <code>true</code> if residuals are the output.
+	 * 
+	 * @param regressor
+	 *            the model.
+	 * @param instances
+	 *            the dataset.
+	 * @param path
+	 *            the output path.
+	 * @param residual
+	 *            <code>true</code> if residuals are the output.
 	 * @throws IOException
 	 */
 	public static void predict(Regressor regressor, Instances instances,
@@ -53,10 +57,13 @@ public class Predictor {
 
 	/**
 	 * Makes predictions for a dataset.
-	 *
-	 * @param classifier the model.
-	 * @param instances the dataset.
-	 * @param path the output path.
+	 * 
+	 * @param classifier
+	 *            the model.
+	 * @param instances
+	 *            the dataset.
+	 * @param path
+	 *            the output path.
 	 * @throws IOException
 	 */
 	public static void predict(Classifier classifier, Instances instances,
@@ -97,6 +104,7 @@ public class Predictor {
 
 	/**
 	 * <p>
+	 * 
 	 * <pre>
 	 * Usage: Predictor
 	 * -d	data set path
@@ -107,9 +115,11 @@ public class Predictor {
 	 * [-g]	task between classification (c) and regression (r) (default: r)
 	 * [-P]	output probablity (default: false)
 	 * </pre>
+	 * 
 	 * </p>
-	 *
-	 * @param args the command line arguments.
+	 * 
+	 * @param args
+	 *            the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
@@ -125,7 +135,8 @@ public class Predictor {
 		}
 
 		Instances instances = InstancesReader.read(opts.attPath, opts.dataPath);
-		mltk.predictor.Predictor predictor = PredictorReader.read(opts.modelPath);
+		mltk.predictor.Predictor predictor = PredictorReader
+				.read(opts.modelPath);
 
 		switch (task) {
 		case REGRESSION:
@@ -162,10 +173,10 @@ public class Predictor {
 			if (opts.predictionPath != null) {
 				if (opts.prob) {
 					PrintWriter out = new PrintWriter(opts.predictionPath);
-					ProbabilisticClassifier probClassifier =
-							(ProbabilisticClassifier) predictor;
+					ProbabilisticClassifier probClassifier = (ProbabilisticClassifier) predictor;
 					for (Instance instance : instances) {
-						double[] pred = probClassifier.predictProbabilities(instance);
+						double[] pred = probClassifier
+								.predictProbabilities(instance);
 						out.println(Arrays.toString(pred));
 					}
 					out.flush();
@@ -193,7 +204,8 @@ public class Predictor {
 					out.flush();
 					out.close();
 				} else {
-					System.out.println("Warning: Classifier does not support outputing pseudo residual.");
+					System.out
+							.println("Warning: Classifier does not support outputing pseudo residual.");
 				}
 			}
 

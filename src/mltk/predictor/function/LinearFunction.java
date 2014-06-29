@@ -7,39 +7,42 @@ import mltk.core.Instance;
 import mltk.predictor.Regressor;
 
 public class LinearFunction implements Regressor, UnivariateFunction {
-	
+
 	/**
 	 * The attribute index.
 	 */
 	protected int attIndex;
-	
+
 	/**
 	 * The slope.
 	 */
 	protected double beta;
-	
+
 	/**
 	 * Constructor.
 	 */
 	public LinearFunction() {
-		
+
 	}
-	
+
 	/**
 	 * Constructs a linear function with a provided slope value.
 	 * 
-	 * @param beta the slope.
+	 * @param beta
+	 *            the slope.
 	 */
 	public LinearFunction(double beta) {
 		this(-1, beta);
 	}
-	
+
 	/**
-	 * Constructs a linear function with a provided slope value and attribute 
+	 * Constructs a linear function with a provided slope value and attribute
 	 * index.
 	 * 
-	 * @param attIndex the attribute index.
-	 * @param beta the slope.
+	 * @param attIndex
+	 *            the attribute index.
+	 * @param beta
+	 *            the slope.
 	 */
 	public LinearFunction(int attIndex, double beta) {
 		this.attIndex = attIndex;
@@ -68,15 +71,15 @@ public class LinearFunction implements Regressor, UnivariateFunction {
 	public double regress(Instance instance) {
 		return evaluate(instance.getValue(attIndex));
 	}
-	
+
 	public double getSlope() {
 		return beta;
 	}
-	
+
 	public void setSlope(double beta) {
 		this.beta = beta;
 	}
-	
+
 	public int getAttributeIndex() {
 		return attIndex;
 	}

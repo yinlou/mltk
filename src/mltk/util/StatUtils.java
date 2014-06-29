@@ -4,14 +4,15 @@ package mltk.util;
  * Class for utility functions for computing statistics.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class StatUtils {
-	
+
 	/**
 	 * Returns the maximum element in an array.
 	 * 
-	 * @param a the array.
+	 * @param a
+	 *            the array.
 	 * @return the maximum element in an array.
 	 */
 	public static double max(double[] a) {
@@ -23,7 +24,7 @@ public class StatUtils {
 		}
 		return max;
 	}
-	
+
 	/**
 	 * Returns the index of maximum element.
 	 * 
@@ -40,11 +41,12 @@ public class StatUtils {
 		}
 		return idx;
 	}
-	
+
 	/**
 	 * Returns the minimum element in an array.
 	 * 
-	 * @param a the array.
+	 * @param a
+	 *            the array.
 	 * @return the minimum element in an array.
 	 */
 	public static double min(double[] a) {
@@ -56,7 +58,7 @@ public class StatUtils {
 		}
 		return min;
 	}
-	
+
 	/**
 	 * Returns the index of minimum element.
 	 * 
@@ -73,11 +75,12 @@ public class StatUtils {
 		}
 		return idx;
 	}
-	
+
 	/**
 	 * Returns the sum of elements in an array.
 	 * 
-	 * @param a the array.
+	 * @param a
+	 *            the array.
 	 * @return the sum of elements in an array.
 	 */
 	public static double sum(double[] a) {
@@ -87,23 +90,27 @@ public class StatUtils {
 		}
 		return sum;
 	}
-	
+
 	/**
 	 * Returns the sum of squares.
 	 * 
-	 * @param a the array.
+	 * @param a
+	 *            the array.
 	 * @return the sum of squares.
 	 */
 	public static double sumSq(double[] a) {
 		return sumSq(a, 0, a.length);
 	}
-	
+
 	/**
 	 * Returns the sum of squares within a specific range.
 	 * 
-	 * @param a the array.
-	 * @param fromIndex the index of the first element (inclusive).
-	 * @param toIndex the index of the last element (exclusive).
+	 * @param a
+	 *            the array.
+	 * @param fromIndex
+	 *            the index of the first element (inclusive).
+	 * @param toIndex
+	 *            the index of the last element (exclusive).
 	 * @return the sum of squares.
 	 */
 	public static double sumSq(double[] a, int fromIndex, int toIndex) {
@@ -117,18 +124,21 @@ public class StatUtils {
 	/**
 	 * Returns the mean.
 	 * 
-	 * @param a the array.
+	 * @param a
+	 *            the array.
 	 * @return the mean.
 	 */
 	public static double mean(double[] a) {
 		return mean(a, a.length);
 	}
-	
+
 	/**
 	 * Returns the mean.
 	 * 
-	 * @param a the array.
-	 * @param n the total number of elements.
+	 * @param a
+	 *            the array.
+	 * @param n
+	 *            the total number of elements.
 	 * @return the mean.
 	 */
 	public static double mean(double[] a, int n) {
@@ -138,22 +148,25 @@ public class StatUtils {
 		}
 		return avg / n;
 	}
-	
+
 	/**
 	 * Returns the variance.
 	 * 
-	 * @param a the array.
+	 * @param a
+	 *            the array.
 	 * @return the variance.
 	 */
 	public static double variance(double[] a) {
 		return variance(a, a.length);
 	}
-	
+
 	/**
 	 * Returns the variance.
 	 * 
-	 * @param a the array.
-	 * @param n the total number of elements.
+	 * @param a
+	 *            the array.
+	 * @param n
+	 *            the total number of elements.
 	 * @return the variance.
 	 */
 	public static double variance(double[] a, int n) {
@@ -161,37 +174,41 @@ public class StatUtils {
 		double avg = 0.0;
 		for (double v : a) {
 			sq += v * v;
-			avg += v; 
+			avg += v;
 		}
 		avg /= n;
 		return sq / (n - 1.0) - avg * avg * n / (n - 1.0);
 	}
-	
+
 	/**
 	 * Returns the standard variance.
 	 * 
-	 * @param a the array.
+	 * @param a
+	 *            the array.
 	 * @return the standard variance.
 	 */
 	public static double std(double[] a) {
 		return std(a, a.length);
 	}
-	
+
 	/**
 	 * Returns the standard variance.
 	 * 
-	 * @param a the array.
-	 * @param n the total number of elements.
+	 * @param a
+	 *            the array.
+	 * @param n
+	 *            the total number of elements.
 	 * @return the standard variance.
 	 */
 	public static double std(double[] a, int n) {
 		return Math.sqrt(variance(a, n));
 	}
-	
+
 	/**
 	 * Returns the root mean square.
 	 * 
-	 * @param a the array.
+	 * @param a
+	 *            the array.
 	 * @return the root mean square.
 	 */
 	public static double rms(double[] a) {
@@ -202,5 +219,5 @@ public class StatUtils {
 		rms /= a.length;
 		return Math.sqrt(rms);
 	}
-	
+
 }

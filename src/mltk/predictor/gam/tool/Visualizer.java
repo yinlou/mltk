@@ -26,41 +26,42 @@ import mltk.predictor.io.PredictorReader;
  * Class for visualizing 1D and 2D components in a GAM.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class Visualizer {
-	
+
 	/**
 	 * Enumeration of output terminals.
 	 * 
 	 * @author Yin Lou
-	 *
+	 * 
 	 */
 	public enum Terminal {
-		
+
 		/**
 		 * PNG terminal.
 		 */
-		PNG("png"), 
+		PNG("png"),
 		/**
 		 * PDF terminal.
 		 */
 		PDF("pdf");
-		
+
 		String term;
-		
+
 		Terminal(String term) {
 			this.term = term;
 		}
-		
+
 		public String toString() {
 			return term;
 		}
-		
+
 		/**
 		 * Parses an enumeration from a string.
 		 * 
-		 * @param term the string.
+		 * @param term
+		 *            the string.
 		 * @return a parsed terminal.
 		 */
 		public static Terminal getEnum(String term) {
@@ -72,33 +73,37 @@ public class Visualizer {
 			throw new IllegalArgumentException("Invalid Terminal value: "
 					+ term);
 		}
-		
+
 	}
 
 	/**
-	 * Generates a set of Gnuplot scripts for visualizing low dimensional 
+	 * Generates a set of Gnuplot scripts for visualizing low dimensional
 	 * components in a GAM.
 	 * 
-	 * @param gam the GAM model.
-	 * @param instances the training set.
-	 * @param dirPath the directory path to write to.
-	 * @param outputTerminal output plot format (png or pdf).
+	 * @param gam
+	 *            the GAM model.
+	 * @param instances
+	 *            the training set.
+	 * @param dirPath
+	 *            the directory path to write to.
+	 * @param outputTerminal
+	 *            output plot format (png or pdf).
 	 * @throws IOException
 	 */
-	public static void generateGnuplotScripts(GAM gam, Instances instances, 
+	public static void generateGnuplotScripts(GAM gam, Instances instances,
 			String dirPath, Terminal outputTerminal) throws IOException {
 		List<Attribute> attributes = instances.getAttributes();
 		List<int[]> terms = gam.getTerms();
 		List<Regressor> regressors = gam.getRegressors();
-		
+
 		File dir = new File(dirPath);
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
-		
+
 		double[] value = new double[attributes.size()];
 		Instance point = new Instance(value);
-		
+
 		String terminal = outputTerminal.toString();
 		for (int i = 0; i < terms.size(); i++) {
 			int[] term = terms.get(i);
@@ -121,81 +126,82 @@ public class Visualizer {
 				default:
 					break;
 				}
-				PrintWriter out = new PrintWriter(dir.getAbsolutePath() 
+				PrintWriter out = new PrintWriter(dir.getAbsolutePath()
 						+ File.separator + f.getName() + ".plt");
 				out.printf("set term %s\n", terminal);
 				out.printf("set output \"%s.%s\"\n", f.getName(), terminal);
 				out.println("set datafile separator \"\t\"");
 				switch (f.getType()) {
-					case BINNED:
-						int numBins = ((BinnedAttribute) f).getNumBins();
-						out.printf("set xrange[0:%d]\n", numBins - 1);
+				case BINNED:
+					int numBins = ((BinnedAttribute) f).getNumBins();
+					out.printf("set xrange[0:%d]\n", numBins - 1);
+					out.println("plot \"-\" u 1:2 w lp t \"\"");
+					for (int j = 0; j < numBins; j++) {
+						point.setValue(term[0], j);
+						out.printf("%d\t%f\n", j, regressor.regress(point));
+					}
+					out.println("e");
+					break;
+				case NOMINAL:
+					out.println("set style data histogram");
+					out.println("set style histogram cluster gap 1");
+					out.println("set style fill solid border -1");
+					out.println("set boxwidth 0.9");
+					out.println("plot \"-\" u 2:xtic(1) t \"\"");
+					out.println("set xtic rotate by -90");
+					String[] states = ((NominalAttribute) f).getStates();
+					for (int j = 0; j < states.length; j++) {
+						point.setValue(term[0], j);
+						out.printf("%s\t%f\n", states[j],
+								regressor.regress(point));
+					}
+					out.println("e");
+					break;
+				default:
+					Set<Double> values = new HashSet<>();
+					for (Instance instance : instances) {
+						values.add(instance.getValue(term[0]));
+					}
+					List<Double> list = new ArrayList<>(values);
+					Collections.sort(list);
+					out.printf("set xrange[%f:%f]\n", list.get(0),
+							list.get(list.size() - 1));
+					if (regressor instanceof CubicSpline) {
+						CubicSpline spline = (CubicSpline) regressor;
+						out.println("z(x) = x < 0 ? 0 : x ** 3");
+						out.println("h(x, k) = z(x - k)");
+						double[] knots = spline.getKnots();
+						double[] w = spline.getCoefficients();
+						StringBuilder sb = new StringBuilder();
+						sb.append("plot ").append(spline.getIntercept());
+						sb.append(" + ").append(w[0]).append(" * x");
+						sb.append(" + ").append(w[1]).append(" * (x ** 2)");
+						sb.append(" + ").append(w[2]).append(" * (x ** 3)");
+						for (int j = 0; j < knots.length; j++) {
+							sb.append(" + ").append(w[j + 3]).append(" * ");
+							sb.append("h(x, ").append(knots[j]).append(")");
+						}
+						sb.append(" t \"\"");
+						out.println(sb.toString());
+					} else {
 						out.println("plot \"-\" u 1:2 w lp t \"\"");
-						for (int j = 0; j < numBins; j++) {
-							point.setValue(term[0], j);
-							out.printf("%d\t%f\n", j, regressor.regress(point));
+						for (double v : list) {
+							point.setValue(term[0], v);
+							out.printf("%f\t%f\n", v, regressor.regress(point));
 						}
-						out.println("e");
-						break;
-					case NOMINAL:
-						out.println("set style data histogram");
-						out.println("set style histogram cluster gap 1");
-						out.println("set style fill solid border -1");
-						out.println("set boxwidth 0.9");
-						out.println("plot \"-\" u 2:xtic(1) t \"\"");
-						out.println("set xtic rotate by -90");
-						String[] states = ((NominalAttribute) f).getStates();
-						for (int j = 0; j < states.length; j++) {
-							point.setValue(term[0], j);
-							out.printf("%s\t%f\n", states[j], regressor.regress(point));
-						}
-						out.println("e");
-						break;
-					default:
-						Set<Double> values = new HashSet<>();
-						for (Instance instance : instances) {
-							values.add(instance.getValue(term[0]));
-						}
-						List<Double> list = new ArrayList<>(values);
-						Collections.sort(list);
-						out.printf("set xrange[%f:%f]\n", list.get(0), 
-								list.get(list.size() - 1));
-						if (regressor instanceof CubicSpline) {
-							CubicSpline spline = (CubicSpline) regressor;
-							out.println("z(x) = x < 0 ? 0 : x ** 3");
-							out.println("h(x, k) = z(x - k)");
-							double[] knots = spline.getKnots();
-							double[] w = spline.getCoefficients();
-							StringBuilder sb = new StringBuilder();
-							sb.append("plot ").append(spline.getIntercept());
-							sb.append(" + ").append(w[0]).append(" * x");
-							sb.append(" + ").append(w[1]).append(" * (x ** 2)");
-							sb.append(" + ").append(w[2]).append(" * (x ** 3)");
-							for (int j = 0; j < knots.length; j++) {
-								sb.append(" + ").append(w[j + 3]).append(" * ");
-								sb.append("h(x, ").append(knots[j]).append(")");
-							}
-							sb.append(" t \"\"");
-							out.println(sb.toString());
-						} else {
-							out.println("plot \"-\" u 1:2 w lp t \"\"");
-							for (double v : list) {
-								point.setValue(term[0], v);
-								out.printf("%f\t%f\n", v, regressor.regress(point));
-							}
-						}
-						break;
+					}
+					break;
 				}
 				out.flush();
 				out.close();
 			} else if (term.length == 2) {
 				Attribute f1 = attributes.get(term[0]);
 				Attribute f2 = attributes.get(term[1]);
-				PrintWriter out = new PrintWriter(dir.getAbsolutePath() 
-						+ File.separator + f1.getName() + "_" + f2.getName() 
+				PrintWriter out = new PrintWriter(dir.getAbsolutePath()
+						+ File.separator + f1.getName() + "_" + f2.getName()
 						+ ".plt");
 				out.printf("set term %s\n", terminal);
-				out.printf("set output \"%s_%s.%s\"\n", f1.getName(), 
+				out.printf("set output \"%s_%s.%s\"\n", f1.getName(),
 						f2.getName(), terminal);
 				out.println("set datafile separator \"\t\"");
 				int size1 = 0;
@@ -243,28 +249,29 @@ public class Visualizer {
 			}
 		}
 	}
-	
+
 	static class Options {
-		
+
 		@Argument(name = "-r", description = "attribute file path", required = true)
 		String attPath = null;
-		
+
 		@Argument(name = "-d", description = "dataset path", required = true)
 		String datasetPath = null;
-		
+
 		@Argument(name = "-i", description = "input model path", required = true)
 		String inputModelPath = null;
-		
+
 		@Argument(name = "-o", description = "output directory path", required = true)
 		String dirPath = null;
-		
+
 		@Argument(name = "-t", description = "output terminal (default: png)")
 		String terminal = "png";
-		
+
 	}
-	
+
 	/**
 	 * <p>
+	 * 
 	 * <pre>
 	 * Usage: Visualizer
 	 * -r	attribute file path
@@ -273,9 +280,11 @@ public class Visualizer {
 	 * -o	output directory path
 	 * [-t]	output terminal (default: png)
 	 * </pre>
+	 * 
 	 * </p>
 	 * 
-	 * @param args the command line arguments.
+	 * @param args
+	 *            the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
@@ -287,11 +296,12 @@ public class Visualizer {
 			parser.printUsage();
 			System.exit(1);
 		}
-		Instances dataset = InstancesReader.read(opts.attPath, opts.datasetPath);
+		Instances dataset = InstancesReader
+				.read(opts.attPath, opts.datasetPath);
 		GAM gam = PredictorReader.read(opts.inputModelPath, GAM.class);
-		
-		Visualizer.generateGnuplotScripts(gam, dataset, opts.dirPath, 
+
+		Visualizer.generateGnuplotScripts(gam, dataset, opts.dirPath,
 				Terminal.getEnum(opts.terminal));
 	}
-	
+
 }

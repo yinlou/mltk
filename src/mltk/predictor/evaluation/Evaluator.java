@@ -19,15 +19,17 @@ import mltk.util.tuple.DoublePair;
  * Class for making evaluations.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class Evaluator {
-	
+
 	/**
 	 * Returns the area under ROC curve.
 	 * 
-	 * @param probs probability of positive class
-	 * @param targets 0/1 targets
+	 * @param probs
+	 *            probability of positive class
+	 * @param targets
+	 *            0/1 targets
 	 * @return the area under ROC curve.
 	 */
 	public static double evalAreaUnderROC(double[] probs, double[] targets) {
@@ -53,11 +55,11 @@ public class Evaluator {
 					}
 				}
 			}
-			
+
 		});
-		
+
 		double[] fraction = new double[a.length];
-		for (int idx = 0; idx < fraction.length; ) {
+		for (int idx = 0; idx < fraction.length;) {
 			int begin = idx;
 			double pos = 0;
 			for (; idx < fraction.length && a[idx].v1 == a[begin].v1; idx++) {
@@ -68,21 +70,21 @@ public class Evaluator {
 				fraction[i] = frac;
 			}
 		}
-		
+
 		double tt = 0;
 		double tf = 0;
 		double ft = 0;
 		double ff = 0;
-		
+
 		for (int i = 0; i < a.length; i++) {
 			tf += a[i].v2;
 			ff += 1 - a[i].v2;
 		}
-		
+
 		double area = 0;
 		double tpfPrev = 0;
 		double fpfPrev = 0;
-		
+
 		for (int i = a.length - 1; i >= 0; i--) {
 			tt += fraction[i];
 			tf -= fraction[i];
@@ -94,18 +96,21 @@ public class Evaluator {
 			tpfPrev = tpf;
 			fpfPrev = fpf;
 		}
-		
+
 		return area;
 	}
-	
+
 	/**
 	 * Returns the area under ROC curve.
 	 * 
-	 * @param probs probability of positive class
-	 * @param targets 0/1 targets
+	 * @param probs
+	 *            probability of positive class
+	 * @param targets
+	 *            0/1 targets
 	 * @return the area under ROC curve.
 	 */
-	public static double evalAreaUnderROC(List<Double> probs, List<Double> targets) {
+	public static double evalAreaUnderROC(List<Double> probs,
+			List<Double> targets) {
 		DoublePair[] a = new DoublePair[probs.size()];
 		for (int i = 0; i < probs.size(); i++) {
 			a[i] = new DoublePair(probs.get(i), targets.get(i));
@@ -128,11 +133,11 @@ public class Evaluator {
 					}
 				}
 			}
-			
+
 		});
-		
+
 		double[] fraction = new double[a.length];
-		for (int idx = 0; idx < fraction.length; ) {
+		for (int idx = 0; idx < fraction.length;) {
 			int begin = idx;
 			double pos = 0;
 			for (; idx < fraction.length && a[idx].v1 == a[begin].v1; idx++) {
@@ -143,21 +148,21 @@ public class Evaluator {
 				fraction[i] = frac;
 			}
 		}
-		
+
 		double tt = 0;
 		double tf = 0;
 		double ft = 0;
 		double ff = 0;
-		
+
 		for (int i = 0; i < a.length; i++) {
 			tf += a[i].v2;
 			ff += 1 - a[i].v2;
 		}
-		
+
 		double area = 0;
 		double tpfPrev = 0;
 		double fpfPrev = 0;
-		
+
 		for (int i = a.length - 1; i >= 0; i--) {
 			tt += fraction[i];
 			tf -= fraction[i];
@@ -169,18 +174,20 @@ public class Evaluator {
 			tpfPrev = tpf;
 			fpfPrev = fpf;
 		}
-		
+
 		return area;
 	}
-	
+
 	/**
 	 * Returns the area under ROC curve.
 	 * 
-	 * @param classifier a classifier that outputs probability.
-	 * @param instances the instances.
+	 * @param classifier
+	 *            a classifier that outputs probability.
+	 * @param instances
+	 *            the instances.
 	 * @return the area under ROC curve.
 	 */
-	public static double evalAreaUnderROC(ProbabilisticClassifier classifier, 
+	public static double evalAreaUnderROC(ProbabilisticClassifier classifier,
 			Instances instances) {
 		double[] probs = new double[instances.size()];
 		double[] targets = new double[instances.size()];
@@ -191,12 +198,14 @@ public class Evaluator {
 		}
 		return evalAreaUnderROC(probs, targets);
 	}
-	
+
 	/**
 	 * Returns the root mean squared error.
 	 * 
-	 * @param preds the predictions.
-	 * @param targets the targets.
+	 * @param preds
+	 *            the predictions.
+	 * @param targets
+	 *            the targets.
 	 * @return the root mean squared error.
 	 */
 	public static double evalRMSE(double[] preds, double[] targets) {
@@ -208,12 +217,14 @@ public class Evaluator {
 		rmse = Math.sqrt(rmse / preds.length);
 		return rmse;
 	}
-	
+
 	/**
 	 * Returns the root mean squared error.
 	 * 
-	 * @param preds the predictions.
-	 * @param targets the targets.
+	 * @param preds
+	 *            the predictions.
+	 * @param targets
+	 *            the targets.
 	 * @return the root mean squared error.
 	 */
 	public static double evalRMSE(List<Double> preds, List<Double> targets) {
@@ -225,12 +236,14 @@ public class Evaluator {
 		rmse = Math.sqrt(rmse / preds.size());
 		return rmse;
 	}
-	
+
 	/**
 	 * Returns the root mean squared error.
 	 * 
-	 * @param regressor the regressor.
-	 * @param instances the instances.
+	 * @param regressor
+	 *            the regressor.
+	 * @param instances
+	 *            the instances.
 	 * @return the root mean squared error.
 	 */
 	public static double evalRMSE(Regressor regressor, Instances instances) {
@@ -245,12 +258,14 @@ public class Evaluator {
 		rmse = Math.sqrt(rmse / instances.size());
 		return rmse;
 	}
-	
+
 	/**
 	 * Returns the classification error.
 	 * 
-	 * @param classifier the classifier.
-	 * @param instances the instances.
+	 * @param classifier
+	 *            the classifier.
+	 * @param instances
+	 *            the instances.
 	 * @return the classification error.
 	 */
 	public static double evalError(Classifier classifier, Instances instances) {
@@ -266,25 +281,26 @@ public class Evaluator {
 		error /= instances.size();
 		return error;
 	}
-	
+
 	static class Options {
-		
+
 		@Argument(name = "-r", description = "attribute file path")
 		String attPath = null;
-		
+
 		@Argument(name = "-d", description = "data set path", required = true)
 		String dataPath = null;
-		
+
 		@Argument(name = "-m", description = "model path", required = true)
 		String modelPath = null;
-		
+
 		@Argument(name = "-e", description = "AUC (a), Error (c), RMSE (r) (default: r)")
 		String task = "r";
-		
+
 	}
-	
+
 	/**
 	 * <p>
+	 * 
 	 * <pre>
 	 * Usage: Evaluator
 	 * -d	data set path
@@ -292,10 +308,12 @@ public class Evaluator {
 	 * [-r]	attribute file path
 	 * [-e]	AUC (a), Error (c), RMSE (r) (default: r)
 	 * </pre>
+	 * 
 	 * </p>
 	 * 
-	 * @param args the command line arguments.
-	 * @throws Exception 
+	 * @param args
+	 *            the command line arguments.
+	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
 		Options opts = new Options();
@@ -306,10 +324,11 @@ public class Evaluator {
 			parser.printUsage();
 			System.exit(1);
 		}
-		
+
 		Instances instances = InstancesReader.read(opts.attPath, opts.dataPath);
-		mltk.predictor.Predictor predictor = PredictorReader.read(opts.modelPath);
-		
+		mltk.predictor.Predictor predictor = PredictorReader
+				.read(opts.modelPath);
+
 		switch (opts.task) {
 		case "a":
 			ProbabilisticClassifier probClassifier = (ProbabilisticClassifier) predictor;
@@ -330,5 +349,5 @@ public class Evaluator {
 			break;
 		}
 	}
-	
+
 }

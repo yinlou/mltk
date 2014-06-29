@@ -25,15 +25,17 @@ import mltk.util.Element;
  * Class for GAM diagnostics.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class Diagnostics {
 
 	/**
 	 * Computes the weights for each term in a GAM.
 	 * 
-	 * @param gam the GAM model.
-	 * @param instances the training set.
+	 * @param gam
+	 *            the GAM model.
+	 * @param instances
+	 *            the training set.
 	 * @return the list of weights for each term in a GAM.
 	 */
 	public static List<Element<int[]>> diagnose(GAM gam, Instances instances) {
@@ -49,7 +51,7 @@ public class Diagnostics {
 			Regressor regressor = regressors.get(i);
 			map.get(term).add(regressor);
 		}
-		
+
 		double[] predictions = new double[instances.size()];
 		for (int[] term : map.keySet()) {
 			List<Regressor> regressorList = map.get(term);
@@ -66,26 +68,26 @@ public class Diagnostics {
 
 		return list;
 	}
-	
-	
+
 	static class Options {
-		
+
 		@Argument(name = "-r", description = "attribute file path", required = true)
 		String attPath = null;
-		
+
 		@Argument(name = "-d", description = "dataset path", required = true)
 		String datasetPath = null;
-		
+
 		@Argument(name = "-i", description = "input model path", required = true)
 		String inputModelPath = null;
-		
+
 		@Argument(name = "-o", description = "output path", required = true)
 		String outputPath = null;
-		
+
 	}
-	
+
 	/**
 	 * <p>
+	 * 
 	 * <pre>
 	 * Usage: Diagnostics
 	 * -r	attribute file path
@@ -93,9 +95,11 @@ public class Diagnostics {
 	 * -i	input model path
 	 * -o	output path
 	 * </pre>
+	 * 
 	 * </p>
 	 * 
-	 * @param args the command line arguments.
+	 * @param args
+	 *            the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
@@ -107,13 +111,14 @@ public class Diagnostics {
 			parser.printUsage();
 			System.exit(1);
 		}
-		Instances dataset = InstancesReader.read(opts.attPath, opts.datasetPath);
+		Instances dataset = InstancesReader
+				.read(opts.attPath, opts.datasetPath);
 		GAM gam = (GAM) PredictorReader.read(opts.inputModelPath);
-		
+
 		List<Element<int[]>> list = Diagnostics.diagnose(gam, dataset);
 		Collections.sort(list);
 		Collections.reverse(list);
-		
+
 		PrintWriter out = new PrintWriter(opts.outputPath);
 		for (Element<int[]> element : list) {
 			int[] term = element.element;
@@ -123,5 +128,5 @@ public class Diagnostics {
 		out.flush();
 		out.close();
 	}
-	
+
 }

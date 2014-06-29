@@ -36,17 +36,17 @@ import mltk.util.tuple.IntPair;
  * 
  * <p>
  * Reference:<br>
- * Y. Lou, R. Caruana, J. Gehrke, and G. Hooker. Accurate intelligible models 
- * with pairwise interactions. In <i>Proceedings of the 19th ACM SIGKDD 
- * International Conference on Knowledge Discovery and Data Mining (KDD)</i>, 
+ * Y. Lou, R. Caruana, J. Gehrke, and G. Hooker. Accurate intelligible models
+ * with pairwise interactions. In <i>Proceedings of the 19th ACM SIGKDD
+ * International Conference on Knowledge Discovery and Data Mining (KDD)</i>,
  * Chicago, IL, USA, 2013.
  * </p>
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class GA2MLearner extends Learner {
-	
+
 	private boolean verbose;
 	private int baggingIters;
 	private int maxNumIters;
@@ -55,7 +55,7 @@ public class GA2MLearner extends Learner {
 	private GAM gam;
 	private List<IntPair> pairs;
 	private Instances validSet;
-	
+
 	/**
 	 * Constructor.
 	 */
@@ -79,7 +79,8 @@ public class GA2MLearner extends Learner {
 	/**
 	 * Sets whether we output something during the training.
 	 * 
-	 * @param verbose the switch if we output things during training.
+	 * @param verbose
+	 *            the switch if we output things during training.
 	 */
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
@@ -97,12 +98,13 @@ public class GA2MLearner extends Learner {
 	/**
 	 * Sets the number of bagging iterations.
 	 * 
-	 * @param baggingIters the number of bagging iterations.
+	 * @param baggingIters
+	 *            the number of bagging iterations.
 	 */
 	public void setBaggingIters(int baggingIters) {
 		this.baggingIters = baggingIters;
 	}
-	
+
 	/**
 	 * Returns the maximum number of iterations.
 	 * 
@@ -111,11 +113,12 @@ public class GA2MLearner extends Learner {
 	public int getMaxNumIters() {
 		return maxNumIters;
 	}
-	
+
 	/**
 	 * Sets the maximum number of iterations.
 	 * 
-	 * @param maxNumIters the maximum number of iterations.
+	 * @param maxNumIters
+	 *            the maximum number of iterations.
 	 */
 	public void setMaxNumIters(int maxNumIters) {
 		this.maxNumIters = maxNumIters;
@@ -133,12 +136,13 @@ public class GA2MLearner extends Learner {
 	/**
 	 * Sets the learning rate.
 	 * 
-	 * @param learningRate the learning rate.
+	 * @param learningRate
+	 *            the learning rate.
 	 */
 	public void setLearningRate(double learningRate) {
 		this.learningRate = learningRate;
 	}
-	
+
 	/**
 	 * Returns the task of this learner.
 	 * 
@@ -147,16 +151,17 @@ public class GA2MLearner extends Learner {
 	public Task getTask() {
 		return task;
 	}
-	
+
 	/**
 	 * Sets the task of this learner.
 	 * 
-	 * @param task the new task.
+	 * @param task
+	 *            the new task.
 	 */
 	public void setTask(Task task) {
 		this.task = task;
 	}
-	
+
 	/**
 	 * Returns the GAM.
 	 * 
@@ -165,16 +170,17 @@ public class GA2MLearner extends Learner {
 	public GAM getGAM() {
 		return gam;
 	}
-	
+
 	/**
 	 * Sets the GAM.
 	 * 
-	 * @param gam the GAM.
+	 * @param gam
+	 *            the GAM.
 	 */
 	public void setGAM(GAM gam) {
 		this.gam = gam;
 	}
-	
+
 	/**
 	 * Returns the list of feature interaction pairs.
 	 * 
@@ -183,16 +189,17 @@ public class GA2MLearner extends Learner {
 	public List<IntPair> getPairs() {
 		return pairs;
 	}
-	
+
 	/**
 	 * Sets the list of feature interaction pairs.
 	 * 
-	 * @param pairs the list of feature interaction pairs.
+	 * @param pairs
+	 *            the list of feature interaction pairs.
 	 */
 	public void setPairs(List<IntPair> pairs) {
 		this.pairs = pairs;
 	}
-	
+
 	/**
 	 * Returns the validation set.
 	 * 
@@ -201,11 +208,12 @@ public class GA2MLearner extends Learner {
 	public Instances getValidSet() {
 		return validSet;
 	}
-	
+
 	/**
 	 * Sets the validation set.
 	 * 
-	 * @param validSet the validation set.
+	 * @param validSet
+	 *            the validation set.
 	 */
 	public void setValidSet(Instances validSet) {
 		this.validSet = validSet;
@@ -214,11 +222,16 @@ public class GA2MLearner extends Learner {
 	/**
 	 * Builds a classifier.
 	 * 
-	 * @param gam the GAM.
-	 * @param terms the list of feature interaction pairs.
-	 * @param trainSet the training set.
-	 * @param validSet the validation set.
-	 * @param maxNumIters the maximum number of iterations.
+	 * @param gam
+	 *            the GAM.
+	 * @param terms
+	 *            the list of feature interaction pairs.
+	 * @param trainSet
+	 *            the training set.
+	 * @param validSet
+	 *            the validation set.
+	 * @param maxNumIters
+	 *            the maximum number of iterations.
 	 */
 	public void buildClassifier(GAM gam, List<IntPair> terms,
 			Instances trainSet, Instances validSet, int maxNumIters) {
@@ -228,23 +241,23 @@ public class GA2MLearner extends Learner {
 			indices[i] = gam.terms.indexOf(terms.get(i));
 			regressors.add(new BoostedEnsemble());
 		}
-		
+
 		// Backup targets
 		int[] target = new int[trainSet.size()];
 		for (int i = 0; i < target.length; i++) {
 			target[i] = (int) trainSet.get(i).getTarget();
 		}
-		
+
 		// Create bags
 		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
 		SquareCutter cutter = new SquareCutter(true);
-		BaggedEnsembleLearner learner = 
-				new BaggedEnsembleLearner(bags.length, cutter);
+		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(bags.length,
+				cutter);
 
 		// Initialize predictions
 		double[] predictionTrain = new double[trainSet.size()];
 		double[] predictionValid = new double[validSet.size()];
-		
+
 		for (int i = 0; i < predictionTrain.length; i++) {
 			Instance instance = trainSet.get(i);
 			predictionTrain[i] = gam.regress(instance);
@@ -253,7 +266,7 @@ public class GA2MLearner extends Learner {
 			Instance instance = validSet.get(i);
 			predictionValid[i] = gam.regress(instance);
 		}
-		
+
 		List<Double> errorList = new ArrayList<>(maxNumIters);
 
 		// Gradient boosting
@@ -262,10 +275,11 @@ public class GA2MLearner extends Learner {
 			// Derivitive to attribute k
 			// Minimizes the loss function: log(1 + exp(-yF))
 			for (int i = 0; i < trainSet.size(); i++) {
-				double r = OptimUtils.getPseudoResidual(predictionTrain[i], target[i]);
+				double r = OptimUtils.getPseudoResidual(predictionTrain[i],
+						target[i]);
 				trainSet.get(i).setTarget(r);
 			}
-			
+
 			BoostedEnsemble boostedEnsemble = regressors.get(k);
 
 			// Train model
@@ -303,7 +317,8 @@ public class GA2MLearner extends Learner {
 			error /= validSet.size();
 			errorList.add(error);
 			if (verbose) {
-				System.out.println("Iteration " + iter + " term " + k + ": " + error);
+				System.out.println("Iteration " + iter + " term " + k + ": "
+						+ error);
 			}
 		}
 
@@ -316,7 +331,7 @@ public class GA2MLearner extends Learner {
 				idx = i;
 			}
 		}
-		
+
 		// Remove trees
 		int n = idx / terms.size();
 		int m = idx % terms.size();
@@ -329,12 +344,12 @@ public class GA2MLearner extends Learner {
 				boostedEnsemble.removeLast();
 			}
 		}
-		
+
 		// Restore targets
 		for (int i = 0; i < target.length; i++) {
 			trainSet.get(i).setTarget(target[i]);
 		}
-		
+
 		// Compress model
 		List<Attribute> attributes = trainSet.getAttributes();
 		for (int i = 0; i < regressors.size(); i++) {
@@ -361,7 +376,7 @@ public class GA2MLearner extends Learner {
 				newRegressor = CompressionUtils.convert(n1, n2, function);
 			}
 			if (indices[i] < 0) {
-				gam.add(new int[] {term.v1, term.v2}, newRegressor);
+				gam.add(new int[] { term.v1, term.v2 }, newRegressor);
 			} else {
 				Regressor regressor = gam.regressors.get(indices[i]);
 				if (regressor instanceof Function2D) {
@@ -376,14 +391,18 @@ public class GA2MLearner extends Learner {
 			}
 		}
 	}
-	
+
 	/**
 	 * Builds a classifier.
 	 * 
-	 * @param gam the GAM.
-	 * @param terms the list of feature interaction pairs.
-	 * @param trainSet the training set.
-	 * @param maxNumIters the maximum number of iterations.
+	 * @param gam
+	 *            the GAM.
+	 * @param terms
+	 *            the list of feature interaction pairs.
+	 * @param trainSet
+	 *            the training set.
+	 * @param maxNumIters
+	 *            the maximum number of iterations.
 	 */
 	public void buildClassifier(GAM gam, List<IntPair> terms,
 			Instances trainSet, int maxNumIters) {
@@ -393,27 +412,27 @@ public class GA2MLearner extends Learner {
 			indices[i] = gam.terms.indexOf(terms.get(i));
 			regressors.add(new BoostedEnsemble());
 		}
-		
+
 		// Backup targets
 		int[] target = new int[trainSet.size()];
 		for (int i = 0; i < target.length; i++) {
 			target[i] = (int) trainSet.get(i).getTarget();
 		}
-		
+
 		// Create bags
 		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
 		SquareCutter cutter = new SquareCutter(true);
-		BaggedEnsembleLearner learner = 
-				new BaggedEnsembleLearner(bags.length, cutter);
+		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(bags.length,
+				cutter);
 
 		// Initialize predictions
 		double[] predictionTrain = new double[trainSet.size()];
-		
+
 		for (int i = 0; i < predictionTrain.length; i++) {
 			Instance instance = trainSet.get(i);
 			predictionTrain[i] = gam.regress(instance);
 		}
-		
+
 		List<Double> errorList = new ArrayList<>(maxNumIters);
 
 		// Gradient boosting
@@ -422,10 +441,11 @@ public class GA2MLearner extends Learner {
 			// Derivitive to attribute k
 			// Minimizes the loss function: log(1 + exp(-2yF))
 			for (int i = 0; i < trainSet.size(); i++) {
-				double r = OptimUtils.getPseudoResidual(predictionTrain[i], target[i]);
+				double r = OptimUtils.getPseudoResidual(predictionTrain[i],
+						target[i]);
 				trainSet.get(i).setTarget(r);
 			}
-			
+
 			BoostedEnsemble boostedEnsemble = regressors.get(k);
 
 			// Train model
@@ -458,15 +478,16 @@ public class GA2MLearner extends Learner {
 			error /= trainSet.size();
 			errorList.add(error);
 			if (verbose) {
-				System.out.println("Iteration " + iter + " term " + k + ": " + error);
+				System.out.println("Iteration " + iter + " term " + k + ": "
+						+ error);
 			}
 		}
-		
+
 		// Restore targets
 		for (int i = 0; i < target.length; i++) {
 			trainSet.get(i).setTarget(target[i]);
 		}
-		
+
 		// Compress model
 		List<Attribute> attributes = trainSet.getAttributes();
 		for (int i = 0; i < regressors.size(); i++) {
@@ -493,7 +514,7 @@ public class GA2MLearner extends Learner {
 				newRegressor = CompressionUtils.convert(n1, n2, function);
 			}
 			if (indices[i] < 0) {
-				gam.add(new int[] {term.v1, term.v2}, newRegressor);
+				gam.add(new int[] { term.v1, term.v2 }, newRegressor);
 			} else {
 				Regressor regressor = gam.regressors.get(indices[i]);
 				if (regressor instanceof Function2D) {
@@ -508,17 +529,22 @@ public class GA2MLearner extends Learner {
 			}
 		}
 	}
-	
+
 	/**
 	 * Builds a regressor.
 	 * 
-	 * @param gam the GAM.
-	 * @param terms the list of feature interaction pairs.
-	 * @param trainSet the training set.
-	 * @param validSet the validation set.
-	 * @param maxNumIters the maximum number of iterations.
+	 * @param gam
+	 *            the GAM.
+	 * @param terms
+	 *            the list of feature interaction pairs.
+	 * @param trainSet
+	 *            the training set.
+	 * @param validSet
+	 *            the validation set.
+	 * @param maxNumIters
+	 *            the maximum number of iterations.
 	 */
-	public void buildRegressor(GAM gam, List<IntPair> terms, 
+	public void buildRegressor(GAM gam, List<IntPair> terms,
 			Instances trainSet, Instances validSet, int maxNumIters) {
 		List<BoostedEnsemble> regressors = new ArrayList<>();
 		int[] indices = new int[terms.size()];
@@ -526,7 +552,7 @@ public class GA2MLearner extends Learner {
 			indices[i] = gam.terms.indexOf(terms.get(i));
 			regressors.add(new BoostedEnsemble());
 		}
-		
+
 		// Backup targets
 		double[] target = new double[trainSet.size()];
 		for (int i = 0; i < target.length; i++) {
@@ -537,9 +563,9 @@ public class GA2MLearner extends Learner {
 		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
 
 		SquareCutter cutter = new SquareCutter();
-		BaggedEnsembleLearner learner = 
-				new BaggedEnsembleLearner(baggingIters, cutter);
-		
+		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(baggingIters,
+				cutter);
+
 		// Initialize residuals
 		double[] residualTrain = new double[trainSet.size()];
 		double[] residualValid = new double[validSet.size()];
@@ -551,9 +577,9 @@ public class GA2MLearner extends Learner {
 			Instance instance = validSet.get(i);
 			residualValid[i] = instance.getTarget() - gam.regress(instance);
 		}
-		
+
 		List<Double> rmseList = new ArrayList<>(maxNumIters);
-		
+
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			int k = iter % terms.size();
@@ -575,7 +601,7 @@ public class GA2MLearner extends Learner {
 				}
 			}
 			boostedEnsemble.add(baggedEnsemble);
-			
+
 			// Update residuals
 			for (int j = 0; j < residualTrain.length; j++) {
 				Instance instance = trainSet.get(j);
@@ -591,11 +617,11 @@ public class GA2MLearner extends Learner {
 			double rmse = StatUtils.rms(residualValid);
 			rmseList.add(rmse);
 			if (verbose) {
-				System.out.println("Iteration " + iter + " term " + k + ":"  
-								+ StatUtils.rms(residualTrain) + " " + rmse);
+				System.out.println("Iteration " + iter + " term " + k + ":"
+						+ StatUtils.rms(residualTrain) + " " + rmse);
 			}
 		}
-	
+
 		// Search the best model on validation set
 		double min = Double.POSITIVE_INFINITY;
 		int idx = -1;
@@ -605,7 +631,7 @@ public class GA2MLearner extends Learner {
 				idx = i;
 			}
 		}
-		
+
 		// Remove trees
 		int n = idx / terms.size();
 		int m = idx % terms.size();
@@ -618,12 +644,12 @@ public class GA2MLearner extends Learner {
 				boostedEnsemble.removeLast();
 			}
 		}
-		
+
 		// Restore targets
 		for (int i = 0; i < target.length; i++) {
 			trainSet.get(i).setTarget(target[i]);
 		}
-		
+
 		// Compress model
 		List<Attribute> attributes = trainSet.getAttributes();
 		for (int i = 0; i < regressors.size(); i++) {
@@ -650,7 +676,7 @@ public class GA2MLearner extends Learner {
 				newRegressor = CompressionUtils.convert(n1, n2, function);
 			}
 			if (indices[i] < 0) {
-				gam.add(new int[] {term.v1, term.v2}, newRegressor);
+				gam.add(new int[] { term.v1, term.v2 }, newRegressor);
 			} else {
 				Regressor regressor = gam.regressors.get(indices[i]);
 				if (regressor instanceof Function2D) {
@@ -665,14 +691,18 @@ public class GA2MLearner extends Learner {
 			}
 		}
 	}
-	
+
 	/**
 	 * Builds a regressor.
 	 * 
-	 * @param gam the GAM.
-	 * @param terms the list of feature interaction pairs.
-	 * @param trainSet the training set.
-	 * @param maxNumIters the maximum number of iterations.
+	 * @param gam
+	 *            the GAM.
+	 * @param terms
+	 *            the list of feature interaction pairs.
+	 * @param trainSet
+	 *            the training set.
+	 * @param maxNumIters
+	 *            the maximum number of iterations.
 	 */
 	public void buildRegressor(GAM gam, List<IntPair> terms,
 			Instances trainSet, int maxNumIters) {
@@ -682,7 +712,7 @@ public class GA2MLearner extends Learner {
 			indices[i] = gam.terms.indexOf(terms.get(i));
 			regressors.add(new BoostedEnsemble());
 		}
-		
+
 		// Backup targets
 		double[] target = new double[trainSet.size()];
 		for (int i = 0; i < target.length; i++) {
@@ -691,18 +721,18 @@ public class GA2MLearner extends Learner {
 
 		// Create bags
 		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
-		
+
 		SquareCutter cutter = new SquareCutter();
-		BaggedEnsembleLearner learner = 
-				new BaggedEnsembleLearner(baggingIters, cutter);
-		
+		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(baggingIters,
+				cutter);
+
 		// Initialize residuals
 		double[] residualTrain = new double[trainSet.size()];
 		for (int i = 0; i < trainSet.size(); i++) {
 			Instance instance = trainSet.get(i);
 			residualTrain[i] = instance.getTarget() - gam.regress(instance);
 		}
-		
+
 		List<Double> rmseList = new ArrayList<>(maxNumIters);
 
 		// Gradient boosting
@@ -726,7 +756,7 @@ public class GA2MLearner extends Learner {
 				}
 			}
 			boostedEnsemble.add(baggedEnsemble);
-			
+
 			// Update residuals
 			for (int j = 0; j < residualTrain.length; j++) {
 				Instance instance = trainSet.get(j);
@@ -737,22 +767,23 @@ public class GA2MLearner extends Learner {
 			double rmse = StatUtils.rms(residualTrain);
 			rmseList.add(rmse);
 			if (verbose) {
-				System.out.println("Iteration " + iter + " term " + k + ":"  
-								+ StatUtils.rms(residualTrain) + " " + rmse);
+				System.out.println("Iteration " + iter + " term " + k + ":"
+						+ StatUtils.rms(residualTrain) + " " + rmse);
 			}
 		}
-		
+
 		// Restore targets
 		for (int i = 0; i < target.length; i++) {
 			trainSet.get(i).setTarget(target[i]);
 		}
-		
+
 		// Compress model
 		List<Attribute> attributes = trainSet.getAttributes();
 		for (int i = 0; i < regressors.size(); i++) {
 			BoostedEnsemble boostedEnsemble = regressors.get(i);
 			IntPair term = terms.get(i);
-			Function2D function = CompressionUtils.compress(term.v1, term.v2, boostedEnsemble);
+			Function2D function = CompressionUtils.compress(term.v1, term.v2,
+					boostedEnsemble);
 			Attribute f1 = attributes.get(term.v1);
 			Attribute f2 = attributes.get(term.v2);
 			int n1 = -1;
@@ -772,7 +803,7 @@ public class GA2MLearner extends Learner {
 				newRegressor = CompressionUtils.convert(n1, n2, function);
 			}
 			if (indices[i] < 0) {
-				gam.add(new int[] {term.v1, term.v2}, newRegressor);
+				gam.add(new int[] { term.v1, term.v2 }, newRegressor);
 			} else {
 				Regressor regressor = gam.regressors.get(indices[i]);
 				if (regressor instanceof Function2D) {
@@ -803,65 +834,66 @@ public class GA2MLearner extends Learner {
 			maxNumIters = pairs.size() * 20;
 		}
 		switch (task) {
-			case REGRESSION:
-				if (validSet != null) {
-					buildRegressor(gam, pairs, instances, validSet, maxNumIters);
-				} else {
-					buildRegressor(gam, pairs, instances, maxNumIters);
-				}
-				break;
-			case CLASSIFICATION:
-				if (validSet != null) {
-					buildClassifier(gam, pairs, instances, validSet, maxNumIters);
-				} else {
-					buildClassifier(gam, pairs, instances, maxNumIters);
-				}
-				break;
-			default:
-				break;
+		case REGRESSION:
+			if (validSet != null) {
+				buildRegressor(gam, pairs, instances, validSet, maxNumIters);
+			} else {
+				buildRegressor(gam, pairs, instances, maxNumIters);
+			}
+			break;
+		case CLASSIFICATION:
+			if (validSet != null) {
+				buildClassifier(gam, pairs, instances, validSet, maxNumIters);
+			} else {
+				buildClassifier(gam, pairs, instances, maxNumIters);
+			}
+			break;
+		default:
+			break;
 		}
 		return gam;
 	}
-	
+
 	static class Options {
-		
+
 		@Argument(name = "-r", description = "attribute file path")
 		String attPath = null;
-		
+
 		@Argument(name = "-t", description = "train set path", required = true)
 		String trainPath = null;
-		
+
 		@Argument(name = "-v", description = "valid set path")
 		String validPath = null;
-		
+
 		@Argument(name = "-i", description = "input model path", required = true)
 		String inputModelPath = null;
-		
+
 		@Argument(name = "-o", description = "output model path")
 		String outputModelPath = null;
-		
+
 		@Argument(name = "-g", description = "task between classification (c) and regression (r) (default: r)")
 		String task = "r";
-		
+
 		@Argument(name = "-I", description = "list of pairwise interactions path", required = true)
 		String interactionsPath = null;
-		
+
 		@Argument(name = "-m", description = "maximum number of iterations", required = true)
 		int maxNumIters = -1;
-		
+
 		@Argument(name = "-b", description = "bagging iterations (default: 100)")
 		int baggingIters = 100;
-		
+
 		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
 		long seed = 0L;
-		
+
 		@Argument(name = "-l", description = "learning rate (default: 0.01)")
 		double learningRate = 0.01;
-		
+
 	}
-	
+
 	/**
 	 * <p>
+	 * 
 	 * <pre>
 	 * Usage: GA2MLearner
 	 * -t	train set path
@@ -876,10 +908,12 @@ public class GA2MLearner extends Learner {
 	 * [-s]	seed of the random number generator (default: 0)
 	 * [-l]	learning rate (default: 0.01)
 	 * </pre>
+	 * 
 	 * </p>
 	 * 
-	 * @param args the command line arguments.
-	 * @throws Exception 
+	 * @param args
+	 *            the command line arguments.
+	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
 		Options opts = new Options();
@@ -892,27 +926,28 @@ public class GA2MLearner extends Learner {
 			parser.printUsage();
 			System.exit(1);
 		}
-		
+
 		Random.getInstance().setSeed(opts.seed);
-		
+
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-		
+
 		List<IntPair> terms = new ArrayList<>();
-		BufferedReader br = new BufferedReader(new FileReader(opts.interactionsPath));
+		BufferedReader br = new BufferedReader(new FileReader(
+				opts.interactionsPath));
 		for (;;) {
 			String line = br.readLine();
 			if (line == null) {
 				break;
 			}
 			String[] data = line.split("\\s+");
-			IntPair term = new IntPair(Integer.parseInt(data[0]), 
+			IntPair term = new IntPair(Integer.parseInt(data[0]),
 					Integer.parseInt(data[1]));
 			terms.add(term);
 		}
 		br.close();
-		
+
 		GAM gam = PredictorReader.read(opts.inputModelPath, GAM.class);
-		
+
 		GA2MLearner ga2mLearner = new GA2MLearner();
 		ga2mLearner.setBaggingIters(opts.baggingIters);
 		ga2mLearner.setGAM(gam);
@@ -921,17 +956,18 @@ public class GA2MLearner extends Learner {
 		ga2mLearner.setLearningRate(opts.learningRate);
 		ga2mLearner.setPairs(terms);
 		ga2mLearner.setVerbose(true);
-		
+
 		if (opts.validPath != null) {
-			Instances validSet = InstancesReader.read(opts.attPath, opts.validPath);
+			Instances validSet = InstancesReader.read(opts.attPath,
+					opts.validPath);
 			ga2mLearner.setValidSet(validSet);
 		}
-		
+
 		long start = System.currentTimeMillis();
 		ga2mLearner.build(trainSet);
 		long end = System.currentTimeMillis();
 		System.out.println("Time: " + (end - start) / 1000.0);
-		
+
 		if (opts.outputModelPath != null) {
 			PredictorWriter.write(gam, opts.outputModelPath);
 		}

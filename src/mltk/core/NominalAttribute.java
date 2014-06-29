@@ -4,28 +4,33 @@ package mltk.core;
  * Class for nominal attributes.
  * 
  * @author Yin Lou
- *
+ * 
  */
 public class NominalAttribute extends Attribute {
-	
+
 	protected String[] states;
 
 	/**
 	 * Constructor.
 	 * 
-	 * @param name the name of this attribute.
-	 * @param states the states for this attribute.
+	 * @param name
+	 *            the name of this attribute.
+	 * @param states
+	 *            the states for this attribute.
 	 */
 	public NominalAttribute(String name, String[] states) {
 		this(name, states, -1);
 	}
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param name the name of this attribute.
-	 * @param states the states for this attribute.
-	 * @param index the index of this attribute.
+	 * @param name
+	 *            the name of this attribute.
+	 * @param states
+	 *            the states for this attribute.
+	 * @param index
+	 *            the index of this attribute.
 	 */
 	public NominalAttribute(String name, String[] states, int index) {
 		this.name = name;
@@ -33,13 +38,13 @@ public class NominalAttribute extends Attribute {
 		this.index = index;
 		this.type = Type.NOMINAL;
 	}
-	
+
 	public NominalAttribute copy() {
 		NominalAttribute copy = new NominalAttribute(name, states);
 		copy.index = this.index;
 		return copy;
 	}
-	
+
 	/**
 	 * Returns the cardinality of this attribute.
 	 * 
@@ -48,17 +53,18 @@ public class NominalAttribute extends Attribute {
 	public int getCardinality() {
 		return states.length;
 	}
-	
+
 	/**
 	 * Returns the state given an index.
 	 * 
-	 * @param index the index.
+	 * @param index
+	 *            the index.
 	 * @return the state given an index.
 	 */
 	public String getState(int index) {
 		return states[index];
 	}
-	
+
 	/**
 	 * Returns the states.
 	 * 
@@ -67,7 +73,7 @@ public class NominalAttribute extends Attribute {
 	public String[] getStates() {
 		return states;
 	}
-	
+
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(name).append(": {").append(states[0]);
@@ -77,11 +83,12 @@ public class NominalAttribute extends Attribute {
 		sb.append("}");
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Parses a nominal attribute ojbect from a string.
 	 * 
-	 * @param str the string.
+	 * @param str
+	 *            the string.
 	 * @return a parsed nominal attribute.
 	 */
 	public static NominalAttribute parse(String str) {
@@ -94,5 +101,5 @@ public class NominalAttribute extends Attribute {
 		}
 		return new NominalAttribute(data[0], states);
 	}
-	
+
 }
