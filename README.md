@@ -1,4 +1,6 @@
-# Overview
+# Machine Learning Tool Kit
+
+## Overview
 
 MLTK is a collection of various supervised machine learning algorithms, which is designed for directly training models and further development. For questions or suggestions with the code, please email <a href="mailto:yinlou@cs.cornell.edu">Yin Lou</a>.
 
@@ -12,9 +14,9 @@ Currently MLTK supports:
 * Random Forests
 * Boosted Trees
 
-# Dataset Format
+## Dataset Format
 
-## Dense Input Format
+### Dense Input Format
 
 Typical input to MLTK is a text file containing the data matrix. An optional attribute file may also be provided to specify the target attribute. Datasets should be provided in separate white-space-delimited text files without any headers. MLTK supports continuous, nominal and binned attributes. All dense datasets should have the same number and order of columns. The structure of the attribute description is the following:
 
@@ -44,7 +46,7 @@ label: cont (class)
 0.1 1 37 0 0.1
 ```
 
-## Sparse Input Format
+### Sparse Input Format
 
 MLTK uses the following structure for sparse input format:
 ```
@@ -61,7 +63,7 @@ Feature/value pairs must be ordered by increasing feature number. MLTK does not 
 1 1:3.2 5:-3
 ```
 
-## Dataset I/O
+### Dataset I/O
 
 MLTK provides two classes to perform reading/writing of datasets: `mltk.core.io.InstancesReader` and `mltk.core.io.InstancesWriter`.
 
@@ -82,9 +84,9 @@ InstancesReader.read(< dataset file path >)
 ``` 
 It reads a (maybe sparse) dataset from data file
 
-# Building Models
+## Building Models
 
-## Building Models from Command Line
+### Building Models from Command Line
 
 All learning algorithms in MLTK inherits `mltk.predictor.Learner class`. To build models from command line, use the following command (using `LassoLearner` as example):
 
@@ -104,7 +106,7 @@ Usage: LassoLearner
 [-l]	lambda (default: 0)
 ```
 
-## Building Models in Java Code
+### Building Models in Java Code
 
 Using `LogitBoostLearner` as example, the following code builds a boosted tree model:
 
@@ -119,9 +121,9 @@ logitBoostLearner.setVerbose(true);
 BRT brt = logitBoostLearner.build(trainSet);
 ```
 
-# Evaluating Models
+## Evaluating Models
 
-## Evaluating Models from Command Line
+### Evaluating Models from Command Line
 
 MLTK uses `mltk.predictor.evaluation.Evaluator` class. To evaluate models from command line, use the following command:
 
@@ -140,7 +142,7 @@ Usage: Evaluator
 Currently MLTK supports area-under-curve (AUC), classification error (Error) and root-mean-squared error (RMSE).
 ```
 
-## Evaluating Models in Java Code
+### Evaluating Models in Java Code
 
 The following code builds a boosted tree model and evaluate the classification error on a held-out test set:
 
