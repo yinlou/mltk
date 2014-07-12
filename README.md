@@ -67,14 +67,93 @@ MLTK provides two classes to perform reading/writing of datasets: `mltk.core.io.
 
 #### Example
 
-`Instances instances = InstancesReader.read(< attr file path >, < dataset file path >)`
+```
+Instances instances = InstancesReader.read(< attr file path >, < dataset file path >)
+```
 It reads a dense dataset from attribute file and data file.
-`Instances instances = InstancesReader.read(< dataset file path >, < class index >)`
-It reads a dense dataset from data file and a specified class index. A negative class index (e.g., -1) means no target is specified. Instances instances = `InstancesReader.read(< dataset file path >)` 
+
+```
+Instances instances = InstancesReader.read(< dataset file path >, < class index >)
+```
+It reads a dense dataset from data file and a specified class index. A negative class index (e.g., -1) means no target is specified. Instances instances = 
+
+```
+InstancesReader.read(< dataset file path >)
+``` 
 It reads a (maybe sparse) dataset from data file
 
 # Building Models
 
+## Building Models from Command Line
+
+All learning algorithms in MLTK inherits `mltk.predictor.Learner class`. To build models from command line, use the following command (using `LassoLearner` as example):
+
+```
+$ java mltk.predictor.glm.LassoLearner
+```
+
+It should output a message like this:
+
+```
+Usage: LassoLearner
+-t	train set path
+[-r]	attribute file path
+[-o]	output model path
+[-g]	task between classification (c) and regression (r) (default: r)
+[-m]	maximum num of iterations (default: 0)
+[-l]	lambda (default: 0)
+```
+
+## Building Models in Java Code
+
+Using `LogitBoostLearner` as example, the following code builds a boosted tree model:
+
+```
+Instances trainSet = InstancesReader.read(...)
+LogitBoostLearner logitBoostLearner = new LogitBoostLearner();
+logitBoostLearner.setLearningRate(0.1);
+logitBoostLearner.setMaxNumIters(10000);
+logitBoostLearner.setMaxNumLeaves(2);
+logitBoostLearner.setVerbose(true);
+		
+BRT brt = logitBoostLearner.build(trainSet);
+```
+
 # Evaluating Models
 
+## Evaluating Models from Command Line
 
+MLTK uses `mltk.predictor.evaluation.Evaluator` class. To evaluate models from command line, use the following command:
+
+```
+$ java mltk.predictor.evaluation.Evaluator
+```
+
+It should output a message like this:
+
+```
+Usage: Evaluator
+-d	data set path
+-m	model path
+[-r]	attribute file path
+[-e]	AUC (a), Error (c), RMSE (r) (default: r)
+Currently MLTK supports area-under-curve (AUC), classification error (Error) and root-mean-squared error (RMSE).
+```
+
+## Evaluating Models in Java Code
+
+The following code builds a boosted tree model and evaluate the classification error on a held-out test set:
+
+```
+Instances trainSet = InstancesReader.read(...)
+Instances testSet = InstancesReader.read(...)
+LogitBoostLearner logitBoostLearner = new LogitBoostLearner();
+logitBoostLearner.setLearningRate(0.1);
+logitBoostLearner.setMaxNumIters(10000);
+logitBoostLearner.setMaxNumLeaves(2);
+logitBoostLearner.setVerbose(true);
+		
+BRT brt = logitBoostLearner.build(trainSet);
+
+double error = Evaluator.evalError(brt, testSet);
+```
