@@ -11,10 +11,8 @@ public class OptimUtils {
 	/**
 	 * Returns the residual.
 	 * 
-	 * @param pred
-	 *            the prediction.
-	 * @param target
-	 *            the target.
+	 * @param pred the prediction.
+	 * @param target the target.
 	 * @return the residual.
 	 */
 	public static double getResidual(double pred, double target) {
@@ -24,10 +22,8 @@ public class OptimUtils {
 	/**
 	 * Returns the pseudo residual.
 	 * 
-	 * @param pred
-	 *            the prediction.
-	 * @param cls
-	 *            the class label.
+	 * @param pred the prediction.
+	 * @param cls the class label.
 	 * @return the pseudo residual.
 	 */
 	public static double getPseudoResidual(double pred, int cls) {
@@ -41,10 +37,8 @@ public class OptimUtils {
 	/**
 	 * Returns the logistic loss.
 	 * 
-	 * @param cls
-	 *            the class label.
-	 * @param pred
-	 *            the prediction.
+	 * @param cls the class label.
+	 * @param pred the prediction.
 	 * @return the logistic loss.
 	 */
 	public static double getLogisticLoss(int cls, double pred) {

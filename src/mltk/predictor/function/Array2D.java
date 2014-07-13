@@ -42,14 +42,9 @@ public class Array2D implements Regressor, BivariateFunction {
 	/**
 	 * Constructs a 2D lookup table.
 	 * 
-	 * @param attIndex1
-	 *            the 1st attribute index. The attribute must be discretized or
-	 *            nominal.
-	 * @param attIndex2
-	 *            the 2nd attribute index. The attribute must be discretized or
-	 *            nominal.
-	 * @param predictions
-	 *            the prediction matrix.
+	 * @param attIndex1 the 1st attribute index. The attribute must be discretized or nominal.
+	 * @param attIndex2 the 2nd attribute index. The attribute must be discretized or nominal.
+	 * @param predictions the prediction matrix.
 	 */
 	public Array2D(int attIndex1, int attIndex2, double[][] predictions) {
 		this.attIndex1 = attIndex1;
@@ -87,10 +82,8 @@ public class Array2D implements Regressor, BivariateFunction {
 	/**
 	 * Sets the attribute indices.
 	 * 
-	 * @param attIndex1
-	 *            the new 1st attribute index.
-	 * @param attIndex2
-	 *            the new 2nd attribute index.
+	 * @param attIndex1 the new 1st attribute index.
+	 * @param attIndex2 the new 2nd attribute index.
 	 */
 	public void setAttributeIndices(int attIndex1, int attIndex2) {
 		this.attIndex1 = attIndex1;
@@ -109,8 +102,7 @@ public class Array2D implements Regressor, BivariateFunction {
 	/**
 	 * Sets the internal prediction matrix.
 	 * 
-	 * @param predictions
-	 *            the new prediction matrix.
+	 * @param predictions the new prediction matrix.
 	 */
 	public void setPredictions(double[][] predictions) {
 		this.predictions = predictions;
@@ -137,8 +129,7 @@ public class Array2D implements Regressor, BivariateFunction {
 		out.printf("[Predictor: %s]\n", this.getClass().getCanonicalName());
 		out.println("AttIndex1: " + attIndex1);
 		out.println("AttIndex2: " + attIndex2);
-		out.println("Predictions: " + predictions.length + "x"
-				+ predictions[0].length);
+		out.println("Predictions: " + predictions.length + "x" + predictions[0].length);
 		for (int i = 0; i < predictions.length; i++) {
 			out.println(Arrays.toString(predictions[i]));
 		}
@@ -154,14 +145,12 @@ public class Array2D implements Regressor, BivariateFunction {
 	/**
 	 * Adds this lookup table with another one.
 	 * 
-	 * @param ary
-	 *            the other lookup table.
+	 * @param ary the other lookup table.
 	 * @return this lookup table.
 	 */
 	public Array2D add(Array2D ary) {
 		if (attIndex1 != ary.attIndex1 || attIndex2 != ary.attIndex2) {
-			throw new IllegalArgumentException(
-					"Cannot add arrays on differnt terms");
+			throw new IllegalArgumentException("Cannot add arrays on differnt terms");
 		}
 		for (int i = 0; i < predictions.length; i++) {
 			double[] preds1 = predictions[i];
@@ -182,8 +171,7 @@ public class Array2D implements Regressor, BivariateFunction {
 	public Array2D copy() {
 		double[][] predictionsCopy = new double[predictions.length][];
 		for (int i = 0; i < predictionsCopy.length; i++) {
-			predictionsCopy[i] = Arrays.copyOf(predictions[i],
-					predictions[i].length);
+			predictionsCopy[i] = Arrays.copyOf(predictions[i], predictions[i].length);
 		}
 		return new Array2D(attIndex1, attIndex2, predictionsCopy);
 	}

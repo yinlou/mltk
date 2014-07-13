@@ -80,8 +80,7 @@ public class LineCutter extends Learner {
 
 	}
 
-	protected static void build(Function1D func, List<Double> uniqueValues,
-			List<DoublePair> stats, double limit) {
+	protected static void build(Function1D func, List<Double> uniqueValues, List<DoublePair> stats, double limit) {
 		// 1. Check basic leaf conditions
 		if (uniqueValues.size() == 1) {
 			func.splits = new double[] { Double.POSITIVE_INFINITY };
@@ -131,8 +130,7 @@ public class LineCutter extends Learner {
 		func.splits[func.splits.length - 1] = Double.POSITIVE_INFINITY;
 	}
 
-	protected static void build(Function1D func, List<Double> uniqueValues,
-			List<DoublePair> stats, int numIntervals) {
+	protected static void build(Function1D func, List<Double> uniqueValues, List<DoublePair> stats, int numIntervals) {
 		// 1. Check basic leaf conditions
 		if (uniqueValues.size() == 1) {
 			func.splits = new double[] { Double.POSITIVE_INFINITY };
@@ -149,8 +147,7 @@ public class LineCutter extends Learner {
 
 		if (numIntervals == 2) {
 			func.splits = new double[] { root.split, Double.POSITIVE_INFINITY };
-			func.predictions = new double[] { root.left.getPrediction(),
-					root.right.getPrediction() };
+			func.predictions = new double[] { root.left.getPrediction(), root.right.getPrediction() };
 		} else if (numIntervals > 2) {
 			PriorityQueue<Interval> q = new PriorityQueue<>();
 			if (!root.isLeaf()) {
@@ -192,8 +189,7 @@ public class LineCutter extends Learner {
 		}
 	}
 
-	protected static void getStats(List<Element<DoublePair>> pairs,
-			List<Double> uniqueValues, List<DoublePair> stats) {
+	protected static void getStats(List<Element<DoublePair>> pairs, List<Double> uniqueValues, List<DoublePair> stats) {
 		if (pairs.size() == 0) {
 			return;
 		}
@@ -225,8 +221,7 @@ public class LineCutter extends Learner {
 		stats.add(new DoublePair(totalWeight, sum));
 	}
 
-	protected static void inorder(Interval parent, List<Double> splits,
-			List<Double> predictions) {
+	protected static void inorder(Interval parent, List<Double> splits, List<Double> predictions) {
 		if (parent.isFinalized()) {
 			inorder(parent.left, splits, predictions);
 			splits.add(parent.split);
@@ -239,10 +234,8 @@ public class LineCutter extends Learner {
 	/**
 	 * Performs a line search for a function for classification.
 	 * 
-	 * @param instances
-	 *            the training set.
-	 * @param func
-	 *            the function.
+	 * @param instances the training set.
+	 * @param func the function.
 	 */
 	public static void lineSearch(Instances instances, Function1D func) {
 		double[] predictions = func.getPredictions();
@@ -255,18 +248,15 @@ public class LineCutter extends Learner {
 			denominator[idx] += t * (1 - t) * instance.getWeight();
 		}
 		for (int i = 0; i < predictions.length; i++) {
-			predictions[i] = denominator[i] == 0 ? 0 : numerator[i]
-					/ denominator[i];
+			predictions[i] = denominator[i] == 0 ? 0 : numerator[i] / denominator[i];
 		}
 	}
 
-	protected static void split(List<Double> uniqueValues,
-			List<DoublePair> stats, Interval parent) {
+	protected static void split(List<Double> uniqueValues, List<DoublePair> stats, Interval parent) {
 		split(uniqueValues, stats, parent, 5);
 	}
 
-	protected static void split(List<Double> uniqueValues,
-			List<DoublePair> stats, Interval parent, double limit) {
+	protected static void split(List<Double> uniqueValues, List<DoublePair> stats, Interval parent, double limit) {
 		// Test if we need to split
 		if (parent.weight <= limit || parent.end - parent.start <= 1) {
 			parent.split = Double.NaN; // Declared as leaf
@@ -285,9 +275,8 @@ public class LineCutter extends Learner {
 
 			double bestEval = -sum1 * sum1 / weight1 - sum2 * sum2 / weight2;
 			List<double[]> splits = new ArrayList<>();
-			splits.add(new double[] {
-					(uniqueValues.get(start) + uniqueValues.get(start + 1)) / 2,
-					start, weight1, sum1, weight2, sum2 });
+			splits.add(new double[] { (uniqueValues.get(start) + uniqueValues.get(start + 1)) / 2, start, weight1,
+					sum1, weight2, sum2 });
 			for (int i = start + 1; i < end - 1; i++) {
 				final double w = stats.get(i).v1;
 				final double s = stats.get(i).v2;
@@ -297,14 +286,12 @@ public class LineCutter extends Learner {
 				sum2 -= s;
 				double eval = -sum1 * sum1 / weight1 - sum2 * sum2 / weight2;
 				if (eval <= bestEval) {
-					double split = (uniqueValues.get(i) + uniqueValues
-							.get(i + 1)) / 2;
+					double split = (uniqueValues.get(i) + uniqueValues.get(i + 1)) / 2;
 					if (eval < bestEval) {
 						bestEval = eval;
 						splits.clear();
 					}
-					splits.add(new double[] { split, i, weight1, sum1, weight2,
-							sum2 });
+					splits.add(new double[] { split, i, weight1, sum1, weight2, sum2 });
 				}
 			}
 			Random rand = Random.getInstance();
@@ -316,8 +303,7 @@ public class LineCutter extends Learner {
 			parent.left.sum = split[3];
 			parent.right.weight = split[4];
 			parent.right.sum = split[5];
-			parent.gain = (split[3] / split[2]) * split[3]
-					+ (split[5] / split[4]) * split[5];
+			parent.gain = (split[3] / split[2]) * split[3] + (split[5] / split[4]) * split[5];
 			parent.value = -parent.gain + (sum / totalWeight * sum);
 		}
 	}
@@ -353,8 +339,7 @@ public class LineCutter extends Learner {
 	/**
 	 * Constructor.
 	 * 
-	 * @param lineSearch
-	 *            <code>true</code> if line search is performed in the end.
+	 * @param lineSearch <code>true</code> if line search is performed in the end.
 	 */
 	public LineCutter(boolean lineSearch) {
 		attIndex = -1;
@@ -364,24 +349,19 @@ public class LineCutter extends Learner {
 
 	@Override
 	public Function1D build(Instances instances) {
-		Function1D func = leafLimited ? build(instances, attIndex, numIntervals)
-				: build(instances, attIndex, alpha);
+		Function1D func = leafLimited ? build(instances, attIndex, numIntervals) : build(instances, attIndex, alpha);
 		return func;
 	}
 
 	/**
 	 * Builds a 1D function.
 	 * 
-	 * @param instances
-	 *            the training set.
-	 * @param attribute
-	 *            the attribute.
-	 * @param alpha
-	 *            the alpha.
+	 * @param instances the training set.
+	 * @param attribute the attribute.
+	 * @param alpha the alpha.
 	 * @return a 1D function.
 	 */
-	public Function1D build(Instances instances, Attribute attribute,
-			double alpha) {
+	public Function1D build(Instances instances, Attribute attribute, double alpha) {
 		Function1D func = new Function1D();
 		func.attIndex = attribute.getIndex();
 		// TODO potential bugs
@@ -396,8 +376,7 @@ public class LineCutter extends Learner {
 				double weight = instance.getWeight();
 				double value = instance.getValue(func.attIndex);
 				double target = instance.getTarget();
-				pairs.add(new Element<DoublePair>(
-						new DoublePair(target, weight), value));
+				pairs.add(new Element<DoublePair>(new DoublePair(target, weight), value));
 			}
 			Collections.sort(pairs);
 
@@ -415,8 +394,7 @@ public class LineCutter extends Learner {
 			}
 			for (Instance instance : instances) {
 				int idx = (int) instance.getValue(func.attIndex);
-				histogram[idx].v2 += instance.getTarget()
-						* instance.getWeight();
+				histogram[idx].v2 += instance.getTarget() * instance.getWeight();
 				histogram[idx].v1 += instance.getWeight();
 			}
 
@@ -440,8 +418,7 @@ public class LineCutter extends Learner {
 			}
 			for (Instance instance : instances) {
 				int idx = (int) instance.getValue(func.attIndex);
-				histogram[idx].v2 += instance.getTarget()
-						* instance.getWeight();
+				histogram[idx].v2 += instance.getTarget() * instance.getWeight();
 				histogram[idx].v1 += instance.getWeight();
 			}
 
@@ -467,16 +444,12 @@ public class LineCutter extends Learner {
 	/**
 	 * Builds a 1D function.
 	 * 
-	 * @param instances
-	 *            the training set.
-	 * @param attribute
-	 *            the attribute.
-	 * @param numIntervals
-	 *            the number of intervals.
+	 * @param instances the training set.
+	 * @param attribute the attribute.
+	 * @param numIntervals the number of intervals.
 	 * @return a 1D function.
 	 */
-	public Function1D build(Instances instances, Attribute attribute,
-			int numIntervals) {
+	public Function1D build(Instances instances, Attribute attribute, int numIntervals) {
 		Function1D func = new Function1D();
 		func.attIndex = attribute.getIndex();
 
@@ -489,8 +462,7 @@ public class LineCutter extends Learner {
 				double weight = instance.getWeight();
 				double value = instance.getValue(func.attIndex);
 				double target = instance.getTarget();
-				pairs.add(new Element<DoublePair>(
-						new DoublePair(target, weight), value));
+				pairs.add(new Element<DoublePair>(new DoublePair(target, weight), value));
 			}
 			Collections.sort(pairs);
 
@@ -508,8 +480,7 @@ public class LineCutter extends Learner {
 			}
 			for (Instance instance : instances) {
 				int idx = (int) instance.getValue(func.attIndex);
-				histogram[idx].v2 += instance.getTarget()
-						* instance.getWeight();
+				histogram[idx].v2 += instance.getTarget() * instance.getWeight();
 				histogram[idx].v1 += instance.getWeight();
 			}
 
@@ -533,8 +504,7 @@ public class LineCutter extends Learner {
 			}
 			for (Instance instance : instances) {
 				int idx = (int) instance.getValue(func.attIndex);
-				histogram[idx].v2 += instance.getTarget()
-						* instance.getWeight();
+				histogram[idx].v2 += instance.getTarget() * instance.getWeight();
 				histogram[idx].v1 += instance.getWeight();
 			}
 
@@ -560,12 +530,9 @@ public class LineCutter extends Learner {
 	/**
 	 * Builds a 1D function.
 	 * 
-	 * @param instances
-	 *            the training set.
-	 * @param attIndex
-	 *            the index in the attribute list of training set.
-	 * @param alpha
-	 *            the alpha.
+	 * @param instances the training set.
+	 * @param attIndex the index in the attribute list of training set.
+	 * @param alpha the alpha.
 	 * @return a 1D function.
 	 */
 	public Function1D build(Instances instances, int attIndex, double alpha) {
@@ -576,12 +543,9 @@ public class LineCutter extends Learner {
 	/**
 	 * Builds a 1D function.
 	 * 
-	 * @param instances
-	 *            the training set.
-	 * @param attIndex
-	 *            the index in the attribute list of the training set.
-	 * @param numIntervals
-	 *            the number of intervals.
+	 * @param instances the training set.
+	 * @param attIndex the index in the attribute list of the training set.
+	 * @param numIntervals the number of intervals.
 	 * @return a 1D function.
 	 */
 	public Function1D build(Instances instances, int attIndex, int numIntervals) {
@@ -619,8 +583,7 @@ public class LineCutter extends Learner {
 	/**
 	 * Sets the alpha.
 	 * 
-	 * @param alpha
-	 *            the minimum percentage of points in each interval.
+	 * @param alpha the minimum percentage of points in each interval.
 	 */
 	public void setAlpha(double alpha) {
 		this.alpha = alpha;
@@ -629,8 +592,7 @@ public class LineCutter extends Learner {
 	/**
 	 * Sets the index in the attribute list of the training set.
 	 * 
-	 * @param attIndex
-	 *            the attribute index.
+	 * @param attIndex the attribute index.
 	 */
 	public void setAttributeIndex(int attIndex) {
 		this.attIndex = attIndex;
@@ -639,8 +601,7 @@ public class LineCutter extends Learner {
 	/**
 	 * Sets whether we cut lines according to number of leaves or alpha.
 	 * 
-	 * @param leafLimited
-	 *            whether we cut lines according to number of leaves or alpha.
+	 * @param leafLimited whether we cut lines according to number of leaves or alpha.
 	 */
 	public void setLeafLimited(boolean leafLimited) {
 		this.leafLimited = leafLimited;
@@ -649,8 +610,7 @@ public class LineCutter extends Learner {
 	/**
 	 * Sets <code>true</code> if line search is performed in the end.
 	 * 
-	 * @param lineSearch
-	 *            <code>true</code> if line search is performed in the end.
+	 * @param lineSearch <code>true</code> if line search is performed in the end.
 	 */
 	public void setLineSearch(boolean lineSearch) {
 		this.lineSearch = lineSearch;
@@ -659,8 +619,7 @@ public class LineCutter extends Learner {
 	/**
 	 * Sets the number of intervals.
 	 * 
-	 * @param numIntervals
-	 *            the number of intervals.
+	 * @param numIntervals the number of intervals.
 	 */
 	public void setNumIntervals(int numIntervals) {
 		this.numIntervals = numIntervals;

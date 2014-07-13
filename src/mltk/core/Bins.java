@@ -27,15 +27,12 @@ public class Bins {
 	/**
 	 * Constructor.
 	 * 
-	 * @param boundaries
-	 *            the uppber bounds for each bin.
-	 * @param medians
-	 *            the medians for each bin.
+	 * @param boundaries the uppber bounds for each bin.
+	 * @param medians the medians for each bin.
 	 */
 	public Bins(double[] boundaries, double[] medians) {
 		if (boundaries.length != medians.length) {
-			throw new IllegalArgumentException(
-					"Boundary size doesn't match medians size");
+			throw new IllegalArgumentException("Boundary size doesn't match medians size");
 		}
 		this.boundaries = boundaries;
 		this.medians = medians;
@@ -53,8 +50,7 @@ public class Bins {
 	/**
 	 * Returns the bin index given a real value using binary search.
 	 * 
-	 * @param value
-	 *            the real value to discretize.
+	 * @param value the real value to discretize.
 	 * @return the discretized index.
 	 */
 	public int getIndex(double value) {
@@ -74,8 +70,7 @@ public class Bins {
 	/**
 	 * Returns the median of a bin.
 	 * 
-	 * @param index
-	 *            the index of the bin.
+	 * @param index the index of the bin.
 	 * @return the median of the bin.
 	 */
 	public double getValue(int index) {

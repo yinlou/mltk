@@ -117,38 +117,31 @@ public class RidgeLearner extends Learner {
 			maxNumIters = instances.dimension() * 20;
 		}
 		switch (task) {
-		case REGRESSION:
-			glm = buildRegressor(instances, maxNumIters, lambda);
-			break;
-		case CLASSIFICATION:
-			glm = buildClassifier(instances, maxNumIters, lambda);
-			break;
-		default:
-			break;
+			case REGRESSION:
+				glm = buildRegressor(instances, maxNumIters, lambda);
+				break;
+			case CLASSIFICATION:
+				glm = buildClassifier(instances, maxNumIters, lambda);
+				break;
+			default:
+				break;
 		}
 		return glm;
 	}
 
 	/**
-	 * Builds an L2-regularized binary classifier. Each row in the input matrix
-	 * x represents a feature (instead of a data point). Thus the input matrix
-	 * is the transpose of the row-oriented data matrix. This procedure does not
+	 * Builds an L2-regularized binary classifier. Each row in the input matrix x represents a feature (instead of a
+	 * data point). Thus the input matrix is the transpose of the row-oriented data matrix. This procedure does not
 	 * assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param x
-	 *            the inputs.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param attrs the attribute list.
+	 * @param x the inputs.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L2-regularized binary classifier.
 	 */
-	public GLM buildBinaryClassifier(int[] attrs, double[][] x, int[] y,
-			int maxNumIters, double lambda) {
+	public GLM buildBinaryClassifier(int[] attrs, double[][] x, int[] y, int maxNumIters, double lambda) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -174,13 +167,11 @@ public class RidgeLearner extends Learner {
 
 			doOnePass(x, theta, y, tl2, w, pTrain, rTrain);
 
-			double currLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w,
-					lambda);
+			double currLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 
 			if (verbose) {
 				double error = GLMOptimUtils.evalError(y, pTrain);
-				System.out.println("Iteration " + iter + ": " + " " + currLoss
-						+ " " + error);
+				System.out.println("Iteration " + iter + ": " + " " + currLoss + " " + error);
 			}
 
 			if (prevLoss - currLoss < epsilon) {
@@ -193,27 +184,20 @@ public class RidgeLearner extends Learner {
 	}
 
 	/**
-	 * Builds an L2-regularized binary classifier on sparse inputs. Each row of
-	 * the input represents a feature (instead of a data point), i.e., in
-	 * column-oriented format. This procedure does not assume the data is
-	 * normalized or centered.
+	 * Builds an L2-regularized binary classifier on sparse inputs. Each row of the input represents a feature (instead
+	 * of a data point), i.e., in column-oriented format. This procedure does not assume the data is normalized or
+	 * centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param attrs the attribute list.
+	 * @param indices the indices.
+	 * @param values the values.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L2-regularized classifier.
 	 */
-	public GLM buildBinaryClassifier(int[] attrs, int[][] indices,
-			double[][] values, int[] y, int maxNumIters, double lambda) {
+	public GLM buildBinaryClassifier(int[] attrs, int[][] indices, double[][] values, int[] y, int maxNumIters,
+			double lambda) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -239,8 +223,7 @@ public class RidgeLearner extends Learner {
 
 			doOnePass(indices, values, theta, y, tl2, w, pTrain, rTrain);
 
-			double currLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w,
-					lambda);
+			double currLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 
 			if (verbose) {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
@@ -256,26 +239,18 @@ public class RidgeLearner extends Learner {
 	}
 
 	/**
-	 * Builds L2-regularized binary classifiers for a sequence of regularization
-	 * parameter lambdas. Each row in the input matrix x represents a feature
-	 * (instead of a data point). Thus the input matrix is the transpose of the
-	 * row-oriented data matrix. This procedure does not assume the data is
-	 * normalized or centered.
+	 * Builds L2-regularized binary classifiers for a sequence of regularization parameter lambdas. Each row in the
+	 * input matrix x represents a feature (instead of a data point). Thus the input matrix is the transpose of the
+	 * row-oriented data matrix. This procedure does not assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param x
-	 *            the values.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambdas
-	 *            the lambdas array.
+	 * @param attrs the attribute list.
+	 * @param x the values.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambdas the lambdas array.
 	 * @return L2-regularized classifiers.
 	 */
-	public GLM[] buildBinaryClassifiers(int[] attrs, double[][] x, int[] y,
-			int maxNumIters, double[] lambdas) {
+	public GLM[] buildBinaryClassifiers(int[] attrs, double[][] x, int[] y, int maxNumIters, double[] lambdas) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -298,8 +273,7 @@ public class RidgeLearner extends Learner {
 			double lambda = lambdas[g];
 			// Coordinate gradient descent
 			final double tl2 = lambda * y.length;
-			double prevLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w,
-					lambda);
+			double prevLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
 					intercept += GLMOptimUtils.fitIntercept(pTrain, y);
@@ -307,13 +281,11 @@ public class RidgeLearner extends Learner {
 
 				doOnePass(x, theta, y, tl2, w, pTrain, rTrain);
 
-				double currLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w,
-						lambda);
+				double currLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 
 				if (verbose & iter % 10 == 0) {
 					double error = GLMOptimUtils.evalError(y, pTrain);
-					System.out.println("Iteration " + iter + ": " + " "
-							+ currLoss + " " + error);
+					System.out.println("Iteration " + iter + ": " + " " + currLoss + " " + error);
 				}
 
 				if (prevLoss - currLoss < epsilon) {
@@ -329,27 +301,20 @@ public class RidgeLearner extends Learner {
 	}
 
 	/**
-	 * Builds L2-regularized binary classifiers for a sequence of regularization
-	 * parameter lambdas on sparse format. Each row of the input represents a
-	 * feature (instead of a data point), i.e., in column-oriented format. This
+	 * Builds L2-regularized binary classifiers for a sequence of regularization parameter lambdas on sparse format.
+	 * Each row of the input represents a feature (instead of a data point), i.e., in column-oriented format. This
 	 * procedure does not assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambdas
-	 *            the lambdas array.
+	 * @param attrs the attribute list.
+	 * @param indices the indices.
+	 * @param values the values.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambdas the lambdas array.
 	 * @return L2-regularized classifiers.
 	 */
-	public GLM[] buildBinaryClassifiers(int[] attrs, int[][] indices,
-			double[][] values, int[] y, int maxNumIters, double[] lambdas) {
+	public GLM[] buildBinaryClassifiers(int[] attrs, int[][] indices, double[][] values, int[] y, int maxNumIters,
+			double[] lambdas) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -373,8 +338,7 @@ public class RidgeLearner extends Learner {
 
 			// Coordinate gradient descent
 			final double tl2 = lambda * y.length;
-			double prevLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w,
-					lambda);
+			double prevLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
 					intercept += GLMOptimUtils.fitIntercept(pTrain, y);
@@ -382,12 +346,10 @@ public class RidgeLearner extends Learner {
 
 				doOnePass(indices, values, theta, y, tl2, w, pTrain, rTrain);
 
-				double currLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w,
-						lambda);
+				double currLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 
 				if (verbose) {
-					System.out.println("Iteration " + iter + ": " + " "
-							+ currLoss);
+					System.out.println("Iteration " + iter + ": " + " " + currLoss);
 				}
 
 				if (prevLoss - currLoss < epsilon) {
@@ -405,22 +367,16 @@ public class RidgeLearner extends Learner {
 	/**
 	 * Builds an L2-regularized binary classifier.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param isSparse
-	 *            <code>true</code> if the training set is treated as sparse.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param trainSet the training set.
+	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L2-regularized binary classifier.
 	 */
-	public GLM buildClassifier(Instances trainSet, boolean isSparse,
-			int maxNumIters, double lambda) {
+	public GLM buildClassifier(Instances trainSet, boolean isSparse, int maxNumIters, double lambda) {
 		Attribute classAttribute = trainSet.getTargetAttribute();
 		if (classAttribute.getType() != Attribute.Type.NOMINAL) {
-			throw new IllegalArgumentException(
-					"Class attribute must be nominal.");
+			throw new IllegalArgumentException("Class attribute must be nominal.");
 		}
 		NominalAttribute clazz = (NominalAttribute) classAttribute;
 		int numClasses = clazz.getStates().length;
@@ -439,8 +395,7 @@ public class RidgeLearner extends Learner {
 					y[i] = label == 0 ? 1 : 0;
 				}
 
-				GLM glm = buildBinaryClassifier(attrs, indices, values, y,
-						maxNumIters, lambda);
+				GLM glm = buildBinaryClassifier(attrs, indices, values, y, maxNumIters, lambda);
 
 				double[] w = glm.w[0];
 				for (int i = 0; i < cList.size(); i++) {
@@ -460,8 +415,7 @@ public class RidgeLearner extends Learner {
 						y[i] = label == k ? 1 : 0;
 					}
 
-					GLM binaryClassifier = buildBinaryClassifier(attrs,
-							indices, values, y, maxNumIters, lambda);
+					GLM binaryClassifier = buildBinaryClassifier(attrs, indices, values, y, maxNumIters, lambda);
 
 					double[] w = binaryClassifier.w[0];
 					for (int i = 0; i < cList.size(); i++) {
@@ -486,8 +440,7 @@ public class RidgeLearner extends Learner {
 					y[i] = label == 0 ? 1 : 0;
 				}
 
-				GLM glm = buildBinaryClassifier(attrs, x, y, maxNumIters,
-						lambda);
+				GLM glm = buildBinaryClassifier(attrs, x, y, maxNumIters, lambda);
 
 				double[] w = glm.w[0];
 				for (int i = 0; i < cList.size(); i++) {
@@ -508,8 +461,7 @@ public class RidgeLearner extends Learner {
 						y[i] = label == k ? 1 : 0;
 					}
 
-					GLM binaryClassifier = buildBinaryClassifier(attrs, x, y,
-							maxNumIters, lambda);
+					GLM binaryClassifier = buildBinaryClassifier(attrs, x, y, maxNumIters, lambda);
 
 					double[] w = binaryClassifier.w[0];
 					for (int i = 0; i < cList.size(); i++) {
@@ -527,40 +479,28 @@ public class RidgeLearner extends Learner {
 	/**
 	 * Builds an L2-regularized classifier.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L2-regularized classifier.
 	 */
-	public GLM buildClassifier(Instances trainSet, int maxNumIters,
-			double lambda) {
-		return buildClassifier(trainSet, isSparse(trainSet), maxNumIters,
-				lambda);
+	public GLM buildClassifier(Instances trainSet, int maxNumIters, double lambda) {
+		return buildClassifier(trainSet, isSparse(trainSet), maxNumIters, lambda);
 	}
 
 	/**
-	 * Builds L2-regularized classifiers for a sequence of regularization
-	 * parameter lambdas.
+	 * Builds L2-regularized classifiers for a sequence of regularization parameter lambdas.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param isSparse
-	 *            <code>true</code> if the training set is treated as sparse.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambdas
-	 *            the lambdas array.
+	 * @param trainSet the training set.
+	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambdas the lambdas array.
 	 * @return L2-regularized binary classifiers.
 	 */
-	public GLM[] buildClassifiers(Instances trainSet, boolean isSparse,
-			int maxNumIters, double[] lambdas) {
+	public GLM[] buildClassifiers(Instances trainSet, boolean isSparse, int maxNumIters, double[] lambdas) {
 		Attribute classAttribute = trainSet.getTargetAttribute();
 		if (classAttribute.getType() != Attribute.Type.NOMINAL) {
-			throw new IllegalArgumentException(
-					"Class attribute must be nominal.");
+			throw new IllegalArgumentException("Class attribute must be nominal.");
 		}
 		NominalAttribute clazz = (NominalAttribute) classAttribute;
 		int numClasses = clazz.getStates().length;
@@ -579,8 +519,7 @@ public class RidgeLearner extends Learner {
 					y[i] = label == 0 ? 1 : 0;
 				}
 
-				GLM[] glms = buildBinaryClassifiers(attrs, indices, values, y,
-						maxNumIters, lambdas);
+				GLM[] glms = buildBinaryClassifiers(attrs, indices, values, y, maxNumIters, lambdas);
 
 				for (GLM glm : glms) {
 					double[] w = glm.w[0];
@@ -605,8 +544,7 @@ public class RidgeLearner extends Learner {
 						y[i] = label == k ? 1 : 0;
 					}
 
-					GLM[] binaryClassifiers = buildBinaryClassifiers(attrs,
-							indices, values, y, maxNumIters, lambdas);
+					GLM[] binaryClassifiers = buildBinaryClassifiers(attrs, indices, values, y, maxNumIters, lambdas);
 
 					for (int l = 0; l < glms.length; l++) {
 						GLM binaryClassifier = binaryClassifiers[l];
@@ -636,8 +574,7 @@ public class RidgeLearner extends Learner {
 					y[i] = label == 0 ? 1 : 0;
 				}
 
-				GLM[] glms = buildBinaryClassifiers(attrs, x, y, maxNumIters,
-						lambdas);
+				GLM[] glms = buildBinaryClassifiers(attrs, x, y, maxNumIters, lambdas);
 
 				for (GLM glm : glms) {
 					double[] w = glm.w[0];
@@ -663,8 +600,7 @@ public class RidgeLearner extends Learner {
 						y[i] = label == k ? 1 : 0;
 					}
 
-					GLM[] binaryClassifiers = buildBinaryClassifiers(attrs, x,
-							y, maxNumIters, lambdas);
+					GLM[] binaryClassifiers = buildBinaryClassifiers(attrs, x, y, maxNumIters, lambdas);
 
 					for (int l = 0; l < glms.length; l++) {
 						GLM binaryClassifier = binaryClassifiers[l];
@@ -684,44 +620,32 @@ public class RidgeLearner extends Learner {
 	}
 
 	/**
-	 * Builds L2-regularized classifiers for a sequence of regularization
-	 * parameter lambdas.
+	 * Builds L2-regularized classifiers for a sequence of regularization parameter lambdas.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambdas
-	 *            the lambdas array.
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambdas the lambdas array.
 	 * @return L2-regularized binary classifiers.
 	 */
-	public GLM[] buildClassifiers(Instances trainSet, int maxNumIters,
-			double[] lambdas) {
-		return buildClassifiers(trainSet, isSparse(trainSet), maxNumIters,
-				lambdas);
+	public GLM[] buildClassifiers(Instances trainSet, int maxNumIters, double[] lambdas) {
+		return buildClassifiers(trainSet, isSparse(trainSet), maxNumIters, lambdas);
 	}
 
 	/**
 	 * Builds an L2 regressor.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param isSparse
-	 *            <code>true</code> if the training set is treated as sparse.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param trainSet the training set.
+	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L2-regularized regressor.
 	 */
-	public GLM buildRegressor(Instances trainSet, boolean isSparse,
-			int maxNumIters, double lambda) {
+	public GLM buildRegressor(Instances trainSet, boolean isSparse, int maxNumIters, double lambda) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
 			List<Double> cList = sd.cList;
 
-			GLM glm = buildRegressor(sd.attrs, sd.indices, sd.values, sd.y,
-					maxNumIters, lambda);
+			GLM glm = buildRegressor(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, lambda);
 
 			double[] w = glm.w[0];
 			for (int i = 0; i < cList.size(); i++) {
@@ -749,12 +673,9 @@ public class RidgeLearner extends Learner {
 	/**
 	 * Builds an L2-regularized regressor.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L2-regularized regressor.
 	 */
 	public GLM buildRegressor(Instances trainSet, int maxNumIters, double lambda) {
@@ -762,25 +683,18 @@ public class RidgeLearner extends Learner {
 	}
 
 	/**
-	 * Builds an L2-regularized regressor. Each row in the input matrix x
-	 * represents a feature (instead of a data point). Thus the input matrix is
-	 * the transpose of the row-oriented data matrix. This procedure does not
-	 * assume the data is normalized or centered.
+	 * Builds an L2-regularized regressor. Each row in the input matrix x represents a feature (instead of a data
+	 * point). Thus the input matrix is the transpose of the row-oriented data matrix. This procedure does not assume
+	 * the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param x
-	 *            the inputs.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param attrs the attribute list.
+	 * @param x the inputs.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L2-regularized regressor.
 	 */
-	public GLM buildRegressor(int[] attrs, double[][] x, double[] y,
-			int maxNumIters, double lambda) {
+	public GLM buildRegressor(int[] attrs, double[][] x, double[] y, int maxNumIters, double lambda) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -798,8 +712,7 @@ public class RidgeLearner extends Learner {
 
 		// Coordinate descent
 		final double tl2 = lambda * y.length;
-		double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w,
-				lambda);
+		double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
 				intercept += GLMOptimUtils.fitIntercept(residualTrain);
@@ -807,8 +720,7 @@ public class RidgeLearner extends Learner {
 
 			doOnePass(x, sq, tl2, w, residualTrain);
 
-			double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w,
-					lambda);
+			double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
 
 			if (verbose & iter % 100 == 0) {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
@@ -824,27 +736,19 @@ public class RidgeLearner extends Learner {
 	}
 
 	/**
-	 * Builds an L2-regularized regressor on sparse inputs. Each row of the
-	 * input represents a feature (instead of a data point), i.e., in
-	 * column-oriented format. This procedure does not assume the data is
-	 * normalized or centered.
+	 * Builds an L2-regularized regressor on sparse inputs. Each row of the input represents a feature (instead of a
+	 * data point), i.e., in column-oriented format. This procedure does not assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param attrs the attribute list.
+	 * @param indices the indices.
+	 * @param values the values.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L2-regularized regressor.
 	 */
-	public GLM buildRegressor(int[] attrs, int[][] indices, double[][] values,
-			double[] y, int maxNumIters, double lambda) {
+	public GLM buildRegressor(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
+			double lambda) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -862,8 +766,7 @@ public class RidgeLearner extends Learner {
 
 		// Coordinate descent
 		final double tl2 = lambda * y.length;
-		double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w,
-				lambda);
+		double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
 				intercept += GLMOptimUtils.fitIntercept(residualTrain);
@@ -871,8 +774,7 @@ public class RidgeLearner extends Learner {
 
 			doOnePass(indices, values, sq, tl2, w, residualTrain);
 
-			double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w,
-					lambda);
+			double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
 
 			if (verbose) {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
@@ -888,27 +790,20 @@ public class RidgeLearner extends Learner {
 	}
 
 	/**
-	 * Builds L2-regularized regressors for a sequence of regularization
-	 * parameter lambdas.
+	 * Builds L2-regularized regressors for a sequence of regularization parameter lambdas.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param isSparse
-	 *            <code>true</code> if the training set is treated as sparse.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambdas
-	 *            the lambdas array.
+	 * @param trainSet the training set.
+	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambdas the lambdas array.
 	 * @return L2-regularized regressors.
 	 */
-	public GLM[] buildRegressors(Instances trainSet, boolean isSparse,
-			int maxNumIters, double[] lambdas) {
+	public GLM[] buildRegressors(Instances trainSet, boolean isSparse, int maxNumIters, double[] lambdas) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
 			List<Double> cList = sd.cList;
 
-			GLM[] glms = buildRegressors(sd.attrs, sd.indices, sd.values, sd.y,
-					maxNumIters, lambdas);
+			GLM[] glms = buildRegressors(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, lambdas);
 
 			for (GLM glm : glms) {
 				double[] w = glm.w[0];
@@ -924,8 +819,7 @@ public class RidgeLearner extends Learner {
 			DenseDataset dd = getDenseDataset(trainSet, true);
 			List<Double> cList = dd.cList;
 
-			GLM[] glms = buildRegressors(dd.attrs, dd.x, dd.y, maxNumIters,
-					lambdas);
+			GLM[] glms = buildRegressors(dd.attrs, dd.x, dd.y, maxNumIters, lambdas);
 
 			for (GLM glm : glms) {
 				double[] w = glm.w[0];
@@ -941,44 +835,30 @@ public class RidgeLearner extends Learner {
 	}
 
 	/**
-	 * Builds L2-regularized regressors for a sequence of regularization
-	 * parameter lambdas.
+	 * Builds L2-regularized regressors for a sequence of regularization parameter lambdas.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambdas
-	 *            the lambdas array.
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambdas the lambdas array.
 	 * @return L2-regularized regressors.
 	 */
-	public GLM[] buildRegressors(Instances trainSet, int maxNumIters,
-			double[] lambdas) {
-		return buildRegressors(trainSet, isSparse(trainSet), maxNumIters,
-				lambdas);
+	public GLM[] buildRegressors(Instances trainSet, int maxNumIters, double[] lambdas) {
+		return buildRegressors(trainSet, isSparse(trainSet), maxNumIters, lambdas);
 	}
 
 	/**
-	 * Builds L2-regularized regressors for a sequence of regularization
-	 * parameter lambdas on dense inputs. Each row in the input matrix x
-	 * represents a feature (instead of a data point). Thus the input matrix is
-	 * the transpose of the row-oriented data matrix. This procedure does not
-	 * assume the data is normalized or centered.
+	 * Builds L2-regularized regressors for a sequence of regularization parameter lambdas on dense inputs. Each row in
+	 * the input matrix x represents a feature (instead of a data point). Thus the input matrix is the transpose of the
+	 * row-oriented data matrix. This procedure does not assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param x
-	 *            the inputs.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambdas
-	 *            the lambdas array.
+	 * @param attrs the attribute list.
+	 * @param x the inputs.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambdas the lambdas array.
 	 * @return L2-regularized regressors.
 	 */
-	public GLM[] buildRegressors(int[] attrs, double[][] x, double[] y,
-			int maxNumIters, double[] lambdas) {
+	public GLM[] buildRegressors(int[] attrs, double[][] x, double[] y, int maxNumIters, double[] lambdas) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -1003,8 +883,7 @@ public class RidgeLearner extends Learner {
 
 			// Coordinate descent
 			final double tl2 = lambda * y.length;
-			double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w,
-					lambda);
+			double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
 					intercept += GLMOptimUtils.fitIntercept(residualTrain);
@@ -1012,8 +891,7 @@ public class RidgeLearner extends Learner {
 
 				doOnePass(x, sq, tl2, w, residualTrain);
 
-				double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain,
-						w, lambda);
+				double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
 
 				if (prevLoss - currLoss < epsilon) {
 					break;
@@ -1021,10 +899,8 @@ public class RidgeLearner extends Learner {
 				prevLoss = currLoss;
 			}
 
-			double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w,
-					lambda);
-			System.out.println("Model " + g + ": " + lambda + " " + currLoss
-					+ " " + StatUtils.rms(residualTrain));
+			double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
+			System.out.println("Model " + g + ": " + lambda + " " + currLoss + " " + StatUtils.rms(residualTrain));
 
 			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept);
 		}
@@ -1033,27 +909,20 @@ public class RidgeLearner extends Learner {
 	}
 
 	/**
-	 * Builds L2-regularized regressors for a sequence of regularization
-	 * parameter lambdas on sparse inputs. Each row of the input represents a
-	 * feature (instead of a data point), i.e., in column-oriented format. This
-	 * procedure does not assume the data is normalized or centered.
+	 * Builds L2-regularized regressors for a sequence of regularization parameter lambdas on sparse inputs. Each row of
+	 * the input represents a feature (instead of a data point), i.e., in column-oriented format. This procedure does
+	 * not assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambdas
-	 *            the lambdas array.
+	 * @param attrs the attribute list.
+	 * @param indices the indices.
+	 * @param values the values.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambdas the lambdas array.
 	 * @return L2-regularized regressors.
 	 */
-	public GLM[] buildRegressors(int[] attrs, int[][] indices,
-			double[][] values, double[] y, int maxNumIters, double[] lambdas) {
+	public GLM[] buildRegressors(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
+			double[] lambdas) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -1078,8 +947,7 @@ public class RidgeLearner extends Learner {
 
 			// Coordinate descent
 			final double tl2 = lambda * y.length;
-			double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w,
-					lambda);
+			double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
 					intercept += GLMOptimUtils.fitIntercept(residualTrain);
@@ -1087,8 +955,7 @@ public class RidgeLearner extends Learner {
 
 				doOnePass(indices, values, sq, tl2, w, residualTrain);
 
-				double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain,
-						w, lambda);
+				double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
 
 				if (prevLoss - currLoss < epsilon) {
 					break;
@@ -1096,10 +963,8 @@ public class RidgeLearner extends Learner {
 				prevLoss = currLoss;
 			}
 
-			double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w,
-					lambda);
-			System.out.println("Model " + g + ": " + lambda + " " + currLoss
-					+ " " + StatUtils.rms(residualTrain));
+			double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
+			System.out.println("Model " + g + ": " + lambda + " " + currLoss + " " + StatUtils.rms(residualTrain));
 
 			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept);
 		}
@@ -1107,8 +972,7 @@ public class RidgeLearner extends Learner {
 		return glms;
 	}
 
-	protected void doOnePass(double[][] x, double[] sq, final double tl2,
-			double[] w, double[] rTrain) {
+	protected void doOnePass(double[][] x, double[] sq, final double tl2, double[] w, double[] rTrain) {
 		for (int j = 0; j < x.length; j++) {
 			double[] v = x[j];
 			// Calculate weight updates using naive updates
@@ -1125,8 +989,8 @@ public class RidgeLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(double[][] x, double[] theta, int[] y,
-			final double tl2, double[] w, double[] pTrain, double[] rTrain) {
+	protected void doOnePass(double[][] x, double[] theta, int[] y, final double tl2, double[] w, double[] pTrain,
+			double[] rTrain) {
 		for (int j = 0; j < x.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
 				continue;
@@ -1147,8 +1011,8 @@ public class RidgeLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(int[][] indices, double[][] values, double[] sq,
-			final double tl2, double[] w, double[] rTrain) {
+	protected void doOnePass(int[][] indices, double[][] values, double[] sq, final double tl2, double[] w,
+			double[] rTrain) {
 		for (int j = 0; j < indices.length; j++) {
 			// Calculate weight updates using naive updates
 			double wNew = w[j] * sq[j];
@@ -1169,8 +1033,7 @@ public class RidgeLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(int[][] indices, double[][] values,
-			double[] theta, int[] y, final double tl2, double[] w,
+	protected void doOnePass(int[][] indices, double[][] values, double[] theta, int[] y, final double tl2, double[] w,
 			double[] pTrain, double[] rTrain) {
 		for (int j = 0; j < indices.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
@@ -1210,8 +1073,7 @@ public class RidgeLearner extends Learner {
 	/**
 	 * Sets whether we fit intercept.
 	 * 
-	 * @param fitIntercept
-	 *            whether we fit intercept.
+	 * @param fitIntercept whether we fit intercept.
 	 */
 	public void fitIntercept(boolean fitIntercept) {
 		this.fitIntercept = fitIntercept;
@@ -1265,8 +1127,7 @@ public class RidgeLearner extends Learner {
 	/**
 	 * Sets the convergence threshold epsilon.
 	 * 
-	 * @param epsilon
-	 *            the convergence threshold epsilon.
+	 * @param epsilon the convergence threshold epsilon.
 	 */
 	public void setEpsilon(double epsilon) {
 		this.epsilon = epsilon;
@@ -1275,8 +1136,7 @@ public class RidgeLearner extends Learner {
 	/**
 	 * Sets the lambda.
 	 * 
-	 * @param lambda
-	 *            the lambda.
+	 * @param lambda the lambda.
 	 */
 	public void setLambda(double lambda) {
 		this.lambda = lambda;
@@ -1285,8 +1145,7 @@ public class RidgeLearner extends Learner {
 	/**
 	 * Sets the maximum number of iterations.
 	 * 
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
+	 * @param maxNumIters the maximum number of iterations.
 	 */
 	public void setMaxNumIters(int maxNumIters) {
 		this.maxNumIters = maxNumIters;
@@ -1295,8 +1154,7 @@ public class RidgeLearner extends Learner {
 	/**
 	 * Sets the task of this learner.
 	 * 
-	 * @param task
-	 *            the task of this learner.
+	 * @param task the task of this learner.
 	 */
 	public void setTask(Task task) {
 		this.task = task;
@@ -1305,8 +1163,7 @@ public class RidgeLearner extends Learner {
 	/**
 	 * Sets whether we output something during the training.
 	 * 
-	 * @param verbose
-	 *            the switch if we output things during training.
+	 * @param verbose the switch if we output things during training.
 	 */
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;

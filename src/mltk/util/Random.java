@@ -30,16 +30,15 @@ public class Random {
 	/**
 	 * Sets the random seed.
 	 * 
-	 * @param seed
-	 *            the random seed.
+	 * @param seed the random seed.
 	 */
 	public void setSeed(long seed) {
 		rand.setSeed(seed);
 	}
 
 	/**
-	 * Returns the next pseudorandom, uniformly distributed <code>int</code>
-	 * value from this random number generator's sequence.
+	 * Returns the next pseudorandom, uniformly distributed <code>int</code> value from this random number generator's
+	 * sequence.
 	 * 
 	 * @return a random integer.
 	 */
@@ -48,12 +47,10 @@ public class Random {
 	}
 
 	/**
-	 * Returns the next pseudorandom, uniformly distributed <code>int</code>
-	 * value between 0 (inclusive) and n (exclusive) from this random number
-	 * generator's sequence.
+	 * Returns the next pseudorandom, uniformly distributed <code>int</code> value between 0 (inclusive) and n
+	 * (exclusive) from this random number generator's sequence.
 	 * 
-	 * @param n
-	 *            the range.
+	 * @param n the range.
 	 * @return a random integer in [0, n- 1].
 	 */
 	public int nextInt(int n) {
@@ -61,8 +58,8 @@ public class Random {
 	}
 
 	/**
-	 * Returns the next pseudorandom, uniformly distributed <code>double</code>
-	 * value between 0.0 and 1.0 from this random number generator's sequence.
+	 * Returns the next pseudorandom, uniformly distributed <code>double</code> value between 0.0 and 1.0 from this
+	 * random number generator's sequence.
 	 * 
 	 * @return a random <code>double</code> value.
 	 */
@@ -71,8 +68,8 @@ public class Random {
 	}
 
 	/**
-	 * Returns the next pseudorandom, uniformly distributed <code>float</code>
-	 * value between 0.0 and 1.0 from this random number generator's sequence.
+	 * Returns the next pseudorandom, uniformly distributed <code>float</code> value between 0.0 and 1.0 from this
+	 * random number generator's sequence.
 	 * 
 	 * @return a random <code>float</code> value.
 	 */
@@ -82,8 +79,7 @@ public class Random {
 
 	/**
 	 * Returns the next pseudorandom, Gaussian ("normally") distributed <code>
-	 * double</code> value with mean 0.0 and standard deviation 1.0 from this
-	 * random number generator's sequence.
+	 * double</code> value with mean 0.0 and standard deviation 1.0 from this random number generator's sequence.
 	 * 
 	 * @return a random <code>double</code> value.
 	 */
@@ -92,8 +88,8 @@ public class Random {
 	}
 
 	/**
-	 * Returns the next pseudorandom, uniformly distributed <code>long</code>
-	 * value from this random number generator's sequence.
+	 * Returns the next pseudorandom, uniformly distributed <code>long</code> value from this random number generator's
+	 * sequence.
 	 * 
 	 * @return a random <code>long</code> value.
 	 */
@@ -102,8 +98,8 @@ public class Random {
 	}
 
 	/**
-	 * Returns the next pseudorandom, uniformly distributed <code>boolean</code>
-	 * value from this random number generator's sequence.
+	 * Returns the next pseudorandom, uniformly distributed <code>boolean</code> value from this random number
+	 * generator's sequence.
 	 * 
 	 * @return a random <code>boolean</code> value.
 	 */

@@ -15,10 +15,8 @@ public class Element<T> implements Comparable<Element<T>> {
 	/**
 	 * Constructs a weighted element.
 	 * 
-	 * @param element
-	 *            the element.
-	 * @param weight
-	 *            the weight.
+	 * @param element the element.
+	 * @param weight the weight.
 	 */
 	public Element(T element, double weight) {
 		this.element = element;

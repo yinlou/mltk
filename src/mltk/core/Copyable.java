@@ -5,8 +5,7 @@ package mltk.core;
  * 
  * @author Yin Lou
  * 
- * @param <T>
- *            the type of the object.
+ * @param <T> the type of the object.
  */
 public interface Copyable<T> {
 

@@ -20,8 +20,7 @@ public class BoostedEnsemble extends Ensemble {
 	/**
 	 * Constructor.
 	 * 
-	 * @param capacity
-	 *            the capacity of the boosted ensemble.
+	 * @param capacity the capacity of the boosted ensemble.
 	 */
 	public BoostedEnsemble(int capacity) {
 		super(capacity);
@@ -50,8 +49,7 @@ public class BoostedEnsemble extends Ensemble {
 	/**
 	 * Removes a particular predictor.
 	 * 
-	 * @param index
-	 *            the index of the predictor to remove.
+	 * @param index the index of the predictor to remove.
 	 */
 	public void remove(int index) {
 		predictors.remove(index);

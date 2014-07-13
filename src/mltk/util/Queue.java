@@ -23,8 +23,7 @@ public class Queue<T> {
 	/**
 	 * Inserts an item to the queue.
 	 * 
-	 * @param item
-	 *            the item.
+	 * @param item the item.
 	 */
 	public void enqueue(T item) {
 		list.addLast(item);

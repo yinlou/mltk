@@ -14,10 +14,8 @@ public class IntDoublePair {
 	/**
 	 * Constructor.
 	 * 
-	 * @param v1
-	 *            the <code>int</code> value.
-	 * @param v2
-	 *            the <code>double</code> value.
+	 * @param v1 the <code>int</code> value.
+	 * @param v2 the <code>double</code> value.
 	 */
 	public IntDoublePair(int v1, double v2) {
 		this.v1 = v1;

@@ -13,10 +13,9 @@ import mltk.util.VectorUtils;
  * Class for 1D functions.
  * 
  * <p>
- * This class represents a segmented 1D function. Segments are defined in split
- * array. For example, [3, 5, +INF] defines three segments: (-INF, 3], (3, 5],
- * (5, +INF). The last value in the split array is always +INF. The prediction
- * array is the corresponding predictions for segments defined in splits.
+ * This class represents a segmented 1D function. Segments are defined in split array. For example, [3, 5, +INF] defines
+ * three segments: (-INF, 3], (3, 5], (5, +INF). The last value in the split array is always +INF. The prediction array
+ * is the corresponding predictions for segments defined in splits.
  * </p>
  * 
  * @author Yin Lou
@@ -30,8 +29,8 @@ public class Function1D implements Regressor, UnivariateFunction {
 	protected int attIndex;
 
 	/**
-	 * Last value is always Double.POSITIVE_INFINITY. e.g. [3, 5, +INF] defines
-	 * three segments: (-INF, 3], (3, 5], (5, +INF)
+	 * Last value is always Double.POSITIVE_INFINITY. e.g. [3, 5, +INF] defines three segments: (-INF, 3], (3, 5], (5,
+	 * +INF)
 	 */
 	protected double[] splits;
 
@@ -43,15 +42,12 @@ public class Function1D implements Regressor, UnivariateFunction {
 	/**
 	 * Returns a constant 1D function.
 	 * 
-	 * @param attIndex
-	 *            the attribute index of this function.
-	 * @param prediction
-	 *            the constant.
+	 * @param attIndex the attribute index of this function.
+	 * @param prediction the constant.
 	 * @return a constant 1D function.
 	 */
 	public static Function1D getConstantFunction(int attIndex, double prediction) {
-		Function1D func = new Function1D(attIndex,
-				new double[] { Double.POSITIVE_INFINITY },
+		Function1D func = new Function1D(attIndex, new double[] { Double.POSITIVE_INFINITY },
 				new double[] { prediction });
 		return func;
 	}
@@ -79,15 +75,13 @@ public class Function1D implements Regressor, UnivariateFunction {
 	 * @return <code>true</code> if the function is constant.
 	 */
 	public boolean isConstant() {
-		return ArrayUtils.isConstant(predictions, 1, predictions.length,
-				predictions[0]);
+		return ArrayUtils.isConstant(predictions, 1, predictions.length, predictions[0]);
 	}
 
 	/**
 	 * Multiplies this function with a constant.
 	 * 
-	 * @param c
-	 *            the constant.
+	 * @param c the constant.
 	 * @return this function.
 	 */
 	public Function1D multiply(double c) {
@@ -98,8 +92,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	/**
 	 * Divides this function with a constant.
 	 * 
-	 * @param c
-	 *            the constant.
+	 * @param c the constant.
 	 * @return this function.
 	 */
 	public Function1D divide(double c) {
@@ -110,8 +103,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	/**
 	 * Adds this function with a constant.
 	 * 
-	 * @param c
-	 *            the constant.
+	 * @param c the constant.
 	 * @return this function.
 	 */
 	public Function1D add(double c) {
@@ -122,8 +114,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	/**
 	 * Subtracts this function with a constant.
 	 * 
-	 * @param c
-	 *            the constant.
+	 * @param c the constant.
 	 * @return this function.
 	 */
 	public Function1D subtract(double c) {
@@ -141,12 +132,9 @@ public class Function1D implements Regressor, UnivariateFunction {
 	/**
 	 * Constructor.
 	 * 
-	 * @param attIndex
-	 *            the attribute index.
-	 * @param splits
-	 *            the splits.
-	 * @param predictions
-	 *            the predictions.
+	 * @param attIndex the attribute index.
+	 * @param splits the splits.
+	 * @param predictions the predictions.
 	 */
 	public Function1D(int attIndex, double[] splits, double[] predictions) {
 		this.attIndex = attIndex;
@@ -157,14 +145,12 @@ public class Function1D implements Regressor, UnivariateFunction {
 	/**
 	 * Adds this function whit another function.
 	 * 
-	 * @param func
-	 *            the other function.
+	 * @param func the other function.
 	 * @return this function.
 	 */
 	public Function1D add(Function1D func) {
 		if (attIndex != func.attIndex) {
-			throw new IllegalArgumentException(
-					"Cannot add functions on different terms");
+			throw new IllegalArgumentException("Cannot add functions on different terms");
 		}
 		int[] insertionPoints = new int[func.splits.length - 1];
 		int newElements = 0;
@@ -187,8 +173,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 
 			double[] newPredictions = new double[newSplits.length];
 			for (int i = 0; i < newSplits.length; i++) {
-				newPredictions[i] = this.evaluate(newSplits[i])
-						+ func.evaluate(newSplits[i]);
+				newPredictions[i] = this.evaluate(newSplits[i]) + func.evaluate(newSplits[i]);
 			}
 			splits = newSplits;
 			predictions = newPredictions;
@@ -212,8 +197,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	/**
 	 * Sets the attribute index.
 	 * 
-	 * @param attIndex
-	 *            the new attribute index.
+	 * @param attIndex the new attribute index.
 	 */
 	public void setAttributeIndex(int attIndex) {
 		this.attIndex = attIndex;
@@ -231,8 +215,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	/**
 	 * Sets the split array.
 	 * 
-	 * @param splits
-	 *            the new split array.
+	 * @param splits the new split array.
 	 */
 	public void setSplits(double[] splits) {
 		this.splits = splits;
@@ -250,8 +233,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	/**
 	 * Sets the prediction array.
 	 * 
-	 * @param predictions
-	 *            the new prediction array.
+	 * @param predictions the new prediction array.
 	 */
 	public void setPredictions(double[] predictions) {
 		this.predictions = predictions;
@@ -285,8 +267,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	/**
 	 * Returns the segment index given an instance.
 	 * 
-	 * @param instance
-	 *            the instance.
+	 * @param instance the instance.
 	 * @return the segment index given an instance.
 	 */
 	public int getSegmentIndex(Instance instance) {
@@ -298,8 +279,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	/**
 	 * Returns the segment index given a real value.
 	 * 
-	 * @param x
-	 *            the real value.
+	 * @param x the real value.
 	 * @return the segment index given a real value.
 	 */
 	public int getSegmentIndex(double x) {
@@ -323,8 +303,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	@Override
 	public Function1D copy() {
 		double[] splitsCopy = Arrays.copyOf(splits, splits.length);
-		double[] predictionsCopy = Arrays.copyOf(predictions,
-				predictions.length);
+		double[] predictionsCopy = Arrays.copyOf(predictions, predictions.length);
 		return new Function1D(attIndex, splitsCopy, predictionsCopy);
 	}
 

@@ -18,10 +18,8 @@ public class BinnedAttribute extends Attribute {
 	/**
 	 * Constructor.
 	 * 
-	 * @param name
-	 *            the name of this attribute.
-	 * @param numBins
-	 *            number of bins for this attribute.
+	 * @param name the name of this attribute.
+	 * @param numBins number of bins for this attribute.
 	 */
 	public BinnedAttribute(String name, int numBins) {
 		this(name, numBins, -1);
@@ -30,12 +28,9 @@ public class BinnedAttribute extends Attribute {
 	/**
 	 * Constructor.
 	 * 
-	 * @param name
-	 *            the name of this attribute.
-	 * @param numBins
-	 *            number of bins for this attribute.
-	 * @param index
-	 *            the index of this attribute.
+	 * @param name the name of this attribute.
+	 * @param numBins number of bins for this attribute.
+	 * @param index the index of this attribute.
 	 */
 	public BinnedAttribute(String name, int numBins, int index) {
 		this.name = name;
@@ -48,10 +43,8 @@ public class BinnedAttribute extends Attribute {
 	/**
 	 * Constructor.
 	 * 
-	 * @param name
-	 *            the name of this attribute.
-	 * @param bins
-	 *            bins for this attribute.
+	 * @param name the name of this attribute.
+	 * @param bins bins for this attribute.
 	 */
 	public BinnedAttribute(String name, Bins bins) {
 		this(name, bins, -1);
@@ -60,12 +53,9 @@ public class BinnedAttribute extends Attribute {
 	/**
 	 * Constructor.
 	 * 
-	 * @param name
-	 *            the name of this attribute.
-	 * @param bins
-	 *            bins for this attribute.
-	 * @param index
-	 *            the index of this attribute.
+	 * @param name the name of this attribute.
+	 * @param bins bins for this attribute.
+	 * @param index the index of this attribute.
 	 */
 	public BinnedAttribute(String name, Bins bins, int index) {
 		this(name, bins.size());
@@ -75,8 +65,7 @@ public class BinnedAttribute extends Attribute {
 
 	@Override
 	public BinnedAttribute copy() {
-		BinnedAttribute copy = (bins == null ? new BinnedAttribute(name,
-				numBins) : new BinnedAttribute(name, bins));
+		BinnedAttribute copy = (bins == null ? new BinnedAttribute(name, numBins) : new BinnedAttribute(name, bins));
 		copy.index = index;
 		return copy;
 	}
@@ -103,8 +92,7 @@ public class BinnedAttribute extends Attribute {
 		if (bins == null) {
 			return name + ": binned (" + numBins + ")";
 		} else {
-			return name + ": binned (" + bins.size() + ";"
-					+ Arrays.toString(bins.boundaries) + ";"
+			return name + ": binned (" + bins.size() + ";" + Arrays.toString(bins.boundaries) + ";"
 					+ Arrays.toString(bins.medians) + ")";
 		}
 	}
@@ -112,8 +100,7 @@ public class BinnedAttribute extends Attribute {
 	/**
 	 * Parses a binned attribute object from a string.
 	 * 
-	 * @param str
-	 *            the string.
+	 * @param str the string.
 	 * @return a parsed binned attribute.
 	 */
 	public static BinnedAttribute parse(String str) {

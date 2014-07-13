@@ -28,21 +28,17 @@ public class LinearFunction implements Regressor, UnivariateFunction {
 	/**
 	 * Constructs a linear function with a provided slope value.
 	 * 
-	 * @param beta
-	 *            the slope.
+	 * @param beta the slope.
 	 */
 	public LinearFunction(double beta) {
 		this(-1, beta);
 	}
 
 	/**
-	 * Constructs a linear function with a provided slope value and attribute
-	 * index.
+	 * Constructs a linear function with a provided slope value and attribute index.
 	 * 
-	 * @param attIndex
-	 *            the attribute index.
-	 * @param beta
-	 *            the slope.
+	 * @param attIndex the attribute index.
+	 * @param beta the slope.
 	 */
 	public LinearFunction(int attIndex, double beta) {
 		this.attIndex = attIndex;

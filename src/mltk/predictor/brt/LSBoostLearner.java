@@ -54,8 +54,7 @@ public class LSBoostLearner extends Learner {
 	/**
 	 * Sets whether we output something during the training.
 	 * 
-	 * @param verbose
-	 *            the switch if we output things during training.
+	 * @param verbose the switch if we output things during training.
 	 */
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
@@ -73,8 +72,7 @@ public class LSBoostLearner extends Learner {
 	/**
 	 * Sets the maximum number of iterations.
 	 * 
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
+	 * @param maxNumIters the maximum number of iterations.
 	 */
 	public void setMaxNumIters(int maxNumIters) {
 		this.maxNumIters = maxNumIters;
@@ -92,8 +90,7 @@ public class LSBoostLearner extends Learner {
 	/**
 	 * Sets the learning rate.
 	 * 
-	 * @param learningRate
-	 *            the learning rate.
+	 * @param learningRate the learning rate.
 	 */
 	public void setLearningRate(double learningRate) {
 		this.learningRate = learningRate;
@@ -111,8 +108,7 @@ public class LSBoostLearner extends Learner {
 	/**
 	 * Sets the maximum number of leaves.
 	 * 
-	 * @param maxNumLeaves
-	 *            the maximum number of leaves.
+	 * @param maxNumLeaves the maximum number of leaves.
 	 */
 	public void setMaxNumLeaves(int maxNumLeaves) {
 		this.maxNumLeaves = maxNumLeaves;
@@ -121,16 +117,12 @@ public class LSBoostLearner extends Learner {
 	/**
 	 * Builds a regressor.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param maxNumLeaves
-	 *            the maximum number of leaves.
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param maxNumLeaves the maximum number of leaves.
 	 * @return a regressor.
 	 */
-	public BRT buildRegressor(Instances trainSet, int maxNumIters,
-			int maxNumLeaves) {
+	public BRT buildRegressor(Instances trainSet, int maxNumIters, int maxNumLeaves) {
 		BRT brt = new BRT(1);
 
 		List<Attribute> attributes = trainSet.getAttributes();
@@ -240,8 +232,7 @@ public class LSBoostLearner extends Learner {
 	 * 
 	 * </p>
 	 * 
-	 * @param args
-	 *            the command line arguments.
+	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {

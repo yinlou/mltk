@@ -6,8 +6,7 @@ package mltk.core;
  * @author Yin Lou
  * 
  */
-public abstract class Attribute implements Comparable<Attribute>,
-		Copyable<Attribute> {
+public abstract class Attribute implements Comparable<Attribute>, Copyable<Attribute> {
 
 	public enum Type {
 		/**
@@ -51,8 +50,7 @@ public abstract class Attribute implements Comparable<Attribute>,
 	/**
 	 * Sets the index of this attribute.
 	 * 
-	 * @param index
-	 *            the new index.
+	 * @param index the new index.
 	 */
 	public final void setIndex(int index) {
 		this.index = index;

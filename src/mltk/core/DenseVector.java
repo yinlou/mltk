@@ -15,8 +15,7 @@ public class DenseVector implements Vector {
 	/**
 	 * Constructs a dense vector from a double array.
 	 * 
-	 * @param values
-	 *            the double array.
+	 * @param values the double array.
 	 */
 	public DenseVector(double[] values) {
 		this.values = values;

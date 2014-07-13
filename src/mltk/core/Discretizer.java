@@ -31,17 +31,13 @@ public class Discretizer {
 	/**
 	 * Discretizes an attribute using bins.
 	 * 
-	 * @param instances
-	 *            the dataset to discretize.
-	 * @param attIndex
-	 *            the attribute index.
-	 * @param bins
-	 *            the bins.
+	 * @param instances the dataset to discretize.
+	 * @param attIndex the attribute index.
+	 * @param bins the bins.
 	 */
 	public static void discretize(Instances instances, int attIndex, Bins bins) {
 		Attribute attribute = instances.getAttributes().get(attIndex);
-		BinnedAttribute binnedAttribute = new BinnedAttribute(
-				attribute.getName(), bins);
+		BinnedAttribute binnedAttribute = new BinnedAttribute(attribute.getName(), bins);
 		binnedAttribute.setIndex(attribute.getIndex());
 		instances.getAttributes().set(attIndex, binnedAttribute);
 		for (Instance instance : instances) {
@@ -53,15 +49,11 @@ public class Discretizer {
 	/**
 	 * Discretized an attribute with specified number of bins.
 	 * 
-	 * @param instances
-	 *            the dataset to discretize.
-	 * @param attIndex
-	 *            the attribute index.
-	 * @param maxNumBins
-	 *            the number of bins.
+	 * @param instances the dataset to discretize.
+	 * @param attIndex the attribute index.
+	 * @param maxNumBins the number of bins.
 	 */
-	public static void discretize(Instances instances, int attIndex,
-			int maxNumBins) {
+	public static void discretize(Instances instances, int attIndex, int maxNumBins) {
 		Bins bins = computeBins(instances, attIndex, maxNumBins);
 		discretize(instances, attIndex, bins);
 	}
@@ -69,20 +61,15 @@ public class Discretizer {
 	/**
 	 * Compute bins for a specified attribute.
 	 * 
-	 * @param instances
-	 *            the dataset to discretize.
-	 * @param attIndex
-	 *            the attribute index.
-	 * @param maxNumBins
-	 *            the number of bins.
+	 * @param instances the dataset to discretize.
+	 * @param attIndex the attribute index.
+	 * @param maxNumBins the number of bins.
 	 */
-	public static Bins computeBins(Instances instances, int attIndex,
-			int maxNumBins) {
+	public static Bins computeBins(Instances instances, int attIndex, int maxNumBins) {
 		Attribute attribute = instances.getAttributes().get(attIndex);
 		List<Element<Double>> list = new ArrayList<>();
 		for (Instance instance : instances) {
-			list.add(new Element<Double>(instance.getWeight(), instance
-					.getValue(attribute)));
+			list.add(new Element<Double>(instance.getWeight(), instance.getValue(attribute)));
 		}
 		Collections.sort(list);
 		List<DoublePair> stats = new ArrayList<>();
@@ -129,8 +116,7 @@ public class Discretizer {
 							weight = stats.get(i).v2;
 						}
 					}
-					binSize = (totalWeight + weight)
-							/ (maxNumBins - boundaryList.size());
+					binSize = (totalWeight + weight) / (maxNumBins - boundaryList.size());
 				} else if (i == stats.size() - 1) {
 					boundaryList.add(stats.get(i).v1);
 					medianList.add(getMedian(stats, start, weight / 2));
@@ -150,10 +136,8 @@ public class Discretizer {
 	/**
 	 * Compute bins for a list of values.
 	 * 
-	 * @param x
-	 *            the vector of input data.
-	 * @param maxNumBins
-	 *            the number of bins.
+	 * @param x the vector of input data.
+	 * @param maxNumBins the number of bins.
 	 */
 	public static Bins computeBins(double[] x, int maxNumBins) {
 		List<Element<Double>> list = new ArrayList<>();
@@ -205,8 +189,7 @@ public class Discretizer {
 							weight = stats.get(i).v2;
 						}
 					}
-					binSize = (totalWeight + weight)
-							/ (maxNumBins - boundaryList.size());
+					binSize = (totalWeight + weight) / (maxNumBins - boundaryList.size());
 				} else if (i == stats.size() - 1) {
 					boundaryList.add(stats.get(i).v1);
 					medianList.add(getMedian(stats, start, weight / 2));
@@ -226,10 +209,8 @@ public class Discretizer {
 	/**
 	 * Compute bins for a list of values.
 	 * 
-	 * @param list
-	 *            the histogram.
-	 * @param maxNumBins
-	 *            the number of bins.
+	 * @param list the histogram.
+	 * @param maxNumBins the number of bins.
 	 */
 	public static Bins computeBins(List<Element<Double>> list, int maxNumBins) {
 		Collections.sort(list);
@@ -277,8 +258,7 @@ public class Discretizer {
 							weight = stats.get(i).v2;
 						}
 					}
-					binSize = (totalWeight + weight)
-							/ (maxNumBins - boundaryList.size());
+					binSize = (totalWeight + weight) / (maxNumBins - boundaryList.size());
 				} else if (i == stats.size() - 1) {
 					boundaryList.add(stats.get(i).v1);
 					medianList.add(getMedian(stats, start, weight / 2));
@@ -368,8 +348,7 @@ public class Discretizer {
 	 * 
 	 * </p>
 	 * 
-	 * @param args
-	 *            the command line arguments.
+	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
@@ -386,8 +365,7 @@ public class Discretizer {
 		}
 		List<Attribute> attributes = null;
 		if (app.trainPath != null) {
-			Instances trainSet = InstancesReader.read(app.attPath,
-					app.trainPath);
+			Instances trainSet = InstancesReader.read(app.attPath, app.trainPath);
 			attributes = trainSet.getAttributes();
 			for (int i = 0; i < attributes.size(); i++) {
 				Attribute attribute = attributes.get(i);
@@ -408,8 +386,7 @@ public class Discretizer {
 		for (int i = 0; i < attrs.size(); i++) {
 			Attribute attr = attrs.get(i);
 			if (attr.getType() == Type.NUMERIC) {
-				BinnedAttribute binnedAttr = (BinnedAttribute) attributes
-						.get(i);
+				BinnedAttribute binnedAttr = (BinnedAttribute) attributes.get(i);
 				// Only discretize numeric attributes
 				Discretizer.discretize(instances, i, binnedAttr.getBins());
 			}

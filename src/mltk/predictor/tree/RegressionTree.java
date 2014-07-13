@@ -29,8 +29,7 @@ public class RegressionTree implements Regressor {
 	/**
 	 * Constructs a regression tree with specified root.
 	 * 
-	 * @param root
-	 *            the root.
+	 * @param root the root.
 	 */
 	public RegressionTree(RegressionTreeNode root) {
 		this.root = root;
@@ -48,8 +47,7 @@ public class RegressionTree implements Regressor {
 	/**
 	 * Sets the root for this regression tree.
 	 * 
-	 * @param root
-	 *            the new root.
+	 * @param root the new root.
 	 */
 	public void setRoot(RegressionTreeNode root) {
 		this.root = root;
@@ -58,8 +56,7 @@ public class RegressionTree implements Regressor {
 	/**
 	 * Returns the leaf node.
 	 * 
-	 * @param instance
-	 *            the data point.
+	 * @param instance the data point.
 	 * @return the leaf node.
 	 */
 	public RegressionTreeLeaf getLeafNode(Instance instance) {
@@ -78,8 +75,7 @@ public class RegressionTree implements Regressor {
 	/**
 	 * Multiplies this regression tree with a constant.
 	 * 
-	 * @param c
-	 *            the constant.
+	 * @param c the constant.
 	 */
 	public void multiply(double c) {
 		multiply(root, c);
@@ -88,10 +84,8 @@ public class RegressionTree implements Regressor {
 	/**
 	 * Multiplies this subtree with a constant.
 	 * 
-	 * @param node
-	 *            the root of the subtree.
-	 * @param c
-	 *            the constant.
+	 * @param node the root of the subtree.
+	 * @param c the constant.
 	 */
 	protected void multiply(RegressionTreeNode node, double c) {
 		if (node.isLeaf()) {

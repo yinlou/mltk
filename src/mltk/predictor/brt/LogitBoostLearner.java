@@ -58,8 +58,7 @@ public class LogitBoostLearner extends Learner {
 	/**
 	 * Sets whether we output something during the training.
 	 * 
-	 * @param verbose
-	 *            the switch if we output things during training.
+	 * @param verbose the switch if we output things during training.
 	 */
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
@@ -77,8 +76,7 @@ public class LogitBoostLearner extends Learner {
 	/**
 	 * Sets the maximum number of iterations.
 	 * 
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
+	 * @param maxNumIters the maximum number of iterations.
 	 */
 	public void setMaxNumIters(int maxNumIters) {
 		this.maxNumIters = maxNumIters;
@@ -96,8 +94,7 @@ public class LogitBoostLearner extends Learner {
 	/**
 	 * Sets the learning rate.
 	 * 
-	 * @param learningRate
-	 *            the learning rate.
+	 * @param learningRate the learning rate.
 	 */
 	public void setLearningRate(double learningRate) {
 		this.learningRate = learningRate;
@@ -115,8 +112,7 @@ public class LogitBoostLearner extends Learner {
 	/**
 	 * Sets the maximum number of leaves.
 	 * 
-	 * @param maxNumLeaves
-	 *            the maximum number of leaves.
+	 * @param maxNumLeaves the maximum number of leaves.
 	 */
 	public void setMaxNumLeaves(int maxNumLeaves) {
 		this.maxNumLeaves = maxNumLeaves;
@@ -125,20 +121,15 @@ public class LogitBoostLearner extends Learner {
 	/**
 	 * Builds a classifier.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param maxNumLeaves
-	 *            the maximum number of leaves.
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param maxNumLeaves the maximum number of leaves.
 	 * @return a classifier.
 	 */
-	public BRT buildClassifier(Instances trainSet, int maxNumIters,
-			int maxNumLeaves) {
+	public BRT buildClassifier(Instances trainSet, int maxNumIters, int maxNumLeaves) {
 		Attribute classAttribute = trainSet.getTargetAttribute();
 		if (classAttribute.getType() != Attribute.Type.NOMINAL) {
-			throw new IllegalArgumentException(
-					"Class attribute must be nominal.");
+			throw new IllegalArgumentException("Class attribute must be nominal.");
 		}
 		NominalAttribute clazz = (NominalAttribute) classAttribute;
 		final int numClasses = clazz.getStates().length;
@@ -305,8 +296,7 @@ public class LogitBoostLearner extends Learner {
 	 * 
 	 * </p>
 	 * 
-	 * @param args
-	 *            the command line arguments.
+	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {

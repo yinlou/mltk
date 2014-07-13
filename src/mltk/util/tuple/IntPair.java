@@ -14,10 +14,8 @@ public class IntPair {
 	/**
 	 * Constructor.
 	 * 
-	 * @param v1
-	 *            the 1st <code>int</code>.
-	 * @param v2
-	 *            the 2nd <code>int</code>.
+	 * @param v1 the 1st <code>int</code>.
+	 * @param v2 the 2nd <code>int</code>.
 	 */
 	public IntPair(int v1, int v2) {
 		this.v1 = v1;

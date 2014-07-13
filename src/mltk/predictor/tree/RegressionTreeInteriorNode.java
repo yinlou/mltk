@@ -28,10 +28,8 @@ public class RegressionTreeInteriorNode extends RegressionTreeNode {
 	/**
 	 * Constructs an interior node with attribute index and split point.
 	 * 
-	 * @param attIndex
-	 *            the attribute index.
-	 * @param splitPoint
-	 *            the split point.
+	 * @param attIndex the attribute index.
+	 * @param splitPoint the split point.
 	 */
 	public RegressionTreeInteriorNode(int attIndex, double splitPoint) {
 		this.attIndex = attIndex;
@@ -82,8 +80,7 @@ public class RegressionTreeInteriorNode extends RegressionTreeNode {
 	/**
 	 * Returns <code>true</code> if going to left child.
 	 * 
-	 * @param instance
-	 *            the instance.
+	 * @param instance the instance.
 	 * @return <code>true</code> if going to left child.
 	 */
 	public boolean goLeft(Instance instance) {
@@ -121,8 +118,7 @@ public class RegressionTreeInteriorNode extends RegressionTreeNode {
 
 	@Override
 	public RegressionTreeNode copy() {
-		RegressionTreeInteriorNode copy = new RegressionTreeInteriorNode(
-				attIndex, splitPoint);
+		RegressionTreeInteriorNode copy = new RegressionTreeInteriorNode(attIndex, splitPoint);
 		copy.left = this.left.copy();
 		copy.right = this.right.copy();
 		return copy;

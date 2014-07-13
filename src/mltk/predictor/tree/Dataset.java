@@ -3,12 +3,14 @@ package mltk.predictor.tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import mltk.core.Attribute;
-import mltk.core.Attribute.Type;
 import mltk.core.Instance;
 import mltk.core.Instances;
+import mltk.core.SparseVector;
 import mltk.util.tuple.IntDoublePair;
 import mltk.util.tuple.IntDoublePairComparator;
 
@@ -19,28 +21,42 @@ class Dataset {
 	List<List<IntDoublePair>> sortedLists;
 
 	Dataset(Instances instances) {
-		this.instances = new Instances(instances.getAttributes(),
-				instances.getTargetAttribute());
+		this.instances = new Instances(instances.getAttributes(), instances.getTargetAttribute());
 		sortedLists = new ArrayList<>(instances.dimension());
 	}
 
 	static Dataset create(Instances instances) {
 		Dataset dataset = new Dataset(instances);
 		List<Attribute> attributes = instances.getAttributes();
-		for (int i = 0; i < attributes.size(); i++) {
-			Attribute attribute = attributes.get(i);
-			int capacity = attribute.getType() == Type.NUMERIC ? instances
-					.size() : 0;
-			dataset.sortedLists.add(new ArrayList<IntDoublePair>(capacity));
+		// Feature selection may be applied
+		Map<Integer, Integer> attMap = new HashMap<>();
+		for (int j = 0; j < attributes.size(); j++) {
+			Attribute attribute = attributes.get(j);
+			attMap.put(attribute.getIndex(), j);
+		}
+		for (int j = 0; j < instances.dimension(); j++) {
+			dataset.sortedLists.add(new ArrayList<IntDoublePair>());
 		}
 		for (int i = 0; i < instances.size(); i++) {
 			Instance instance = instances.get(i);
 			dataset.instances.add(instance.clone());
-			for (int j = 0; j < attributes.size(); j++) {
-				Attribute attribute = attributes.get(j);
-				if (attribute.getType() == Type.NUMERIC) {
-					dataset.sortedLists.get(j).add(
-							new IntDoublePair(i, instance.getValue(attribute)));
+			if (instance.isSparse()) {
+				SparseVector sv = (SparseVector) instance.getVector();
+				int[] indices = sv.getIndices();
+				double[] values = sv.getValues();
+				for (int k = 0; k < indices.length; k++) {
+					if (attMap.containsKey(indices[k])) {
+						int idx = attMap.get(indices[k]);
+						dataset.sortedLists.get(idx).add(new IntDoublePair(i, values[k]));
+					}
+				}
+			} else {
+				double[] values = instance.getValues();
+				for (int j = 0; j < values.length; j++) {
+					if (attMap.containsKey(j) && values[j] != 0.0) {
+						int idx = attMap.get(j);
+						dataset.sortedLists.get(idx).add(new IntDoublePair(i, values[j]));
+					}
 				}
 			}
 		}
@@ -67,30 +83,19 @@ class Dataset {
 			}
 		}
 
-		List<Attribute> attributes = instances.getAttributes();
 		for (int i = 0; i < sortedLists.size(); i++) {
-			Attribute attribute = attributes.get(i);
-			if (attribute.getType() == Type.NUMERIC) {
-				left.sortedLists.add(new ArrayList<IntDoublePair>(
-						left.instances.size()));
-				right.sortedLists.add(new ArrayList<IntDoublePair>(
-						right.instances.size()));
-			} else {
-				left.sortedLists.add(new ArrayList<IntDoublePair>(0));
-				right.sortedLists.add(new ArrayList<IntDoublePair>(0));
-			}
+			left.sortedLists.add(new ArrayList<IntDoublePair>(left.instances.size()));
+			right.sortedLists.add(new ArrayList<IntDoublePair>(right.instances.size()));
 
 			List<IntDoublePair> sortedList = sortedLists.get(i);
 			for (IntDoublePair pair : sortedList) {
 				int leftIdx = leftHash[pair.v1];
 				int rightIdx = rightHash[pair.v1];
 				if (leftIdx != -1) {
-					left.sortedLists.get(i).add(
-							new IntDoublePair(leftIdx, pair.v2));
+					left.sortedLists.get(i).add(new IntDoublePair(leftIdx, pair.v2));
 				}
 				if (rightIdx != -1) {
-					right.sortedLists.get(i).add(
-							new IntDoublePair(rightIdx, pair.v2));
+					right.sortedLists.get(i).add(new IntDoublePair(rightIdx, pair.v2));
 				}
 			}
 		}

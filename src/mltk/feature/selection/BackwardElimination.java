@@ -23,20 +23,14 @@ public class BackwardElimination {
 	/**
 	 * Selects features using backward elimination.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param validSet
-	 *            the validation set.
-	 * @param learner
-	 *            the learner to use.
-	 * @param numIters
-	 *            the number of iterations to estimate the mean and std for full
-	 *            complexity models.
-	 * @return the list of selected features and <mean, std> pair for full
-	 *         complexity models.
+	 * @param trainSet the training set.
+	 * @param validSet the validation set.
+	 * @param learner the learner to use.
+	 * @param numIters the number of iterations to estimate the mean and std for full complexity models.
+	 * @return the list of selected features and <mean, std> pair for full complexity models.
 	 */
-	public static Pair<List<Attribute>, DoublePair> select(Instances trainSet,
-			Instances validSet, BaggedEnsembleLearner learner, int numIters) {
+	public static Pair<List<Attribute>, DoublePair> select(Instances trainSet, Instances validSet,
+			BaggedEnsembleLearner learner, int numIters) {
 		List<Attribute> attributes = trainSet.getAttributes();
 		List<Attribute> selected = new ArrayList<>(attributes);
 		DoublePair perf = null;
@@ -56,10 +50,8 @@ public class BackwardElimination {
 				trainSet.setAttributes(attList);
 				Regressor regressor = (Regressor) learner.build(trainSet);
 				double rmse = Evaluator.evalRMSE(regressor, validSet);
-				System.out.println("Testing: " + attr.getName() + " RMSE: "
-						+ rmse);
-				if (perf.v1 - perf.v2 * 3 <= rmse
-						&& rmse <= perf.v1 + perf.v2 * 3) {
+				System.out.println("Testing: " + attr.getName() + " RMSE: " + rmse);
+				if (perf.v1 - perf.v2 * 3 <= rmse && rmse <= perf.v1 + perf.v2 * 3) {
 					// Eliminate feature
 					selected.remove(i);
 					changed = true;
@@ -76,8 +68,8 @@ public class BackwardElimination {
 		return new Pair<List<Attribute>, DoublePair>(selected, perf);
 	}
 
-	private static DoublePair evaluateModel(Instances trainSet,
-			Instances validSet, BaggedEnsembleLearner learner, int numIters) {
+	private static DoublePair evaluateModel(Instances trainSet, Instances validSet, BaggedEnsembleLearner learner,
+			int numIters) {
 		// Estimating std of full complexity model
 		double[] rmse = new double[numIters];
 		for (int i = 0; i < rmse.length; i++) {

@@ -16,10 +16,8 @@ public class SparseVector implements Vector {
 	/**
 	 * Constructs a sparse vector from sparse-format arrays.
 	 * 
-	 * @param indices
-	 *            the indices array.
-	 * @param values
-	 *            the values array.
+	 * @param indices the indices array.
+	 * @param values the values array.
 	 */
 	public SparseVector(int[] indices, double[] values) {
 		this.indices = indices;

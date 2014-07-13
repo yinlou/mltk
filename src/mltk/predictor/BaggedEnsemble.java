@@ -23,8 +23,7 @@ public class BaggedEnsemble extends Ensemble {
 	/**
 	 * Constructor.
 	 * 
-	 * @param capacity
-	 *            the capacity of this bagged ensemble.
+	 * @param capacity the capacity of this bagged ensemble.
 	 */
 	public BaggedEnsemble(int capacity) {
 		super(capacity);

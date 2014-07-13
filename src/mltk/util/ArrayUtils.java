@@ -13,8 +13,7 @@ public class ArrayUtils {
 	/**
 	 * Parses a double array from a string (default delimiter: ",").
 	 * 
-	 * @param str
-	 *            the string representation of a double array.
+	 * @param str the string representation of a double array.
 	 * @return a double array.
 	 */
 	public static double[] parseDoubleArray(String str) {
@@ -24,10 +23,8 @@ public class ArrayUtils {
 	/**
 	 * Parses a double array from a string.
 	 * 
-	 * @param str
-	 *            the string representation of a double array.
-	 * @param delimiter
-	 *            the delimiter.
+	 * @param str the string representation of a double array.
+	 * @param delimiter the delimiter.
 	 * @return a double array.
 	 */
 	public static double[] parseDoubleArray(String str, String delimiter) {
@@ -45,8 +42,7 @@ public class ArrayUtils {
 	/**
 	 * Parses an int array from a string (default delimiter: ",").
 	 * 
-	 * @param str
-	 *            the string representation of an int array.
+	 * @param str the string representation of an int array.
 	 * @return an int array.
 	 */
 	public static int[] parseIntArray(String str) {
@@ -56,10 +52,8 @@ public class ArrayUtils {
 	/**
 	 * Parses an int array from a string.
 	 * 
-	 * @param str
-	 *            the string representation of an int array.
-	 * @param delimiter
-	 *            the delimiter.
+	 * @param str the string representation of an int array.
+	 * @param delimiter the delimiter.
 	 * @return an int array.
 	 */
 	public static int[] parseIntArray(String str, String delimiter) {
@@ -75,19 +69,13 @@ public class ArrayUtils {
 	}
 
 	/**
-	 * Returns <code>true</code> if the specified range of an array is constant
-	 * c.
+	 * Returns <code>true</code> if the specified range of an array is constant c.
 	 * 
-	 * @param a
-	 *            the array.
-	 * @param begin
-	 *            the index of first element (inclusive).
-	 * @param end
-	 *            the index of last element (exclusive).
-	 * @param c
-	 *            the constant to test.
-	 * @return <code>true</code> if the specified range of an array is constant
-	 *         c.
+	 * @param a the array.
+	 * @param begin the index of first element (inclusive).
+	 * @param end the index of last element (exclusive).
+	 * @param c the constant to test.
+	 * @return <code>true</code> if the specified range of an array is constant c.
 	 */
 	public static boolean isConstant(double[] a, int begin, int end, double c) {
 		for (int i = begin; i < end; i++) {
@@ -99,19 +87,13 @@ public class ArrayUtils {
 	}
 
 	/**
-	 * Returns <code>true</code> if the specified range of an array is constant
-	 * c.
+	 * Returns <code>true</code> if the specified range of an array is constant c.
 	 * 
-	 * @param a
-	 *            the array.
-	 * @param begin
-	 *            the index of first element (inclusive).
-	 * @param end
-	 *            the index of last element (exclusive).
-	 * @param c
-	 *            the constant to test.
-	 * @return <code>true</code> if the specified range of an array is constant
-	 *         c.
+	 * @param a the array.
+	 * @param begin the index of first element (inclusive).
+	 * @param end the index of last element (exclusive).
+	 * @param c the constant to test.
+	 * @return <code>true</code> if the specified range of an array is constant c.
 	 */
 	public static boolean isConstant(int[] a, int begin, int end, int c) {
 		for (int i = begin; i < end; i++) {
@@ -123,19 +105,13 @@ public class ArrayUtils {
 	}
 
 	/**
-	 * Returns <code>true</code> if the specified range of an array is constant
-	 * c.
+	 * Returns <code>true</code> if the specified range of an array is constant c.
 	 * 
-	 * @param a
-	 *            the array.
-	 * @param begin
-	 *            the index of first element (inclusive).
-	 * @param end
-	 *            the index of last element (exclusive).
-	 * @param c
-	 *            the constant to test.
-	 * @return <code>true</code> if the specified range of an array is constant
-	 *         c.
+	 * @param a the array.
+	 * @param begin the index of first element (inclusive).
+	 * @param end the index of last element (exclusive).
+	 * @param c the constant to test.
+	 * @return <code>true</code> if the specified range of an array is constant c.
 	 */
 	public static boolean isConstant(byte[] a, int begin, int end, byte c) {
 		for (int i = begin; i < end; i++) {
@@ -149,8 +125,7 @@ public class ArrayUtils {
 	/**
 	 * Returns the median of an array.
 	 * 
-	 * @param a
-	 *            the array.
+	 * @param a the array.
 	 * @return the median of an array.
 	 */
 	public static double getMedian(double[] a) {

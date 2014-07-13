@@ -28,9 +28,8 @@ import mltk.util.tuple.IntPair;
  * 
  * <p>
  * Reference:<br>
- * Y. Lou, R. Caruana, J. Gehrke, and G. Hooker. Accurate intelligible models
- * with pairwise interactions. In <i>Proceedings of the 19th ACM SIGKDD
- * International Conference on Knowledge Discovery and Data Mining (KDD)</i>,
+ * Y. Lou, R. Caruana, J. Gehrke, and G. Hooker. Accurate intelligible models with pairwise interactions. In
+ * <i>Proceedings of the 19th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD)</i>,
  * Chicago, IL, USA, 2013.
  * </p>
  * 
@@ -40,6 +39,7 @@ import mltk.util.tuple.IntPair;
 public class FAST {
 
 	static class FASTThread extends Thread {
+
 		List<Element<IntPair>> pairs;
 		Instances instances;
 
@@ -58,6 +58,7 @@ public class FAST {
 	}
 
 	static class Table {
+
 		double[][][] resp;
 		double[][][] count;
 
@@ -104,8 +105,7 @@ public class FAST {
 	 * 
 	 * </p>
 	 * 
-	 * @param args
-	 *            the command line arguments
+	 * @param args the command line arguments
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
@@ -118,12 +118,10 @@ public class FAST {
 			System.exit(1);
 		}
 
-		Instances instances = InstancesReader
-				.read(opts.attPath, opts.trainPath);
+		Instances instances = InstancesReader.read(opts.attPath, opts.trainPath);
 
 		System.out.println("Reading residuals...");
-		BufferedReader br = new BufferedReader(
-				new FileReader(opts.residualPath), 65535);
+		BufferedReader br = new BufferedReader(new FileReader(opts.residualPath), 65535);
 		for (int i = 0; i < instances.size(); i++) {
 			String line = br.readLine();
 			double residual = Double.parseDouble(line);
@@ -174,8 +172,7 @@ public class FAST {
 		PrintWriter out = new PrintWriter(opts.outputPath);
 		for (int i = 0; i < pairs.size(); i++) {
 			Element<IntPair> pair = pairs.get(i);
-			out.println(pair.element.v1 + "\t" + pair.element.v2 + "\t"
-					+ pair.weight);
+			out.println(pair.element.v1 + "\t" + pair.element.v2 + "\t" + pair.weight);
 		}
 		out.flush();
 		out.close();
@@ -185,13 +182,10 @@ public class FAST {
 	/**
 	 * Computes the weights of pairwise interactions.
 	 * 
-	 * @param instances
-	 *            the training set.
-	 * @param pairs
-	 *            the list of pairs to compute.
+	 * @param instances the training set.
+	 * @param pairs the list of pairs to compute.
 	 */
-	public static void computeWeights(Instances instances,
-			List<Element<IntPair>> pairs) {
+	public static void computeWeights(Instances instances, List<Element<IntPair>> pairs) {
 		List<Attribute> attributes = instances.getAttributes();
 		boolean[] used = new boolean[attributes.size()];
 		for (Element<IntPair> pair : pairs) {
@@ -203,17 +197,15 @@ public class FAST {
 		for (int i = 0; i < cHist.length; i++) {
 			if (used[i]) {
 				switch (attributes.get(i).getType()) {
-				case BINNED:
-					BinnedAttribute binnedAtt = (BinnedAttribute) attributes
-							.get(i);
-					cHist[i] = new CHistogram(binnedAtt.getNumBins());
-					break;
-				case NOMINAL:
-					NominalAttribute nominalAtt = (NominalAttribute) attributes
-							.get(i);
-					cHist[i] = new CHistogram(nominalAtt.getCardinality());
-				default:
-					break;
+					case BINNED:
+						BinnedAttribute binnedAtt = (BinnedAttribute) attributes.get(i);
+						cHist[i] = new CHistogram(binnedAtt.getNumBins());
+						break;
+					case NOMINAL:
+						NominalAttribute nominalAtt = (NominalAttribute) attributes.get(i);
+						cHist[i] = new CHistogram(nominalAtt.getCardinality());
+					default:
+						break;
 				}
 			}
 		}
@@ -229,8 +221,7 @@ public class FAST {
 		}
 	}
 
-	protected static DoublePair computeCHistograms(Instances instances,
-			boolean[] used, CHistogram[] cHist) {
+	protected static DoublePair computeCHistograms(Instances instances, boolean[] used, CHistogram[] cHist) {
 		double ySq = 0;
 		double totalWeight = 0;
 		// compute histogram
@@ -258,19 +249,16 @@ public class FAST {
 		return new DoublePair(ySq, totalWeight);
 	}
 
-	protected static void computeHistogram2D(Instances instances, int f1,
-			int f2, Histogram2D hist2d) {
+	protected static void computeHistogram2D(Instances instances, int f1, int f2, Histogram2D hist2d) {
 		for (Instance instance : instances) {
 			int idx1 = (int) instance.getValue(f1);
 			int idx2 = (int) instance.getValue(f2);
-			hist2d.resp[idx1][idx2] += instance.getTarget()
-					* instance.getWeight();
+			hist2d.resp[idx1][idx2] += instance.getTarget() * instance.getWeight();
 			hist2d.count[idx1][idx2] += instance.getWeight();
 		}
 	}
 
-	protected static void computeTable(Histogram2D hist2d, CHistogram cHist1,
-			CHistogram cHist2, Table table) {
+	protected static void computeTable(Histogram2D hist2d, CHistogram cHist1, CHistogram cHist2, Table table) {
 		double sum = 0;
 		double count = 0;
 		for (int j = 0; j < hist2d.resp[0].length; j++) {
@@ -292,8 +280,7 @@ public class FAST {
 		}
 	}
 
-	protected static void fillTable(Table table, int i, int j,
-			CHistogram cHist1, CHistogram cHist2) {
+	protected static void fillTable(Table table, int i, int j, CHistogram cHist1, CHistogram cHist2) {
 		double[] count = table.count[i][j];
 		double[] resp = table.resp[i][j];
 		resp[1] = cHist1.sum[i] - resp[0];
@@ -305,8 +292,7 @@ public class FAST {
 		count[3] = cHist1.count[cHist1.size() - 1] - cHist1.count[i] - count[2];
 	}
 
-	protected static void computeWeight(Element<IntPair> pair,
-			CHistogram[] cHist, Histogram2D hist2d, double ySq,
+	protected static void computeWeight(Element<IntPair> pair, CHistogram[] cHist, Histogram2D hist2d, double ySq,
 			double totalWeight) {
 		final int f1 = pair.element.v1;
 		final int f2 = pair.element.v2;
@@ -328,8 +314,7 @@ public class FAST {
 		pair.weight = bestRSS;
 	}
 
-	protected static void getPredictor(Table table, int v1, int v2,
-			double[] pred) {
+	protected static void getPredictor(Table table, int v1, int v2, double[] pred) {
 		double[] count = table.count[v1][v2];
 		double[] resp = table.resp[v1][v2];
 		for (int i = 0; i < pred.length; i++) {
@@ -337,8 +322,7 @@ public class FAST {
 		}
 	}
 
-	protected static double getRSS(Table table, int v1, int v2, double ySq,
-			double[] pred) {
+	protected static double getRSS(Table table, int v1, int v2, double ySq, double[] pred) {
 		double[] count = table.count[v1][v2];
 		double[] resp = table.resp[v1][v2];
 		double rss = ySq;

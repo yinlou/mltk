@@ -17,15 +17,12 @@ import mltk.util.Random;
 public class InstancesSplitter {
 
 	/**
-	 * Splits the dataset according to the ratio. This method returns two
-	 * instances objects, the size of the first one is 100% * ratio of the
-	 * orignal dataset while the size of the second one is 100% * (1 - ratio) of
-	 * the orignal dataset.
+	 * Splits the dataset according to the ratio. This method returns two instances objects, the size of the first one
+	 * is 100% * ratio of the orignal dataset while the size of the second one is 100% * (1 - ratio) of the orignal
+	 * dataset.
 	 * 
-	 * @param instances
-	 *            the dataset.
-	 * @param ratio
-	 *            the ratio.
+	 * @param instances the dataset.
+	 * @param ratio the ratio.
 	 * @return two smaller datasets.
 	 */
 	public static Instances[] split(Instances instances, double ratio) {
@@ -46,10 +43,8 @@ public class InstancesSplitter {
 	/**
 	 * Splits the dataset into k equi-sized datasets.
 	 * 
-	 * @param instances
-	 *            the dataset.
-	 * @param k
-	 *            the number of datasets to return.
+	 * @param instances the dataset.
+	 * @param k the number of datasets to return.
 	 * @return k equi-sized datasets.
 	 */
 	public static Instances[] split(Instances instances, int k) {
@@ -66,23 +61,19 @@ public class InstancesSplitter {
 	}
 
 	/**
-	 * Creates cross validation folds from a dataset. For each cross validation
-	 * fold contains a training set and a test set.
+	 * Creates cross validation folds from a dataset. For each cross validation fold contains a training set and a test
+	 * set.
 	 * 
-	 * @param instances
-	 *            the dataset.
-	 * @param k
-	 *            the number of cross validation folds.
+	 * @param instances the dataset.
+	 * @param k the number of cross validation folds.
 	 * @return the cross validation datasets.
 	 */
-	public static Instances[][] createCrossValidationFolds(Instances instances,
-			int k) {
+	public static Instances[][] createCrossValidationFolds(Instances instances, int k) {
 		Instances[] datasets = split(instances, k);
 		Instances[][] folds = new Instances[k][2];
 		for (int i = 0; i < k; i++) {
 			folds[i][1] = datasets[i];
-			folds[i][0] = new Instances(instances.attributes,
-					instances.targetAtt);
+			folds[i][0] = new Instances(instances.attributes, instances.targetAtt);
 			for (int j = 0; j < k; j++) {
 				if (i == j) {
 					continue;
@@ -94,26 +85,20 @@ public class InstancesSplitter {
 	}
 
 	/**
-	 * Creates cross validation folds from a dataset. For each cross validation
-	 * fold contains a training set, a validation set and a test set.
+	 * Creates cross validation folds from a dataset. For each cross validation fold contains a training set, a
+	 * validation set and a test set.
 	 * 
-	 * @param instances
-	 *            the dataset.
-	 * @param k
-	 *            the number of cross validation folds.
-	 * @param ratio
-	 *            the ratio that controls how many points in the training set
-	 *            for each fold.
+	 * @param instances the dataset.
+	 * @param k the number of cross validation folds.
+	 * @param ratio the ratio that controls how many points in the training set for each fold.
 	 * @return the cross validation datasets.
 	 */
-	public static Instances[][] createCrossValidationFolds(Instances instances,
-			int k, double ratio) {
+	public static Instances[][] createCrossValidationFolds(Instances instances, int k, double ratio) {
 		Instances[] datasets = split(instances, k);
 		Instances[][] folds = new Instances[k][3];
 		for (int i = 0; i < k; i++) {
 			folds[i][2] = datasets[i];
-			Instances trainSet = new Instances(instances.attributes,
-					instances.targetAtt);
+			Instances trainSet = new Instances(instances.attributes, instances.targetAtt);
 			for (int j = 0; j < k; j++) {
 				if (i == j) {
 					continue;
@@ -179,8 +164,7 @@ public class InstancesSplitter {
 
 		Random.getInstance().setSeed(opts.seed);
 
-		Instances instances = InstancesReader
-				.read(opts.attPath, opts.inputPath);
+		Instances instances = InstancesReader.read(opts.attPath, opts.inputPath);
 
 		File attFile = new File(opts.attPath);
 		String prefix = attFile.getName().split("\\.")[0];
@@ -191,54 +175,44 @@ public class InstancesSplitter {
 		}
 
 		switch (data[0]) {
-		case "c":
-			int k = Integer.parseInt(data[1]);
-			if (data.length == 2) {
-				Instances[][] folds = InstancesSplitter
-						.createCrossValidationFolds(instances, k);
-				for (int i = 0; i < folds.length; i++) {
-					String path = opts.outputDirPath + File.separator + "cv."
-							+ i;
-					File directory = new File(path);
-					if (!directory.exists()) {
-						directory.mkdir();
+			case "c":
+				int k = Integer.parseInt(data[1]);
+				if (data.length == 2) {
+					Instances[][] folds = InstancesSplitter.createCrossValidationFolds(instances, k);
+					for (int i = 0; i < folds.length; i++) {
+						String path = opts.outputDirPath + File.separator + "cv." + i;
+						File directory = new File(path);
+						if (!directory.exists()) {
+							directory.mkdir();
+						}
+						InstancesWriter.write(folds[i][0], path + File.separator + prefix + ".attr", path
+								+ File.separator + prefix + ".train.all");
+						InstancesWriter.write(folds[i][1], path + File.separator + prefix + ".test");
 					}
-					InstancesWriter.write(folds[i][0], path + File.separator
-							+ prefix + ".attr", path + File.separator + prefix
-							+ ".train.all");
-					InstancesWriter.write(folds[i][1], path + File.separator
-							+ prefix + ".test");
-				}
-			} else {
-				double ratio = Double.parseDouble(data[2]);
-				Instances[][] folds = InstancesSplitter
-						.createCrossValidationFolds(instances, k, ratio);
-				for (int i = 0; i < folds.length; i++) {
-					String path = opts.outputDirPath + File.separator + "cv."
-							+ i;
-					File directory = new File(path);
-					if (!directory.exists()) {
-						directory.mkdir();
+				} else {
+					double ratio = Double.parseDouble(data[2]);
+					Instances[][] folds = InstancesSplitter.createCrossValidationFolds(instances, k, ratio);
+					for (int i = 0; i < folds.length; i++) {
+						String path = opts.outputDirPath + File.separator + "cv." + i;
+						File directory = new File(path);
+						if (!directory.exists()) {
+							directory.mkdir();
+						}
+						InstancesWriter.write(folds[i][0], path + File.separator + prefix + ".attr", path
+								+ File.separator + prefix + ".train.all");
+						InstancesWriter.write(folds[i][1], path + File.separator + prefix + ".test");
 					}
-					InstancesWriter.write(folds[i][0], path + File.separator
-							+ prefix + ".attr", path + File.separator + prefix
-							+ ".train.all");
-					InstancesWriter.write(folds[i][1], path + File.separator
-							+ prefix + ".test");
 				}
-			}
-			break;
-		case "s":
-			double ratio = Double.parseDouble(data[1]);
-			Instances[] datasets = InstancesSplitter.split(instances, ratio);
-			InstancesWriter.write(datasets[0], opts.outputDirPath
-					+ File.separator + prefix + ".attr", opts.outputDirPath
-					+ File.separator + prefix + ".train");
-			InstancesWriter.write(datasets[1], opts.outputDirPath
-					+ File.separator + prefix + ".valid");
-			break;
-		default:
-			break;
+				break;
+			case "s":
+				double ratio = Double.parseDouble(data[1]);
+				Instances[] datasets = InstancesSplitter.split(instances, ratio);
+				InstancesWriter.write(datasets[0], opts.outputDirPath + File.separator + prefix + ".attr",
+						opts.outputDirPath + File.separator + prefix + ".train");
+				InstancesWriter.write(datasets[1], opts.outputDirPath + File.separator + prefix + ".valid");
+				break;
+			default:
+				break;
 		}
 	}
 

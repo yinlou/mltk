@@ -13,8 +13,7 @@ import mltk.core.NumericalAttribute;
 import mltk.util.tuple.Pair;
 
 /**
- * Class for reading attributes. It only reads in a list of attributes from the
- * attribute file.
+ * Class for reading attributes. It only reads in a list of attributes from the attribute file.
  * 
  * @author Yin Lou
  * 
@@ -24,14 +23,11 @@ public class AttributesReader {
 	/**
 	 * Reads attributes and class attribute from attribute file.
 	 * 
-	 * @param attFile
-	 *            the attribute file.
-	 * @return a pair of attributes and class attribute (null if no class
-	 *         attribute).
+	 * @param attFile the attribute file.
+	 * @return a pair of attributes and class attribute (null if no class attribute).
 	 * @throws IOException
 	 */
-	public static Pair<List<Attribute>, Attribute> read(String attFile)
-			throws IOException {
+	public static Pair<List<Attribute>, Attribute> read(String attFile) throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(attFile), 65535);
 		List<Attribute> attributes = new ArrayList<Attribute>();
 		Attribute clsAttr = null;

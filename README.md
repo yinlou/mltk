@@ -72,17 +72,12 @@ MLTK provides two classes to perform reading/writing of datasets: `mltk.core.io.
 ```
 Instances instances = InstancesReader.read(< attr file path >, < dataset file path >)
 ```
-It reads a dense dataset from attribute file and data file.
+It reads a dataset from attribute file and data file. Attribute file can be null. When attribute file is not provided, if the data file follows dense format, no class attribute will be assigned, if the data file follows sparse format, the class attribute will be nominal if all class values are integers, or continuous attribute otherwise.
 
 ```
 Instances instances = InstancesReader.read(< dataset file path >, < class index >)
 ```
-It reads a dense dataset from data file and a specified class index. A negative class index (e.g., -1) means no target is specified. Instances instances = 
-
-```
-InstancesReader.read(< dataset file path >)
-``` 
-It reads a (maybe sparse) dataset from data file
+It reads a dense dataset from data file and a specified class index. A negative class index (e.g., -1) means no target is specified.
 
 ## Building Models
 

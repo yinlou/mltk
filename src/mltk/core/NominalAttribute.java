@@ -13,10 +13,8 @@ public class NominalAttribute extends Attribute {
 	/**
 	 * Constructor.
 	 * 
-	 * @param name
-	 *            the name of this attribute.
-	 * @param states
-	 *            the states for this attribute.
+	 * @param name the name of this attribute.
+	 * @param states the states for this attribute.
 	 */
 	public NominalAttribute(String name, String[] states) {
 		this(name, states, -1);
@@ -25,12 +23,9 @@ public class NominalAttribute extends Attribute {
 	/**
 	 * Constructor.
 	 * 
-	 * @param name
-	 *            the name of this attribute.
-	 * @param states
-	 *            the states for this attribute.
-	 * @param index
-	 *            the index of this attribute.
+	 * @param name the name of this attribute.
+	 * @param states the states for this attribute.
+	 * @param index the index of this attribute.
 	 */
 	public NominalAttribute(String name, String[] states, int index) {
 		this.name = name;
@@ -57,8 +52,7 @@ public class NominalAttribute extends Attribute {
 	/**
 	 * Returns the state given an index.
 	 * 
-	 * @param index
-	 *            the index.
+	 * @param index the index.
 	 * @return the state given an index.
 	 */
 	public String getState(int index) {
@@ -87,8 +81,7 @@ public class NominalAttribute extends Attribute {
 	/**
 	 * Parses a nominal attribute ojbect from a string.
 	 * 
-	 * @param str
-	 *            the string.
+	 * @param str the string.
 	 * @return a parsed nominal attribute.
 	 */
 	public static NominalAttribute parse(String str) {

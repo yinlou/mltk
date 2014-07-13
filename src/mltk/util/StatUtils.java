@@ -11,8 +11,7 @@ public class StatUtils {
 	/**
 	 * Returns the maximum element in an array.
 	 * 
-	 * @param a
-	 *            the array.
+	 * @param a the array.
 	 * @return the maximum element in an array.
 	 */
 	public static double max(double[] a) {
@@ -45,8 +44,7 @@ public class StatUtils {
 	/**
 	 * Returns the minimum element in an array.
 	 * 
-	 * @param a
-	 *            the array.
+	 * @param a the array.
 	 * @return the minimum element in an array.
 	 */
 	public static double min(double[] a) {
@@ -79,8 +77,7 @@ public class StatUtils {
 	/**
 	 * Returns the sum of elements in an array.
 	 * 
-	 * @param a
-	 *            the array.
+	 * @param a the array.
 	 * @return the sum of elements in an array.
 	 */
 	public static double sum(double[] a) {
@@ -94,8 +91,7 @@ public class StatUtils {
 	/**
 	 * Returns the sum of squares.
 	 * 
-	 * @param a
-	 *            the array.
+	 * @param a the array.
 	 * @return the sum of squares.
 	 */
 	public static double sumSq(double[] a) {
@@ -105,12 +101,9 @@ public class StatUtils {
 	/**
 	 * Returns the sum of squares within a specific range.
 	 * 
-	 * @param a
-	 *            the array.
-	 * @param fromIndex
-	 *            the index of the first element (inclusive).
-	 * @param toIndex
-	 *            the index of the last element (exclusive).
+	 * @param a the array.
+	 * @param fromIndex the index of the first element (inclusive).
+	 * @param toIndex the index of the last element (exclusive).
 	 * @return the sum of squares.
 	 */
 	public static double sumSq(double[] a, int fromIndex, int toIndex) {
@@ -124,8 +117,7 @@ public class StatUtils {
 	/**
 	 * Returns the mean.
 	 * 
-	 * @param a
-	 *            the array.
+	 * @param a the array.
 	 * @return the mean.
 	 */
 	public static double mean(double[] a) {
@@ -135,10 +127,8 @@ public class StatUtils {
 	/**
 	 * Returns the mean.
 	 * 
-	 * @param a
-	 *            the array.
-	 * @param n
-	 *            the total number of elements.
+	 * @param a the array.
+	 * @param n the total number of elements.
 	 * @return the mean.
 	 */
 	public static double mean(double[] a, int n) {
@@ -152,8 +142,7 @@ public class StatUtils {
 	/**
 	 * Returns the variance.
 	 * 
-	 * @param a
-	 *            the array.
+	 * @param a the array.
 	 * @return the variance.
 	 */
 	public static double variance(double[] a) {
@@ -163,10 +152,8 @@ public class StatUtils {
 	/**
 	 * Returns the variance.
 	 * 
-	 * @param a
-	 *            the array.
-	 * @param n
-	 *            the total number of elements.
+	 * @param a the array.
+	 * @param n the total number of elements.
 	 * @return the variance.
 	 */
 	public static double variance(double[] a, int n) {
@@ -183,8 +170,7 @@ public class StatUtils {
 	/**
 	 * Returns the standard variance.
 	 * 
-	 * @param a
-	 *            the array.
+	 * @param a the array.
 	 * @return the standard variance.
 	 */
 	public static double std(double[] a) {
@@ -194,10 +180,8 @@ public class StatUtils {
 	/**
 	 * Returns the standard variance.
 	 * 
-	 * @param a
-	 *            the array.
-	 * @param n
-	 *            the total number of elements.
+	 * @param a the array.
+	 * @param n the total number of elements.
 	 * @return the standard variance.
 	 */
 	public static double std(double[] a, int n) {
@@ -207,8 +191,7 @@ public class StatUtils {
 	/**
 	 * Returns the root mean square.
 	 * 
-	 * @param a
-	 *            the array.
+	 * @param a the array.
 	 * @return the root mean square.
 	 */
 	public static double rms(double[] a) {

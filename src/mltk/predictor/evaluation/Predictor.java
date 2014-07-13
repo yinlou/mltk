@@ -27,18 +27,14 @@ public class Predictor {
 	/**
 	 * Makes predictions for a dataset.
 	 * 
-	 * @param regressor
-	 *            the model.
-	 * @param instances
-	 *            the dataset.
-	 * @param path
-	 *            the output path.
-	 * @param residual
-	 *            <code>true</code> if residuals are the output.
+	 * @param regressor the model.
+	 * @param instances the dataset.
+	 * @param path the output path.
+	 * @param residual <code>true</code> if residuals are the output.
 	 * @throws IOException
 	 */
-	public static void predict(Regressor regressor, Instances instances,
-			String path, boolean residual) throws IOException {
+	public static void predict(Regressor regressor, Instances instances, String path, boolean residual)
+			throws IOException {
 		PrintWriter out = new PrintWriter(path);
 		if (residual) {
 			for (Instance instance : instances) {
@@ -58,16 +54,12 @@ public class Predictor {
 	/**
 	 * Makes predictions for a dataset.
 	 * 
-	 * @param classifier
-	 *            the model.
-	 * @param instances
-	 *            the dataset.
-	 * @param path
-	 *            the output path.
+	 * @param classifier the model.
+	 * @param instances the dataset.
+	 * @param path the output path.
 	 * @throws IOException
 	 */
-	public static void predict(Classifier classifier, Instances instances,
-			String path) throws IOException {
+	public static void predict(Classifier classifier, Instances instances, String path) throws IOException {
 		PrintWriter out = new PrintWriter(path);
 		for (Instance instance : instances) {
 			int pred = classifier.classify(instance);
@@ -118,8 +110,7 @@ public class Predictor {
 	 * 
 	 * </p>
 	 * 
-	 * @param args
-	 *            the command line arguments.
+	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
@@ -135,83 +126,80 @@ public class Predictor {
 		}
 
 		Instances instances = InstancesReader.read(opts.attPath, opts.dataPath);
-		mltk.predictor.Predictor predictor = PredictorReader
-				.read(opts.modelPath);
+		mltk.predictor.Predictor predictor = PredictorReader.read(opts.modelPath);
 
 		switch (task) {
-		case REGRESSION:
-			Regressor regressor = (Regressor) predictor;
-			double rmse = Evaluator.evalRMSE(regressor, instances);
-			System.out.println("RMSE on Test: " + rmse);
+			case REGRESSION:
+				Regressor regressor = (Regressor) predictor;
+				double rmse = Evaluator.evalRMSE(regressor, instances);
+				System.out.println("RMSE on Test: " + rmse);
 
-			if (opts.predictionPath != null) {
-				PrintWriter out = new PrintWriter(opts.predictionPath);
-				for (Instance instance : instances) {
-					double pred = regressor.regress(instance);
-					out.println(pred);
-				}
-				out.flush();
-				out.close();
-			}
-
-			if (opts.residualPath != null) {
-				PrintWriter out = new PrintWriter(opts.residualPath);
-				for (Instance instance : instances) {
-					double pred = regressor.regress(instance);
-					out.println(instance.getTarget() - pred);
-				}
-				out.flush();
-				out.close();
-			}
-
-			break;
-		case CLASSIFICATION:
-			Classifier classifier = (Classifier) predictor;
-			double error = Evaluator.evalError(classifier, instances);
-			System.out.println("Error rate on Test: " + (error * 100) + " %");
-
-			if (opts.predictionPath != null) {
-				if (opts.prob) {
-					PrintWriter out = new PrintWriter(opts.predictionPath);
-					ProbabilisticClassifier probClassifier = (ProbabilisticClassifier) predictor;
-					for (Instance instance : instances) {
-						double[] pred = probClassifier
-								.predictProbabilities(instance);
-						out.println(Arrays.toString(pred));
-					}
-					out.flush();
-					out.close();
-				} else {
+				if (opts.predictionPath != null) {
 					PrintWriter out = new PrintWriter(opts.predictionPath);
 					for (Instance instance : instances) {
-						double pred = classifier.classify(instance);
-						out.println((int) pred);
+						double pred = regressor.regress(instance);
+						out.println(pred);
 					}
 					out.flush();
 					out.close();
 				}
-			}
 
-			if (opts.residualPath != null) {
-				if (predictor instanceof Regressor) {
+				if (opts.residualPath != null) {
 					PrintWriter out = new PrintWriter(opts.residualPath);
-					Regressor regressingClassifier = (Regressor) predictor;
 					for (Instance instance : instances) {
-						double pred = regressingClassifier.regress(instance);
-						int cls = (int) instance.getTarget();
-						out.println(OptimUtils.getPseudoResidual(pred, cls));
+						double pred = regressor.regress(instance);
+						out.println(instance.getTarget() - pred);
 					}
 					out.flush();
 					out.close();
-				} else {
-					System.out
-							.println("Warning: Classifier does not support outputing pseudo residual.");
 				}
-			}
 
-			break;
-		default:
-			break;
+				break;
+			case CLASSIFICATION:
+				Classifier classifier = (Classifier) predictor;
+				double error = Evaluator.evalError(classifier, instances);
+				System.out.println("Error rate on Test: " + (error * 100) + " %");
+
+				if (opts.predictionPath != null) {
+					if (opts.prob) {
+						PrintWriter out = new PrintWriter(opts.predictionPath);
+						ProbabilisticClassifier probClassifier = (ProbabilisticClassifier) predictor;
+						for (Instance instance : instances) {
+							double[] pred = probClassifier.predictProbabilities(instance);
+							out.println(Arrays.toString(pred));
+						}
+						out.flush();
+						out.close();
+					} else {
+						PrintWriter out = new PrintWriter(opts.predictionPath);
+						for (Instance instance : instances) {
+							double pred = classifier.classify(instance);
+							out.println((int) pred);
+						}
+						out.flush();
+						out.close();
+					}
+				}
+
+				if (opts.residualPath != null) {
+					if (predictor instanceof Regressor) {
+						PrintWriter out = new PrintWriter(opts.residualPath);
+						Regressor regressingClassifier = (Regressor) predictor;
+						for (Instance instance : instances) {
+							double pred = regressingClassifier.regress(instance);
+							int cls = (int) instance.getTarget();
+							out.println(OptimUtils.getPseudoResidual(pred, cls));
+						}
+						out.flush();
+						out.close();
+					} else {
+						System.out.println("Warning: Classifier does not support outputing pseudo residual.");
+					}
+				}
+
+				break;
+			default:
+				break;
 		}
 	}
 

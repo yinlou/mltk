@@ -39,8 +39,7 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	/**
 	 * Constructs a GLM with the specified dimension.
 	 * 
-	 * @param dimension
-	 *            the dimension.
+	 * @param dimension the dimension.
 	 */
 	public GLM(int dimension) {
 		this(1, dimension);
@@ -49,10 +48,8 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	/**
 	 * Constructs a GLM with the specified dimension.
 	 * 
-	 * @param numClasses
-	 *            the number of classes.
-	 * @param dimension
-	 *            the dimension.
+	 * @param numClasses the number of classes.
+	 * @param dimension the dimension.
 	 */
 	public GLM(int numClasses, int dimension) {
 		w = new double[numClasses][dimension];
@@ -62,15 +59,12 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	/**
 	 * Constructs a GLM with the intercept vector and the coefficient vectors.
 	 * 
-	 * @param intercept
-	 *            the intercept vector.
-	 * @param w
-	 *            the coefficient vectors.
+	 * @param intercept the intercept vector.
+	 * @param w the coefficient vectors.
 	 */
 	public GLM(double[] intercept, double[][] w) {
 		if (intercept.length != w.length) {
-			throw new IllegalArgumentException(
-					"Dimensions of intercept and w must match.");
+			throw new IllegalArgumentException("Dimensions of intercept and w must match.");
 		}
 		this.intercept = intercept;
 		this.w = w;
@@ -88,8 +82,7 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	/**
 	 * Returns the coefficient vectors for class k.
 	 * 
-	 * @param k
-	 *            the index of the class.
+	 * @param k the index of the class.
 	 * @return the coefficient vectors for class k.
 	 */
 	public double[] coefficients(int k) {
@@ -108,8 +101,7 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	/**
 	 * Returns the intercept for class k.
 	 * 
-	 * @param k
-	 *            the index of the class.
+	 * @param k the index of the class.
 	 * @return the intercept for class k.
 	 */
 	public double intercept(int k) {

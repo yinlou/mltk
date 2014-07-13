@@ -26,10 +26,8 @@ public class Evaluator {
 	/**
 	 * Returns the area under ROC curve.
 	 * 
-	 * @param probs
-	 *            probability of positive class
-	 * @param targets
-	 *            0/1 targets
+	 * @param probs probability of positive class
+	 * @param targets 0/1 targets
 	 * @return the area under ROC curve.
 	 */
 	public static double evalAreaUnderROC(double[] probs, double[] targets) {
@@ -103,14 +101,11 @@ public class Evaluator {
 	/**
 	 * Returns the area under ROC curve.
 	 * 
-	 * @param probs
-	 *            probability of positive class
-	 * @param targets
-	 *            0/1 targets
+	 * @param probs probability of positive class
+	 * @param targets 0/1 targets
 	 * @return the area under ROC curve.
 	 */
-	public static double evalAreaUnderROC(List<Double> probs,
-			List<Double> targets) {
+	public static double evalAreaUnderROC(List<Double> probs, List<Double> targets) {
 		DoublePair[] a = new DoublePair[probs.size()];
 		for (int i = 0; i < probs.size(); i++) {
 			a[i] = new DoublePair(probs.get(i), targets.get(i));
@@ -181,14 +176,11 @@ public class Evaluator {
 	/**
 	 * Returns the area under ROC curve.
 	 * 
-	 * @param classifier
-	 *            a classifier that outputs probability.
-	 * @param instances
-	 *            the instances.
+	 * @param classifier a classifier that outputs probability.
+	 * @param instances the instances.
 	 * @return the area under ROC curve.
 	 */
-	public static double evalAreaUnderROC(ProbabilisticClassifier classifier,
-			Instances instances) {
+	public static double evalAreaUnderROC(ProbabilisticClassifier classifier, Instances instances) {
 		double[] probs = new double[instances.size()];
 		double[] targets = new double[instances.size()];
 		for (int i = 0; i < probs.length; i++) {
@@ -202,10 +194,8 @@ public class Evaluator {
 	/**
 	 * Returns the root mean squared error.
 	 * 
-	 * @param preds
-	 *            the predictions.
-	 * @param targets
-	 *            the targets.
+	 * @param preds the predictions.
+	 * @param targets the targets.
 	 * @return the root mean squared error.
 	 */
 	public static double evalRMSE(double[] preds, double[] targets) {
@@ -221,10 +211,8 @@ public class Evaluator {
 	/**
 	 * Returns the root mean squared error.
 	 * 
-	 * @param preds
-	 *            the predictions.
-	 * @param targets
-	 *            the targets.
+	 * @param preds the predictions.
+	 * @param targets the targets.
 	 * @return the root mean squared error.
 	 */
 	public static double evalRMSE(List<Double> preds, List<Double> targets) {
@@ -240,10 +228,8 @@ public class Evaluator {
 	/**
 	 * Returns the root mean squared error.
 	 * 
-	 * @param regressor
-	 *            the regressor.
-	 * @param instances
-	 *            the instances.
+	 * @param regressor the regressor.
+	 * @param instances the instances.
 	 * @return the root mean squared error.
 	 */
 	public static double evalRMSE(Regressor regressor, Instances instances) {
@@ -262,10 +248,8 @@ public class Evaluator {
 	/**
 	 * Returns the classification error.
 	 * 
-	 * @param classifier
-	 *            the classifier.
-	 * @param instances
-	 *            the instances.
+	 * @param classifier the classifier.
+	 * @param instances the instances.
 	 * @return the classification error.
 	 */
 	public static double evalError(Classifier classifier, Instances instances) {
@@ -311,8 +295,7 @@ public class Evaluator {
 	 * 
 	 * </p>
 	 * 
-	 * @param args
-	 *            the command line arguments.
+	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
@@ -326,27 +309,26 @@ public class Evaluator {
 		}
 
 		Instances instances = InstancesReader.read(opts.attPath, opts.dataPath);
-		mltk.predictor.Predictor predictor = PredictorReader
-				.read(opts.modelPath);
+		mltk.predictor.Predictor predictor = PredictorReader.read(opts.modelPath);
 
 		switch (opts.task) {
-		case "a":
-			ProbabilisticClassifier probClassifier = (ProbabilisticClassifier) predictor;
-			double auc = Evaluator.evalAreaUnderROC(probClassifier, instances);
-			System.out.println("AUC: " + auc);
-			break;
-		case "c":
-			Classifier classifier = (Classifier) predictor;
-			double error = Evaluator.evalError(classifier, instances);
-			System.out.println("Error: " + error);
-			break;
-		case "r":
-			Regressor regressor = (Regressor) predictor;
-			double rmse = Evaluator.evalRMSE(regressor, instances);
-			System.out.println("RMSE: " + rmse);
-			break;
-		default:
-			break;
+			case "a":
+				ProbabilisticClassifier probClassifier = (ProbabilisticClassifier) predictor;
+				double auc = Evaluator.evalAreaUnderROC(probClassifier, instances);
+				System.out.println("AUC: " + auc);
+				break;
+			case "c":
+				Classifier classifier = (Classifier) predictor;
+				double error = Evaluator.evalError(classifier, instances);
+				System.out.println("Error: " + error);
+				break;
+			case "r":
+				Regressor regressor = (Regressor) predictor;
+				double rmse = Evaluator.evalRMSE(regressor, instances);
+				System.out.println("RMSE: " + rmse);
+				break;
+			default:
+				break;
 		}
 	}
 

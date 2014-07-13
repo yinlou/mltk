@@ -15,12 +15,9 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Constructs a dense instance from values, target and weight.
 	 * 
-	 * @param values
-	 *            the values.
-	 * @param target
-	 *            the target.
-	 * @param weight
-	 *            the weight.
+	 * @param values the values.
+	 * @param target the target.
+	 * @param weight the weight.
 	 */
 	public Instance(double[] values, double target, double weight) {
 		this.vector = new DenseVector(values);
@@ -31,14 +28,10 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Constructs a sparse instance from indices, values, target and weight.
 	 * 
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
-	 * @param target
-	 *            the target.
-	 * @param weight
-	 *            the weight.
+	 * @param indices the indices.
+	 * @param values the values.
+	 * @param target the target.
+	 * @param weight the weight.
 	 */
 	public Instance(int[] indices, double[] values, double target, double weight) {
 		this.vector = new SparseVector(indices, values);
@@ -49,12 +42,9 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Constructs a dense instance from vector, target and weight.
 	 * 
-	 * @param vector
-	 *            the vector.
-	 * @param target
-	 *            the target.
-	 * @param weight
-	 *            the weight.
+	 * @param vector the vector.
+	 * @param target the target.
+	 * @param weight the weight.
 	 */
 	public Instance(Vector vector, double target, double weight) {
 		this.vector = vector;
@@ -65,10 +55,8 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Constructor with default weight 1.0.
 	 * 
-	 * @param values
-	 *            the values.
-	 * @param target
-	 *            the target.
+	 * @param values the values.
+	 * @param target the target.
 	 */
 	public Instance(double[] values, double target) {
 		this(values, target, 1.0);
@@ -77,12 +65,9 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Constructor with default weight 1.0.
 	 * 
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
-	 * @param target
-	 *            the target.
+	 * @param indices the indices.
+	 * @param values the values.
+	 * @param target the target.
 	 */
 	public Instance(int[] indices, double[] values, double target) {
 		this(indices, values, target, 1.0);
@@ -91,10 +76,8 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Construct with default weight 1.0.
 	 * 
-	 * @param vector
-	 *            the vector.
-	 * @param target
-	 *            the target.
+	 * @param vector the vector.
+	 * @param target the target.
 	 */
 	public Instance(Vector vector, double target) {
 		this(vector, target, 1.0);
@@ -103,8 +86,7 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Constructor with default weight 1.0 and no target.
 	 * 
-	 * @param values
-	 *            the values.
+	 * @param values the values.
 	 */
 	public Instance(double[] values) {
 		this(values, Double.NaN);
@@ -113,10 +95,8 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Constructor with default weight 1.0 and no target.
 	 * 
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
+	 * @param indices the indices.
+	 * @param values the values.
 	 */
 	public Instance(int[] indices, double[] values) {
 		this(indices, values, Double.NaN);
@@ -125,10 +105,8 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Constructor with default weight 1.0 and no target.
 	 * 
-	 * @param vector
-	 *            the vector.
-	 * @param values
-	 *            the values.
+	 * @param vector the vector.
+	 * @param values the values.
 	 */
 	public Instance(Vector vector, double[] values) {
 		this(vector, Double.NaN);
@@ -137,8 +115,7 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Copy constructor.
 	 * 
-	 * @param instance
-	 *            the other instance to copy.
+	 * @param instance the other instance to copy.
 	 */
 	public Instance(Instance instance) {
 		this.vector = instance.vector;
@@ -158,8 +135,7 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Returns the value at specified attribute.
 	 * 
-	 * @param attIndex
-	 *            the attribute index.
+	 * @param attIndex the attribute index.
 	 * @return the value at specified attribute.
 	 */
 	public final double getValue(int attIndex) {
@@ -178,8 +154,7 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Returns an array representation of values at specified attributes.
 	 * 
-	 * @param attributes
-	 *            the attributes.
+	 * @param attributes the attributes.
 	 * @return an array representation of values at specified attributes.
 	 */
 	public final double[] getValues(int... attributes) {
@@ -189,10 +164,8 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Sets the value at specified attribute.
 	 * 
-	 * @param attIndex
-	 *            the attribute index.
-	 * @param value
-	 *            the new value to set.
+	 * @param attIndex the attribute index.
+	 * @param value the new value to set.
 	 */
 	public final void setValue(int attIndex, double value) {
 		vector.setValue(attIndex, value);
@@ -201,10 +174,8 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Sets the value at specified attribute.
 	 * 
-	 * @param attribute
-	 *            the attribute.
-	 * @param value
-	 *            the new value to set.
+	 * @param attribute the attribute.
+	 * @param value the new value to set.
 	 */
 	public final void setValue(Attribute attribute, double value) {
 		setValue(attribute.getIndex(), value);
@@ -213,10 +184,8 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Sets the values at specified attributes.
 	 * 
-	 * @param attributes
-	 *            the attribute index array.
-	 * @param v
-	 *            the value array.
+	 * @param attributes the attribute index array.
+	 * @param v the value array.
 	 */
 	public final void setValue(int[] attributes, double[] v) {
 		for (int i = 0; i < attributes.length; i++) {
@@ -242,8 +211,7 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Returns <code>true</code> if a specific attribute value is missing.
 	 * 
-	 * @param attIndex
-	 *            the attribute index.
+	 * @param attIndex the attribute index.
 	 * @return <code>true</code> if a specific attribute value is missing.
 	 */
 	public boolean isMissing(int attIndex) {
@@ -253,8 +221,7 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Returns the value at specified attribute.
 	 * 
-	 * @param att
-	 *            the attribute object.
+	 * @param att the attribute object.
 	 * @return the value at specified attribute.
 	 */
 	public double getValue(Attribute att) {
@@ -282,8 +249,7 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Sets the weight of this instance.
 	 * 
-	 * @param weight
-	 *            the new weight of this instance.
+	 * @param weight the new weight of this instance.
 	 */
 	public void setWeight(double weight) {
 		this.weight = weight;
@@ -301,8 +267,7 @@ public class Instance implements Copyable<Instance> {
 	/**
 	 * Sets the class value.
 	 * 
-	 * @param target
-	 *            the new class value.
+	 * @param target the new class value.
 	 */
 	public void setTarget(double target) {
 		this.target[0] = target;

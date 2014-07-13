@@ -13,8 +13,7 @@ public interface Regressor extends Predictor {
 	/**
 	 * Regresses an instance.
 	 * 
-	 * @param instance
-	 *            the instance to regress.
+	 * @param instance the instance to regress.
 	 * @return a regressed value.
 	 */
 	public double regress(Instance instance);

@@ -126,40 +126,32 @@ public class ElasticNetLearner extends Learner {
 			maxNumIters = instances.dimension() * 20;
 		}
 		switch (task) {
-		case REGRESSION:
-			glm = buildRegressor(instances, maxNumIters, lambda, l1Ratio);
-			break;
-		case CLASSIFICATION:
-			glm = buildClassifier(instances, maxNumIters, lambda, l1Ratio);
-			break;
-		default:
-			break;
+			case REGRESSION:
+				glm = buildRegressor(instances, maxNumIters, lambda, l1Ratio);
+				break;
+			case CLASSIFICATION:
+				glm = buildClassifier(instances, maxNumIters, lambda, l1Ratio);
+				break;
+			default:
+				break;
 		}
 		return glm;
 	}
 
 	/**
-	 * Builds an elastic-net penalized binary classifier. Each row in the input
-	 * matrix x represents a feature (instead of a data point). Thus the input
-	 * matrix is the transpose of the row-oriented data matrix. This procedure
-	 * does not assume the data is normalized or centered.
+	 * Builds an elastic-net penalized binary classifier. Each row in the input matrix x represents a feature (instead
+	 * of a data point). Thus the input matrix is the transpose of the row-oriented data matrix. This procedure does not
+	 * assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param x
-	 *            the inputs.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
-	 * @param l1Ratio
-	 *            the L1 ratio.
+	 * @param attrs the attribute list.
+	 * @param x the inputs.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
+	 * @param l1Ratio the L1 ratio.
 	 * @return an elastic-net penalized binary classifier.
 	 */
-	public GLM buildBinaryClassifier(int[] attrs, double[][] x, int[] y,
-			int maxNumIters, double lambda, double l1Ratio) {
+	public GLM buildBinaryClassifier(int[] attrs, double[][] x, int[] y, int maxNumIters, double lambda, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -181,8 +173,7 @@ public class ElasticNetLearner extends Learner {
 		final double tl2 = lambda2 * y.length;
 
 		// Coordinate descent
-		double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w,
-				lambda1, lambda2);
+		double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
 				intercept += GLMOptimUtils.fitIntercept(pTrain, y);
@@ -190,8 +181,7 @@ public class ElasticNetLearner extends Learner {
 
 			doOnePass(x, theta, y, tl1, tl2, w, pTrain, rTrain);
 
-			double currLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w,
-					lambda1, lambda2);
+			double currLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 
 			if (verbose) {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
@@ -207,30 +197,21 @@ public class ElasticNetLearner extends Learner {
 	}
 
 	/**
-	 * Builds an elastic-net penalized binary classifier on sparse inputs. Each
-	 * row of the input represents a feature (instead of a data point), i.e., in
-	 * column-oriented format. This procedure does not assume the data is
-	 * normalized or centered.
+	 * Builds an elastic-net penalized binary classifier on sparse inputs. Each row of the input represents a feature
+	 * (instead of a data point), i.e., in column-oriented format. This procedure does not assume the data is normalized
+	 * or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
-	 * @param l1Ratio
-	 *            the L1 ratio.
+	 * @param attrs the attribute list.
+	 * @param indices the indices.
+	 * @param values the values.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
+	 * @param l1Ratio the L1 ratio.
 	 * @return an elastic-net penalized classifier.
 	 */
-	public GLM buildBinaryClassifier(int[] attrs, int[][] indices,
-			double[][] values, int[] y, int maxNumIters, double lambda,
-			double l1Ratio) {
+	public GLM buildBinaryClassifier(int[] attrs, int[][] indices, double[][] values, int[] y, int maxNumIters,
+			double lambda, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -252,8 +233,7 @@ public class ElasticNetLearner extends Learner {
 		final double tl2 = lambda2 * y.length;
 
 		// Coordinate descent
-		double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w,
-				lambda1, lambda2);
+		double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
 				intercept += GLMOptimUtils.fitIntercept(pTrain, y);
@@ -261,8 +241,7 @@ public class ElasticNetLearner extends Learner {
 
 			doOnePass(indices, values, theta, y, tl1, tl2, w, pTrain, rTrain);
 
-			double currLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w,
-					lambda1, lambda2);
+			double currLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 
 			if (verbose) {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
@@ -278,31 +257,21 @@ public class ElasticNetLearner extends Learner {
 	}
 
 	/**
-	 * Builds elastic-net penalized binary classifiers for a sequence of
-	 * regularization parameter lambdas. Each row in the input matrix x
-	 * represents a feature (instead of a data point). Thus the input matrix is
-	 * the transpose of the row-oriented data matrix. This procedure does not
-	 * assume the data is normalized or centered.
+	 * Builds elastic-net penalized binary classifiers for a sequence of regularization parameter lambdas. Each row in
+	 * the input matrix x represents a feature (instead of a data point). Thus the input matrix is the transpose of the
+	 * row-oriented data matrix. This procedure does not assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param x
-	 *            the inputs.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
-	 * @param l1Ratio
-	 *            the L1 ratio.
+	 * @param attrs the attribute list.
+	 * @param x the inputs.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
+	 * @param l1Ratio the L1 ratio.
 	 * @return elastic-net penalized classifiers.
 	 */
-	public GLM[] buildBinaryClassifiers(int[] attrs, double[][] x, int[] y,
-			int maxNumIters, int numLambdas, double minLambdaRatio,
-			double l1Ratio) {
+	public GLM[] buildBinaryClassifiers(int[] attrs, double[][] x, int[] y, int maxNumIters, int numLambdas,
+			double minLambdaRatio, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -332,8 +301,7 @@ public class ElasticNetLearner extends Learner {
 			final double tl2 = lambda2 * y.length;
 
 			// Coordinate descent
-			double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w,
-					lambda1, lambda2);
+			double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
 					intercept += GLMOptimUtils.fitIntercept(pTrain, y);
@@ -341,12 +309,10 @@ public class ElasticNetLearner extends Learner {
 
 				doOnePass(x, theta, y, tl1, tl2, w, pTrain, rTrain);
 
-				double currLoss = GLMOptimUtils.computeElasticNetLoss(pTrain,
-						y, w, lambda1, lambda2);
+				double currLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 
 				if (verbose) {
-					System.out.println("Iteration " + iter + ": " + " "
-							+ currLoss);
+					System.out.println("Iteration " + iter + ": " + " " + currLoss);
 				}
 
 				if (prevLoss - currLoss < epsilon) {
@@ -363,33 +329,22 @@ public class ElasticNetLearner extends Learner {
 	}
 
 	/**
-	 * Builds elastic-net penalized binary classifiers on sparse inputs for a
-	 * sequence of regularization parameter lambdas. Each row of the input
-	 * represents a feature (instead of a data point), i.e., in column-oriented
-	 * format. This procedure does not assume the data is normalized or
-	 * centered.
+	 * Builds elastic-net penalized binary classifiers on sparse inputs for a sequence of regularization parameter
+	 * lambdas. Each row of the input represents a feature (instead of a data point), i.e., in column-oriented format.
+	 * This procedure does not assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
-	 * @param l1Ratio
-	 *            the L1 ratio.
+	 * @param attrs the attribute list.
+	 * @param indices the indices.
+	 * @param values the values.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
+	 * @param l1Ratio the L1 ratio.
 	 * @return an elastic-net penalized classifier.
 	 */
-	public GLM[] buildBinaryClassifiers(int[] attrs, int[][] indices,
-			double[][] values, int[] y, int maxNumIters, int numLambdas,
-			double minLambdaRatio, double l1Ratio) {
+	public GLM[] buildBinaryClassifiers(int[] attrs, int[][] indices, double[][] values, int[] y, int maxNumIters,
+			int numLambdas, double minLambdaRatio, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -419,22 +374,18 @@ public class ElasticNetLearner extends Learner {
 			final double tl2 = lambda2 * y.length;
 
 			// Coordinate descent
-			double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w,
-					lambda1, lambda2);
+			double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
 					intercept += GLMOptimUtils.fitIntercept(pTrain, y);
 				}
 
-				doOnePass(indices, values, theta, y, tl1, tl2, w, pTrain,
-						rTrain);
+				doOnePass(indices, values, theta, y, tl1, tl2, w, pTrain, rTrain);
 
-				double currLoss = GLMOptimUtils.computeElasticNetLoss(pTrain,
-						y, w, lambda1, lambda2);
+				double currLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 
 				if (verbose) {
-					System.out.println("Iteration " + iter + ": " + " "
-							+ currLoss);
+					System.out.println("Iteration " + iter + ": " + " " + currLoss);
 				}
 
 				if (prevLoss - currLoss < epsilon) {
@@ -453,24 +404,17 @@ public class ElasticNetLearner extends Learner {
 	/**
 	 * Builds an elastic-net penalized classifier.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param isSparse
-	 *            <code>true</code> if the training set is treated as sparse.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
-	 * @param l1Ratio
-	 *            the l1 ratio.
+	 * @param trainSet the training set.
+	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
+	 * @param l1Ratio the l1 ratio.
 	 * @return an elastic-net penalized classifer.
 	 */
-	public GLM buildClassifier(Instances trainSet, boolean isSparse,
-			int maxNumIters, double lambda, double l1Ratio) {
+	public GLM buildClassifier(Instances trainSet, boolean isSparse, int maxNumIters, double lambda, double l1Ratio) {
 		Attribute classAttribute = trainSet.getTargetAttribute();
 		if (classAttribute.getType() != Attribute.Type.NOMINAL) {
-			throw new IllegalArgumentException(
-					"Class attribute must be nominal.");
+			throw new IllegalArgumentException("Class attribute must be nominal.");
 		}
 		NominalAttribute clazz = (NominalAttribute) classAttribute;
 		int numClasses = clazz.getStates().length;
@@ -489,8 +433,7 @@ public class ElasticNetLearner extends Learner {
 					y[i] = label == 0 ? 1 : 0;
 				}
 
-				GLM glm = buildBinaryClassifier(attrs, indices, values, y,
-						maxNumIters, lambda, l1Ratio);
+				GLM glm = buildBinaryClassifier(attrs, indices, values, y, maxNumIters, lambda, l1Ratio);
 
 				double[] w = glm.w[0];
 				for (int i = 0; i < cList.size(); i++) {
@@ -510,8 +453,8 @@ public class ElasticNetLearner extends Learner {
 						y[i] = label == k ? 1 : 0;
 					}
 
-					GLM binaryClassifier = buildBinaryClassifier(attrs,
-							indices, values, y, maxNumIters, lambda, l1Ratio);
+					GLM binaryClassifier = buildBinaryClassifier(attrs, indices, values, y, maxNumIters, lambda,
+							l1Ratio);
 
 					double[] w = binaryClassifier.w[0];
 					for (int i = 0; i < cList.size(); i++) {
@@ -536,8 +479,7 @@ public class ElasticNetLearner extends Learner {
 					y[i] = label == 0 ? 1 : 0;
 				}
 
-				GLM glm = buildBinaryClassifier(attrs, x, y, maxNumIters,
-						lambda, l1Ratio);
+				GLM glm = buildBinaryClassifier(attrs, x, y, maxNumIters, lambda, l1Ratio);
 
 				double[] w = glm.w[0];
 				for (int i = 0; i < cList.size(); i++) {
@@ -558,8 +500,7 @@ public class ElasticNetLearner extends Learner {
 						y[i] = label == k ? 1 : 0;
 					}
 
-					GLM binaryClassifier = buildBinaryClassifier(attrs, x, y,
-							maxNumIters, lambda, l1Ratio);
+					GLM binaryClassifier = buildBinaryClassifier(attrs, x, y, maxNumIters, lambda, l1Ratio);
 
 					double[] w = binaryClassifier.w[0];
 					for (int i = 0; i < cList.size(); i++) {
@@ -577,46 +518,32 @@ public class ElasticNetLearner extends Learner {
 	/**
 	 * Builds an elastic-net penalized classifier.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
-	 * @param l1Ratio
-	 *            the l1 ratio.
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
+	 * @param l1Ratio the l1 ratio.
 	 * @return an elastic-net penalized classifer.
 	 */
-	public GLM buildClassifier(Instances trainSet, int maxNumIters,
-			double lambda, double l1Ratio) {
-		return buildClassifier(trainSet, isSparse(trainSet), maxNumIters,
-				lambda, l1Ratio);
+	public GLM buildClassifier(Instances trainSet, int maxNumIters, double lambda, double l1Ratio) {
+		return buildClassifier(trainSet, isSparse(trainSet), maxNumIters, lambda, l1Ratio);
 	}
 
 	/**
 	 * Builds elastic-net penalized classifiers.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param isSparse
-	 *            <code>true</code> if the training set is treated as sparse.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
-	 * @param l1Ratio
-	 *            the l1 ratio.
+	 * @param trainSet the training set.
+	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
+	 * @param l1Ratio the l1 ratio.
 	 * @return elastic-net penalized classifers.
 	 */
-	public GLM[] buildClassifiers(Instances trainSet, boolean isSparse,
-			int maxNumIters, int numLambdas, double minLambdaRatio,
-			double l1Ratio) {
+	public GLM[] buildClassifiers(Instances trainSet, boolean isSparse, int maxNumIters, int numLambdas,
+			double minLambdaRatio, double l1Ratio) {
 		Attribute classAttribute = trainSet.getTargetAttribute();
 		if (classAttribute.getType() != Attribute.Type.NOMINAL) {
-			throw new IllegalArgumentException(
-					"Class attribute must be nominal.");
+			throw new IllegalArgumentException("Class attribute must be nominal.");
 		}
 		NominalAttribute clazz = (NominalAttribute) classAttribute;
 		int numClasses = clazz.getStates().length;
@@ -635,8 +562,8 @@ public class ElasticNetLearner extends Learner {
 					y[i] = label == 0 ? 1 : 0;
 				}
 
-				GLM[] glms = buildBinaryClassifiers(attrs, indices, values, y,
-						maxNumIters, numLambdas, minLambdaRatio, l1Ratio);
+				GLM[] glms = buildBinaryClassifiers(attrs, indices, values, y, maxNumIters, numLambdas, minLambdaRatio,
+						l1Ratio);
 
 				for (GLM glm : glms) {
 					double[] w = glm.w[0];
@@ -661,9 +588,8 @@ public class ElasticNetLearner extends Learner {
 						y[i] = label == k ? 1 : 0;
 					}
 
-					GLM[] binaryClassifiers = buildBinaryClassifiers(attrs,
-							indices, values, y, maxNumIters, numLambdas,
-							minLambdaRatio, l1Ratio);
+					GLM[] binaryClassifiers = buildBinaryClassifiers(attrs, indices, values, y, maxNumIters,
+							numLambdas, minLambdaRatio, l1Ratio);
 
 					for (int l = 0; l < glms.length; l++) {
 						GLM binaryClassifier = binaryClassifiers[l];
@@ -692,8 +618,7 @@ public class ElasticNetLearner extends Learner {
 					y[i] = label == 0 ? 1 : 0;
 				}
 
-				GLM[] glms = buildBinaryClassifiers(attrs, x, y, maxNumIters,
-						numLambdas, minLambdaRatio, l1Ratio);
+				GLM[] glms = buildBinaryClassifiers(attrs, x, y, maxNumIters, numLambdas, minLambdaRatio, l1Ratio);
 
 				for (GLM glm : glms) {
 					double[] w = glm.w[0];
@@ -719,8 +644,8 @@ public class ElasticNetLearner extends Learner {
 						y[i] = label == k ? 1 : 0;
 					}
 
-					GLM[] binaryClassifiers = buildBinaryClassifiers(attrs, x,
-							y, maxNumIters, numLambdas, minLambdaRatio, l1Ratio);
+					GLM[] binaryClassifiers = buildBinaryClassifiers(attrs, x, y, maxNumIters, numLambdas,
+							minLambdaRatio, l1Ratio);
 
 					for (int l = 0; l < glms.length; l++) {
 						GLM binaryClassifier = binaryClassifiers[l];
@@ -743,47 +668,34 @@ public class ElasticNetLearner extends Learner {
 	/**
 	 * Builds elastic-net penalized classifiers.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
-	 * @param l1Ratio
-	 *            the l1 ratio.
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
+	 * @param l1Ratio the l1 ratio.
 	 * @return elastic-net penalized classifers.
 	 */
-	public GLM[] buildClassifiers(Instances trainSet, int maxNumIters,
-			int numLambdas, double minLambdaRatio, double l1Ratio) {
-		return buildClassifiers(trainSet, isSparse(trainSet), maxNumIters,
-				numLambdas, minLambdaRatio, l1Ratio);
+	public GLM[] buildClassifiers(Instances trainSet, int maxNumIters, int numLambdas, double minLambdaRatio,
+			double l1Ratio) {
+		return buildClassifiers(trainSet, isSparse(trainSet), maxNumIters, numLambdas, minLambdaRatio, l1Ratio);
 	}
 
 	/**
 	 * Builds an elastic-net penalized regressor.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param isSparse
-	 *            <code>true</code> if the training set is treated as sparse.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
-	 * @param l1Ratio
-	 *            the L1 ratio.
+	 * @param trainSet the training set.
+	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
+	 * @param l1Ratio the L1 ratio.
 	 * @return an elastic-net penalized regressor.
 	 */
-	public GLM buildRegressor(Instances trainSet, boolean isSparse,
-			int maxNumIters, double lambda, double l1Ratio) {
+	public GLM buildRegressor(Instances trainSet, boolean isSparse, int maxNumIters, double lambda, double l1Ratio) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
 			List<Double> cList = sd.cList;
 
-			GLM glm = buildRegressor(sd.attrs, sd.indices, sd.values, sd.y,
-					maxNumIters, lambda, l1Ratio);
+			GLM glm = buildRegressor(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, lambda, l1Ratio);
 
 			double[] w = glm.w[0];
 			for (int i = 0; i < cList.size(); i++) {
@@ -796,8 +708,7 @@ public class ElasticNetLearner extends Learner {
 			DenseDataset dd = getDenseDataset(trainSet, true);
 			List<Double> cList = dd.cList;
 
-			GLM glm = buildRegressor(dd.attrs, dd.x, dd.y, maxNumIters, lambda,
-					l1Ratio);
+			GLM glm = buildRegressor(dd.attrs, dd.x, dd.y, maxNumIters, lambda, l1Ratio);
 
 			double[] w = glm.w[0];
 			for (int i = 0; i < cList.size(); i++) {
@@ -812,44 +723,30 @@ public class ElasticNetLearner extends Learner {
 	/**
 	 * Builds an elastic-net penalized regressor.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
-	 * @param l1Ratio
-	 *            the L1 ratio.
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
+	 * @param l1Ratio the L1 ratio.
 	 * @return an elastic-net penalized regressor.
 	 */
-	public GLM buildRegressor(Instances trainSet, int maxNumIters,
-			double lambda, double l1Ratio) {
-		return buildRegressor(trainSet, isSparse(trainSet), maxNumIters,
-				lambda, l1Ratio);
+	public GLM buildRegressor(Instances trainSet, int maxNumIters, double lambda, double l1Ratio) {
+		return buildRegressor(trainSet, isSparse(trainSet), maxNumIters, lambda, l1Ratio);
 	}
 
 	/**
-	 * Builds an elastic-net penalized regressor. Each row in the input matrix x
-	 * represents a feature (instead of a data point). Thus the input matrix is
-	 * the transpose of the row-oriented data matrix. This procedure does not
-	 * assume the data is normalized or centered.
+	 * Builds an elastic-net penalized regressor. Each row in the input matrix x represents a feature (instead of a data
+	 * point). Thus the input matrix is the transpose of the row-oriented data matrix. This procedure does not assume
+	 * the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param x
-	 *            the inputs.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
-	 * @param l1Ratio
-	 *            the L1 ratio.
+	 * @param attrs the attribute list.
+	 * @param x the inputs.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
+	 * @param l1Ratio the L1 ratio.
 	 * @return an elastic-net penalized regressor.
 	 */
-	public GLM buildRegressor(int[] attrs, double[][] x, double[] y,
-			int maxNumIters, double lambda, double l1Ratio) {
+	public GLM buildRegressor(int[] attrs, double[][] x, double[] y, int maxNumIters, double lambda, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -871,8 +768,7 @@ public class ElasticNetLearner extends Learner {
 		final double tl2 = lambda2 * y.length;
 
 		// Coordinate descent
-		double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w,
-				lambda1, lambda2);
+		double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
 				intercept += GLMOptimUtils.fitIntercept(rTrain);
@@ -880,8 +776,7 @@ public class ElasticNetLearner extends Learner {
 
 			doOnePass(x, sq, tl1, tl2, w, rTrain);
 
-			double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w,
-					lambda1, lambda2);
+			double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 
 			if (verbose) {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
@@ -897,29 +792,21 @@ public class ElasticNetLearner extends Learner {
 	}
 
 	/**
-	 * Builds an elastic-net penalized regressor on sparse inputs. Each row of
-	 * the input represents a feature (instead of a data point), i.e., in
-	 * column-oriented format. This procedure does not assume the data is
-	 * normalized or centered.
+	 * Builds an elastic-net penalized regressor on sparse inputs. Each row of the input represents a feature (instead
+	 * of a data point), i.e., in column-oriented format. This procedure does not assume the data is normalized or
+	 * centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
-	 * @param l1Ratio
-	 *            the L1 ratio.
+	 * @param attrs the attribute list.
+	 * @param indices the indices.
+	 * @param values the values.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
+	 * @param l1Ratio the L1 ratio.
 	 * @return an elastic-net penalized regressor.
 	 */
-	public GLM buildRegressor(int[] attrs, int[][] indices, double[][] values,
-			double[] y, int maxNumIters, double lambda, double l1Ratio) {
+	public GLM buildRegressor(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
+			double lambda, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -941,8 +828,7 @@ public class ElasticNetLearner extends Learner {
 		final double tl2 = lambda2 * y.length;
 
 		// Coordinate descent
-		double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w,
-				lambda1, lambda2);
+		double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
 				intercept += GLMOptimUtils.fitIntercept(rTrain);
@@ -950,8 +836,7 @@ public class ElasticNetLearner extends Learner {
 
 			doOnePass(indices, values, sq, tl1, tl2, w, rTrain);
 
-			double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w,
-					lambda1, lambda2);
+			double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 
 			if (verbose) {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
@@ -967,32 +852,24 @@ public class ElasticNetLearner extends Learner {
 	}
 
 	/**
-	 * Builds elastic-net penalized regressors for a sequence of regularization
-	 * parameter lambdas.
+	 * Builds elastic-net penalized regressors for a sequence of regularization parameter lambdas.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param isSparse
-	 *            <code>true</code> if the training set is treated as sparse.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
-	 * @param l1Ratio
-	 *            the L1 ratio.
+	 * @param trainSet the training set.
+	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
+	 * @param l1Ratio the L1 ratio.
 	 * @return elastic-net penalized regressors.
 	 */
-	public GLM[] buildRegressors(Instances trainSet, boolean isSparse,
-			int maxNumIters, int numLambdas, double minLambdaRatio,
-			double l1Ratio) {
+	public GLM[] buildRegressors(Instances trainSet, boolean isSparse, int maxNumIters, int numLambdas,
+			double minLambdaRatio, double l1Ratio) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
 			List<Double> cList = sd.cList;
 
-			GLM[] glms = buildRegressors(sd.attrs, sd.indices, sd.values, sd.y,
-					maxNumIters, numLambdas, minLambdaRatio, l1Ratio);
+			GLM[] glms = buildRegressors(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, numLambdas,
+					minLambdaRatio, l1Ratio);
 
 			for (GLM glm : glms) {
 				double[] w = glm.w[0];
@@ -1007,8 +884,7 @@ public class ElasticNetLearner extends Learner {
 			DenseDataset dd = getDenseDataset(trainSet, true);
 			List<Double> cList = dd.cList;
 
-			GLM[] glms = buildRegressors(dd.attrs, dd.x, dd.y, maxNumIters,
-					numLambdas, minLambdaRatio, l1Ratio);
+			GLM[] glms = buildRegressors(dd.attrs, dd.x, dd.y, maxNumIters, numLambdas, minLambdaRatio, l1Ratio);
 
 			for (GLM glm : glms) {
 				double[] w = glm.w[0];
@@ -1024,53 +900,36 @@ public class ElasticNetLearner extends Learner {
 	}
 
 	/**
-	 * Builds elastic-net penalized regressors for a sequence of regularization
-	 * parameter lambdas.
+	 * Builds elastic-net penalized regressors for a sequence of regularization parameter lambdas.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
-	 * @param l1Ratio
-	 *            the L1 ratio.
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
+	 * @param l1Ratio the L1 ratio.
 	 * @return elastic-net penalized regressors.
 	 */
-	public GLM[] buildRegressors(Instances trainSet, int maxNumIters,
-			int numLambdas, double minLambdaRatio, double l1Ratio) {
-		return buildRegressors(trainSet, isSparse(trainSet), maxNumIters,
-				numLambdas, minLambdaRatio, l1Ratio);
+	public GLM[] buildRegressors(Instances trainSet, int maxNumIters, int numLambdas, double minLambdaRatio,
+			double l1Ratio) {
+		return buildRegressors(trainSet, isSparse(trainSet), maxNumIters, numLambdas, minLambdaRatio, l1Ratio);
 	}
 
 	/**
-	 * Builds elastic-net penalized regressors for a sequence of regularization
-	 * parameter lambdas. Each row in the input matrix x represents a feature
-	 * (instead of a data point). Thus the input matrix is the transpose of the
-	 * row-oriented data matrix. This procedure does not assume the data is
-	 * normalized or centered.
+	 * Builds elastic-net penalized regressors for a sequence of regularization parameter lambdas. Each row in the input
+	 * matrix x represents a feature (instead of a data point). Thus the input matrix is the transpose of the
+	 * row-oriented data matrix. This procedure does not assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param x
-	 *            the inputs.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
-	 * @param l1Ratio
-	 *            the L1 ratio.
+	 * @param attrs the attribute list.
+	 * @param x the inputs.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
+	 * @param l1Ratio the L1 ratio.
 	 * @return elastic-net penalized regressors.
 	 */
-	public GLM[] buildRegressors(int[] attrs, double[][] x, double[] y,
-			int maxNumIters, int numLambdas, double minLambdaRatio,
-			double l1Ratio) {
+	public GLM[] buildRegressors(int[] attrs, double[][] x, double[] y, int maxNumIters, int numLambdas,
+			double minLambdaRatio, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -1104,8 +963,7 @@ public class ElasticNetLearner extends Learner {
 			final double tl2 = lambda2 * y.length;
 
 			// Coordinate descent
-			double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w,
-					lambda1, lambda2);
+			double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
 					intercept += GLMOptimUtils.fitIntercept(rTrain);
@@ -1113,8 +971,7 @@ public class ElasticNetLearner extends Learner {
 
 				doOnePass(x, sq, tl1, tl2, w, rTrain);
 
-				double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain,
-						w, lambda1, lambda2);
+				double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 
 				if (verbose) {
 					System.out.println("Iteration " + iter + ": " + currLoss);
@@ -1126,10 +983,8 @@ public class ElasticNetLearner extends Learner {
 				prevLoss = currLoss;
 			}
 
-			double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w,
-					lambda1, lambda2);
-			System.out.println("Model " + g + ": " + lambda + " " + currLoss
-					+ " " + StatUtils.rms(rTrain));
+			double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
+			System.out.println("Model " + g + ": " + lambda + " " + currLoss + " " + StatUtils.rms(rTrain));
 
 			lambda *= alpha;
 			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept);
@@ -1139,32 +994,22 @@ public class ElasticNetLearner extends Learner {
 	}
 
 	/**
-	 * Builds elastic-net penalized regressors for a sequence of regularization
-	 * parameter lambdas. Each row of the input represents a feature (instead of
-	 * a data point), i.e., in column-oriented format. This procedure does not
-	 * assume the data is normalized or centered.
+	 * Builds elastic-net penalized regressors for a sequence of regularization parameter lambdas. Each row of the input
+	 * represents a feature (instead of a data point), i.e., in column-oriented format. This procedure does not assume
+	 * the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
-	 * @param l1Ratio
-	 *            the L1 ratio.
+	 * @param attrs the attribute list.
+	 * @param indices the indices.
+	 * @param values the values.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
+	 * @param l1Ratio the L1 ratio.
 	 * @return elastic-net penalized regressors.
 	 */
-	public GLM[] buildRegressors(int[] attrs, int[][] indices,
-			double[][] values, double[] y, int maxNumIters, int numLambdas,
-			double minLambdaRatio, double l1Ratio) {
+	public GLM[] buildRegressors(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
+			int numLambdas, double minLambdaRatio, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -1198,8 +1043,7 @@ public class ElasticNetLearner extends Learner {
 			final double tl2 = lambda2 * y.length;
 
 			// Coordinate descent
-			double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w,
-					lambda1, lambda2);
+			double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
 					intercept += GLMOptimUtils.fitIntercept(rTrain);
@@ -1207,8 +1051,7 @@ public class ElasticNetLearner extends Learner {
 
 				doOnePass(indices, values, sq, tl1, tl2, w, rTrain);
 
-				double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain,
-						w, lambda1, lambda2);
+				double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 
 				if (verbose) {
 					System.out.println("Iteration " + iter + ": " + currLoss);
@@ -1220,10 +1063,8 @@ public class ElasticNetLearner extends Learner {
 				prevLoss = currLoss;
 			}
 
-			double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w,
-					lambda1, lambda2);
-			System.out.println("Model " + g + ": " + lambda + " " + currLoss
-					+ " " + StatUtils.rms(rTrain));
+			double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
+			System.out.println("Model " + g + ": " + lambda + " " + currLoss + " " + StatUtils.rms(rTrain));
 
 			lambda *= alpha;
 			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept);
@@ -1232,8 +1073,7 @@ public class ElasticNetLearner extends Learner {
 		return glms;
 	}
 
-	protected void doOnePass(double[][] x, double[] sq, final double tl1,
-			final double tl2, double[] w, double[] rTrain) {
+	protected void doOnePass(double[][] x, double[] sq, final double tl1, final double tl2, double[] w, double[] rTrain) {
 		for (int j = 0; j < x.length; j++) {
 			double[] v = x[j];
 
@@ -1258,9 +1098,8 @@ public class ElasticNetLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(double[][] x, double[] theta, int[] y,
-			final double tl1, final double tl2, double[] w, double[] pTrain,
-			double[] rTrain) {
+	protected void doOnePass(double[][] x, double[] theta, int[] y, final double tl1, final double tl2, double[] w,
+			double[] pTrain, double[] rTrain) {
 		for (int j = 0; j < x.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
 				continue;
@@ -1291,8 +1130,8 @@ public class ElasticNetLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(int[][] indices, double[][] values, double[] sq,
-			final double tl1, final double tl2, double[] w, double[] rTrain) {
+	protected void doOnePass(int[][] indices, double[][] values, double[] sq, final double tl1, final double tl2,
+			double[] w, double[] rTrain) {
 		for (int j = 0; j < indices.length; j++) {
 			// Calculate weight updates using naive updates
 			double wNew = w[j] * sq[j];
@@ -1321,9 +1160,8 @@ public class ElasticNetLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(int[][] indices, double[][] values,
-			double[] theta, int[] y, final double tl1, final double tl2,
-			double[] w, double[] pTrain, double[] rTrain) {
+	protected void doOnePass(int[][] indices, double[][] values, double[] theta, int[] y, final double tl1,
+			final double tl2, double[] w, double[] pTrain, double[] rTrain) {
 		for (int j = 0; j < indices.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
 				continue;
@@ -1381,8 +1219,7 @@ public class ElasticNetLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(double[][] x, int[] y,
-			double[] predictionTrain, double l1Ratio) {
+	protected double findMaxLambda(double[][] x, int[] y, double[] predictionTrain, double l1Ratio) {
 		if (fitIntercept) {
 			GLMOptimUtils.fitIntercept(predictionTrain, y);
 		}
@@ -1390,8 +1227,7 @@ public class ElasticNetLearner extends Learner {
 		for (double[] col : x) {
 			double eta = 0;
 			for (int i = 0; i < col.length; i++) {
-				double r = OptimUtils.getPseudoResidual(predictionTrain[i],
-						y[i]);
+				double r = OptimUtils.getPseudoResidual(predictionTrain[i], y[i]);
 				r *= col[i];
 				eta += r;
 			}
@@ -1409,8 +1245,7 @@ public class ElasticNetLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(int[][] indices, double[][] values,
-			double[] y, double l1Ratio) {
+	protected double findMaxLambda(int[][] indices, double[][] values, double[] y, double l1Ratio) {
 		double mean = 0;
 		if (fitIntercept) {
 			mean = GLMOptimUtils.fitIntercept(y);
@@ -1422,8 +1257,7 @@ public class ElasticNetLearner extends Learner {
 		for (int i = 0; i < indices.length; i++) {
 			int[] index = indices[i];
 			double[] value = values[i];
-			double dot = Math.abs(VectorUtils.dotProduct(new SparseVector(
-					index, value), v));
+			double dot = Math.abs(VectorUtils.dotProduct(new SparseVector(index, value), v));
 			if (dot > maxLambda) {
 				maxLambda = dot;
 			}
@@ -1436,8 +1270,7 @@ public class ElasticNetLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(int[][] indices, double[][] values, int[] y,
-			double[] predictionTrain, double l1Ratio) {
+	protected double findMaxLambda(int[][] indices, double[][] values, int[] y, double[] predictionTrain, double l1Ratio) {
 		if (fitIntercept) {
 			GLMOptimUtils.fitIntercept(predictionTrain, y);
 		}
@@ -1448,8 +1281,7 @@ public class ElasticNetLearner extends Learner {
 			double[] value = values[k];
 			for (int i = 0; i < index.length; i++) {
 				int idx = index[i];
-				double r = OptimUtils.getPseudoResidual(predictionTrain[idx],
-						y[idx]);
+				double r = OptimUtils.getPseudoResidual(predictionTrain[idx], y[idx]);
 				r *= value[i];
 				eta += r;
 			}
@@ -1478,8 +1310,7 @@ public class ElasticNetLearner extends Learner {
 	/**
 	 * Sets whether we fit intercept.
 	 * 
-	 * @param fitIntercept
-	 *            whether we fit intercept.
+	 * @param fitIntercept whether we fit intercept.
 	 */
 	public void fitIntercept(boolean fitIntercept) {
 		this.fitIntercept = fitIntercept;
@@ -1542,8 +1373,7 @@ public class ElasticNetLearner extends Learner {
 	/**
 	 * Sets the convergence threshold epsilon.
 	 * 
-	 * @param epsilon
-	 *            the convergence threshold epsilon.
+	 * @param epsilon the convergence threshold epsilon.
 	 */
 	public void setEpsilon(double epsilon) {
 		this.epsilon = epsilon;
@@ -1552,8 +1382,7 @@ public class ElasticNetLearner extends Learner {
 	/**
 	 * Sets the l1 ratio.
 	 * 
-	 * @param l1Ratio
-	 *            the l1 ratio.
+	 * @param l1Ratio the l1 ratio.
 	 */
 	public void setL1Ratio(double l1Ratio) {
 		this.l1Ratio = l1Ratio;
@@ -1562,8 +1391,7 @@ public class ElasticNetLearner extends Learner {
 	/**
 	 * Sets the lambda.
 	 * 
-	 * @param lambda
-	 *            the lambda.
+	 * @param lambda the lambda.
 	 */
 	public void setLambda(double lambda) {
 		this.lambda = lambda;
@@ -1572,8 +1400,7 @@ public class ElasticNetLearner extends Learner {
 	/**
 	 * Sets the maximum number of iterations.
 	 * 
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
+	 * @param maxNumIters the maximum number of iterations.
 	 */
 	public void setMaxNumIters(int maxNumIters) {
 		this.maxNumIters = maxNumIters;
@@ -1582,8 +1409,7 @@ public class ElasticNetLearner extends Learner {
 	/**
 	 * Sets the task of this learner.
 	 * 
-	 * @param task
-	 *            the task of this learner.
+	 * @param task the task of this learner.
 	 */
 	public void setTask(Task task) {
 		this.task = task;
@@ -1592,8 +1418,7 @@ public class ElasticNetLearner extends Learner {
 	/**
 	 * Sets whether we output something during the training.
 	 * 
-	 * @param verbose
-	 *            the switch if we output things during training.
+	 * @param verbose the switch if we output things during training.
 	 */
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;

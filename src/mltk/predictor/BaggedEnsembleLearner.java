@@ -17,10 +17,8 @@ public class BaggedEnsembleLearner extends Learner {
 	/**
 	 * Constructor.
 	 * 
-	 * @param baggingIters
-	 *            the number of bagging iterations.
-	 * @param learner
-	 *            the learner.
+	 * @param baggingIters the number of bagging iterations.
+	 * @param learner the learner.
 	 */
 	public BaggedEnsembleLearner(int baggingIters, Learner learner) {
 		this.baggingIters = baggingIters;
@@ -39,8 +37,7 @@ public class BaggedEnsembleLearner extends Learner {
 	/**
 	 * Sets the number of bagging iterations.
 	 * 
-	 * @param baggingIters
-	 *            the number of bagging iterations.
+	 * @param baggingIters the number of bagging iterations.
 	 */
 	public void setBaggingIterations(int baggingIters) {
 		this.baggingIters = baggingIters;
@@ -58,8 +55,7 @@ public class BaggedEnsembleLearner extends Learner {
 	/**
 	 * Sets the learner.
 	 * 
-	 * @param learner
-	 *            the learner.
+	 * @param learner the learner.
 	 */
 	public void setLearner(Learner learner) {
 		this.learner = learner;
@@ -77,8 +73,7 @@ public class BaggedEnsembleLearner extends Learner {
 	/**
 	 * Sets the bootstrap samples.
 	 * 
-	 * @param bags
-	 *            the bootstrap samples.
+	 * @param bags the bootstrap samples.
 	 */
 	public void setBags(Instances[] bags) {
 		this.bags = bags;
@@ -99,8 +94,7 @@ public class BaggedEnsembleLearner extends Learner {
 	/**
 	 * Builds a bagged ensemble.
 	 * 
-	 * @param bags
-	 *            the bootstrap samples.
+	 * @param bags the bootstrap samples.
 	 * @return a bagged ensemble.
 	 */
 	public BaggedEnsemble build(Instances[] bags) {

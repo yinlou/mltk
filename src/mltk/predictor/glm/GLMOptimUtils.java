@@ -8,8 +8,7 @@ import mltk.util.VectorUtils;
 class GLMOptimUtils {
 
 	static GLM getGLM(int[] attrs, double[] w, double intercept) {
-		GLM glm = attrs.length == 0 ? new GLM(0) : new GLM(
-				attrs[attrs.length - 1] + 1);
+		GLM glm = attrs.length == 0 ? new GLM(0) : new GLM(attrs[attrs.length - 1] + 1);
 		for (int i = 0; i < attrs.length; i++) {
 			glm.w[0][attrs[i]] = w[i];
 		}
@@ -63,8 +62,7 @@ class GLMOptimUtils {
 		return loss;
 	}
 
-	static double computeRidgeLoss(double[] pred, int[] y, double[] w,
-			double lambda) {
+	static double computeRidgeLoss(double[] pred, int[] y, double[] w, double lambda) {
 		double loss = computeLogisticLoss(pred, y);
 		loss += lambda / 2 * StatUtils.sumSq(w);
 		return loss;
@@ -76,26 +74,21 @@ class GLMOptimUtils {
 		return loss;
 	}
 
-	static double computeLassoLoss(double[] pred, int[] y, double[] w,
-			double lambda) {
+	static double computeLassoLoss(double[] pred, int[] y, double[] w, double lambda) {
 		double loss = computeLogisticLoss(pred, y);
 		loss += lambda * VectorUtils.l1norm(w);
 		return loss;
 	}
 
-	static double computeElasticNetLoss(double[] residual, double[] w,
-			double lambda1, double lambda2) {
+	static double computeElasticNetLoss(double[] residual, double[] w, double lambda1, double lambda2) {
 		double loss = computeQuadraticLoss(residual);
-		loss += lambda1 * VectorUtils.l1norm(w) + lambda2 / 2
-				* StatUtils.sumSq(w);
+		loss += lambda1 * VectorUtils.l1norm(w) + lambda2 / 2 * StatUtils.sumSq(w);
 		return loss;
 	}
 
-	static double computeElasticNetLoss(double[] pred, int[] y, double[] w,
-			double lambda1, double lambda2) {
+	static double computeElasticNetLoss(double[] pred, int[] y, double[] w, double lambda1, double lambda2) {
 		double loss = computeLogisticLoss(pred, y);
-		loss += lambda1 * VectorUtils.l1norm(w) + lambda2 / 2
-				* StatUtils.sumSq(w);
+		loss += lambda1 * VectorUtils.l1norm(w) + lambda2 / 2 * StatUtils.sumSq(w);
 		return loss;
 	}
 

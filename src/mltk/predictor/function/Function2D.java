@@ -14,11 +14,9 @@ import mltk.util.tuple.IntPair;
  * Class for 2D functions.
  * 
  * <p>
- * This class represents a segmented 2D function. Segments are defined in split
- * arrays for the two attributes. For example, [3, 5, +INF] defines three
- * segments: (-INF, 3], (3, 5], (5, +INF). The last value in the split array is
- * always +INF. The prediction matrix is the corresponding predictions for
- * segments defined in splits.
+ * This class represents a segmented 2D function. Segments are defined in split arrays for the two attributes. For
+ * example, [3, 5, +INF] defines three segments: (-INF, 3], (3, 5], (5, +INF). The last value in the split array is
+ * always +INF. The prediction matrix is the corresponding predictions for segments defined in splits.
  * </p>
  * 
  * @author Yin Lou
@@ -42,8 +40,8 @@ public class Function2D implements Regressor, BivariateFunction {
 	protected double[][] predictions;
 
 	/**
-	 * Last value is always Double.POSITIVE_INFINITY. e.g. [3, 5, +INF] defines
-	 * three segments: (-INF, 3], (3, 5], (5, +INF)
+	 * Last value is always Double.POSITIVE_INFINITY. e.g. [3, 5, +INF] defines three segments: (-INF, 3], (3, 5], (5,
+	 * +INF)
 	 */
 	protected double[] splits1;
 	protected double[] splits2;
@@ -58,19 +56,13 @@ public class Function2D implements Regressor, BivariateFunction {
 	/**
 	 * Constructor.
 	 * 
-	 * @param attIndex1
-	 *            the 1st attribute index.
-	 * @param attIndex2
-	 *            the 2nd attribute index.
-	 * @param splits1
-	 *            the split array for the 1st attribute.
-	 * @param splits2
-	 *            the split array for the 2nd attribute.
-	 * @param predictions
-	 *            the prediction matrix.
+	 * @param attIndex1 the 1st attribute index.
+	 * @param attIndex2 the 2nd attribute index.
+	 * @param splits1 the split array for the 1st attribute.
+	 * @param splits2 the split array for the 2nd attribute.
+	 * @param predictions the prediction matrix.
 	 */
-	public Function2D(int attIndex1, int attIndex2, double[] splits1,
-			double[] splits2, double[][] predictions) {
+	public Function2D(int attIndex1, int attIndex2, double[] splits1, double[] splits2, double[][] predictions) {
 		this.attIndex1 = attIndex1;
 		this.attIndex2 = attIndex2;
 		this.predictions = predictions;
@@ -81,20 +73,14 @@ public class Function2D implements Regressor, BivariateFunction {
 	/**
 	 * Returns a constant 2D function.
 	 * 
-	 * @param attIndex1
-	 *            the 1st attribute index.
-	 * @param attIndex2
-	 *            the 2nd attribute index.
-	 * @param prediction
-	 *            the constant.
+	 * @param attIndex1 the 1st attribute index.
+	 * @param attIndex2 the 2nd attribute index.
+	 * @param prediction the constant.
 	 * @return a constant 2D function.
 	 */
-	public static Function2D getConstantFunction(int attIndex1, int attIndex2,
-			double prediction) {
-		Function2D func = new Function2D(attIndex1, attIndex2,
-				new double[] { Double.POSITIVE_INFINITY },
-				new double[] { Double.POSITIVE_INFINITY },
-				new double[][] { { prediction } });
+	public static Function2D getConstantFunction(int attIndex1, int attIndex2, double prediction) {
+		Function2D func = new Function2D(attIndex1, attIndex2, new double[] { Double.POSITIVE_INFINITY },
+				new double[] { Double.POSITIVE_INFINITY }, new double[][] { { prediction } });
 		return func;
 	}
 
@@ -128,10 +114,8 @@ public class Function2D implements Regressor, BivariateFunction {
 	/**
 	 * Sets the attribute indices.
 	 * 
-	 * @param attIndex1
-	 *            the new index for the 1st attribute.
-	 * @param attIndex2
-	 *            the new index for the 2nd attribute.
+	 * @param attIndex1 the new index for the 1st attribute.
+	 * @param attIndex2 the new index for the 2nd attribute.
 	 */
 	public void setAttributeIndices(int attIndex1, int attIndex2) {
 		this.attIndex1 = attIndex1;
@@ -141,8 +125,7 @@ public class Function2D implements Regressor, BivariateFunction {
 	/**
 	 * Multiplies this function with a constant.
 	 * 
-	 * @param c
-	 *            the constant.
+	 * @param c the constant.
 	 * @return this function.
 	 */
 	public Function2D multiply(double c) {
@@ -155,8 +138,7 @@ public class Function2D implements Regressor, BivariateFunction {
 	/**
 	 * Divides this function with a constant.
 	 * 
-	 * @param c
-	 *            the constant.
+	 * @param c the constant.
 	 * @return this function.
 	 */
 	public Function2D divide(double c) {
@@ -169,8 +151,7 @@ public class Function2D implements Regressor, BivariateFunction {
 	/**
 	 * Adds this function with a constant.
 	 * 
-	 * @param c
-	 *            the constant.
+	 * @param c the constant.
 	 * @return this function.
 	 */
 	public Function2D add(double c) {
@@ -183,8 +164,7 @@ public class Function2D implements Regressor, BivariateFunction {
 	/**
 	 * Subtracts this function with a constant.
 	 * 
-	 * @param c
-	 *            the constant.
+	 * @param c the constant.
 	 * @return this function.
 	 */
 	public Function2D subtract(double c) {
@@ -197,14 +177,12 @@ public class Function2D implements Regressor, BivariateFunction {
 	/**
 	 * Adds this function with another one.
 	 * 
-	 * @param func
-	 *            the other function.
+	 * @param func the other function.
 	 * @return this function.
 	 */
 	public Function2D add(Function2D func) {
 		if (attIndex1 != func.attIndex1 || attIndex2 != func.attIndex2) {
-			throw new IllegalArgumentException(
-					"Cannot add arrays on differnt terms");
+			throw new IllegalArgumentException("Cannot add arrays on differnt terms");
 		}
 		double[] s1 = splits1;
 		int[] insertionPoints1 = new int[func.splits1.length - 1];
@@ -259,8 +237,7 @@ public class Function2D implements Regressor, BivariateFunction {
 			double[][] newPredictions = new double[s1.length][s2.length];
 			for (int i = 0; i < s1.length; i++) {
 				for (int j = 0; j < s2.length; j++) {
-					newPredictions[i][j] = this.evaluate(s1[i], s2[j])
-							+ func.evaluate(s1[i], s2[j]);
+					newPredictions[i][j] = this.evaluate(s1[i], s2[j]) + func.evaluate(s1[i], s2[j]);
 				}
 			}
 			splits1 = s1;
@@ -303,8 +280,7 @@ public class Function2D implements Regressor, BivariateFunction {
 		out.println(Arrays.toString(splits1));
 		out.println("Splits2: " + splits2.length);
 		out.println(Arrays.toString(splits2));
-		out.println("Predictions: " + predictions.length + "x"
-				+ predictions[0].length);
+		out.println("Predictions: " + predictions.length + "x" + predictions[0].length);
 		for (int i = 0; i < predictions.length; i++) {
 			out.println(Arrays.toString(predictions[i]));
 		}
@@ -313,10 +289,8 @@ public class Function2D implements Regressor, BivariateFunction {
 	/**
 	 * Returns the segment indices pair given (x1, x2).
 	 * 
-	 * @param x1
-	 *            the 1st argument.
-	 * @param x2
-	 *            the 2nd argument.
+	 * @param x1 the 1st argument.
+	 * @param x2 the 2nd argument.
 	 * @return segment indices pair at (x1, x2).
 	 */
 	public IntPair getSegmentIndex(double x1, double x2) {
@@ -334,8 +308,7 @@ public class Function2D implements Regressor, BivariateFunction {
 	/**
 	 * Returns the segment indices pair.
 	 * 
-	 * @param instance
-	 *            the instance.
+	 * @param instance the instance.
 	 * @return the segment indices pair.
 	 */
 	public IntPair getSegmentIndex(Instance instance) {
@@ -362,11 +335,9 @@ public class Function2D implements Regressor, BivariateFunction {
 		double[] splits2Copy = Arrays.copyOf(splits2, splits2.length);
 		double[][] predictionsCopy = new double[predictions.length][];
 		for (int i = 0; i < predictionsCopy.length; i++) {
-			predictionsCopy[i] = Arrays.copyOf(predictions[i],
-					predictions[i].length);
+			predictionsCopy[i] = Arrays.copyOf(predictions[i], predictions[i].length);
 		}
-		return new Function2D(attIndex1, attIndex2, splits1Copy, splits2Copy,
-				predictionsCopy);
+		return new Function2D(attIndex1, attIndex2, splits1Copy, splits2Copy, predictionsCopy);
 	}
 
 }

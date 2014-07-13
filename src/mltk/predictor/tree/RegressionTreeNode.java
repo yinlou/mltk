@@ -9,8 +9,7 @@ import mltk.core.Writable;
  * @author Yin Lou
  * 
  */
-public abstract class RegressionTreeNode implements Writable,
-		Copyable<RegressionTreeNode> {
+public abstract class RegressionTreeNode implements Writable, Copyable<RegressionTreeNode> {
 
 	/**
 	 * Returns <code>true</code> if the node is a leaf.

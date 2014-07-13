@@ -16,10 +16,8 @@ public class Histogram2D {
 	/**
 	 * Constructor.
 	 * 
-	 * @param n
-	 *            the size of the 1st dimension.
-	 * @param m
-	 *            the size of the 2nd dimension.
+	 * @param n the size of the 1st dimension.
+	 * @param m the size of the 2nd dimension.
 	 */
 	public Histogram2D(int n, int m) {
 		resp = new double[n][m];

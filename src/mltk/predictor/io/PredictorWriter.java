@@ -15,10 +15,8 @@ public class PredictorWriter {
 	/**
 	 * Writes a predictor to file.
 	 * 
-	 * @param predictor
-	 *            the predictor to write.
-	 * @param path
-	 *            the file path.
+	 * @param predictor the predictor to write.
+	 * @param path the file path.
 	 * @throws Exception
 	 */
 	public static void write(Predictor predictor, String path) throws Exception {

@@ -32,10 +32,8 @@ public class Diagnostics {
 	/**
 	 * Computes the weights for each term in a GAM.
 	 * 
-	 * @param gam
-	 *            the GAM model.
-	 * @param instances
-	 *            the training set.
+	 * @param gam the GAM model.
+	 * @param instances the training set.
 	 * @return the list of weights for each term in a GAM.
 	 */
 	public static List<Element<int[]>> diagnose(GAM gam, Instances instances) {
@@ -98,8 +96,7 @@ public class Diagnostics {
 	 * 
 	 * </p>
 	 * 
-	 * @param args
-	 *            the command line arguments.
+	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
@@ -111,8 +108,7 @@ public class Diagnostics {
 			parser.printUsage();
 			System.exit(1);
 		}
-		Instances dataset = InstancesReader
-				.read(opts.attPath, opts.datasetPath);
+		Instances dataset = InstancesReader.read(opts.attPath, opts.datasetPath);
 		GAM gam = (GAM) PredictorReader.read(opts.inputModelPath);
 
 		List<Element<int[]>> list = Diagnostics.diagnose(gam, dataset);

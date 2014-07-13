@@ -23,8 +23,7 @@ public class CmdLineParser {
 	/**
 	 * Constructor.
 	 * 
-	 * @param obj
-	 *            the object.
+	 * @param obj the object.
 	 */
 	public CmdLineParser(Class<?> clazz, Object obj) {
 		this.name = clazz.getSimpleName();
@@ -46,13 +45,11 @@ public class CmdLineParser {
 	/**
 	 * Parses the command line arguments.
 	 * 
-	 * @param args
-	 *            the command line arguments.
+	 * @param args the command line arguments.
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 */
-	public void parse(String[] args) throws IllegalArgumentException,
-			IllegalAccessException {
+	public void parse(String[] args) throws IllegalArgumentException, IllegalAccessException {
 		if (args.length % 2 != 0) {
 			throw new IllegalArgumentException();
 		}
@@ -100,11 +97,9 @@ public class CmdLineParser {
 
 		for (Argument arg : argList) {
 			if (arg.required()) {
-				required.append(arg.name()).append("\t")
-						.append(arg.description()).append("\n");
+				required.append(arg.name()).append("\t").append(arg.description()).append("\n");
 			} else {
-				optional.append("[").append(arg.name()).append("]\t")
-						.append(arg.description()).append("\n");
+				optional.append("[").append(arg.name()).append("]\t").append(arg.description()).append("\n");
 			}
 		}
 

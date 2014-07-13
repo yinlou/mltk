@@ -3,8 +3,7 @@ package mltk.util.tuple;
 import java.util.Comparator;
 
 /**
- * Class for comparing <int, double> pairs. By default int is used as key, and
- * in ascending order.
+ * Class for comparing <int, double> pairs. By default int is used as key, and in ascending order.
  * 
  * @author Yin Lou
  * 

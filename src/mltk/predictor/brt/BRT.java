@@ -31,8 +31,7 @@ public class BRT implements ProbabilisticClassifier, Regressor {
 	/**
 	 * Constructor.
 	 * 
-	 * @param k
-	 *            the number of classes.
+	 * @param k the number of classes.
 	 */
 	public BRT(int k) {
 		trees = new RegressionTreeList[k];
@@ -44,8 +43,7 @@ public class BRT implements ProbabilisticClassifier, Regressor {
 	/**
 	 * Returns the tree list for class k.
 	 * 
-	 * @param k
-	 *            the class k.
+	 * @param k the class k.
 	 * @return the tree list for class k.
 	 */
 	public RegressionTreeList getRegressionTreeList(int k) {

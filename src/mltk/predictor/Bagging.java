@@ -19,8 +19,7 @@ public class Bagging {
 	/**
 	 * Returns a bootstrap sample.
 	 * 
-	 * @param instances
-	 *            the data set.
+	 * @param instances the data set.
 	 * @return a bootstrap sample.
 	 */
 	public static Instances createBootstrapSample(Instances instances) {
@@ -33,8 +32,7 @@ public class Bagging {
 			}
 			map.put(idx, map.get(idx) + 1);
 		}
-		Instances bag = new Instances(instances.getAttributes(),
-				instances.getTargetAttribute(), map.size());
+		Instances bag = new Instances(instances.getAttributes(), instances.getTargetAttribute(), map.size());
 		for (Integer idx : map.keySet()) {
 			int weight = map.get(idx);
 			Instance instance = instances.get(idx).clone();
@@ -47,13 +45,12 @@ public class Bagging {
 	/**
 	 * Returns a bootstrap sample with out-of-bag samples.
 	 * 
-	 * @param instances
-	 *            the data set.
+	 * @param instances the data set.
 	 * @param bagIndices
 	 * @param oobIndices
 	 */
-	public static void createBootstrapSample(Instances instances,
-			Map<Integer, Integer> bagIndices, List<Integer> oobIndices) {
+	public static void createBootstrapSample(Instances instances, Map<Integer, Integer> bagIndices,
+			List<Integer> oobIndices) {
 		Random rand = Random.getInstance();
 		for (;;) {
 			bagIndices.clear();
@@ -79,10 +76,8 @@ public class Bagging {
 	/**
 	 * Returns a set of bags.
 	 * 
-	 * @param instances
-	 *            the dataset.
-	 * @param baggingIter
-	 *            the number of bagging iterations.
+	 * @param instances the dataset.
+	 * @param baggingIter the number of bagging iterations.
 	 * @return a set of bags.
 	 */
 	public static Instances[] createBags(Instances instances, int baggingIter) {

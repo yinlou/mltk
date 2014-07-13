@@ -55,8 +55,7 @@ public abstract class Learner {
 		/**
 		 * Parses an enumeration from a string.
 		 * 
-		 * @param task
-		 *            the string.
+		 * @param task the string.
 		 * @return a parsed task.
 		 */
 		public static Task getEnum(String task) {
@@ -73,8 +72,7 @@ public abstract class Learner {
 	/**
 	 * Builds a predictor from training set.
 	 * 
-	 * @param instances
-	 *            the training set.
+	 * @param instances the training set.
 	 * @return a predictior.
 	 */
 	public abstract Predictor build(Instances instances);
@@ -82,8 +80,7 @@ public abstract class Learner {
 	/**
 	 * Returns <code>true</code> if the instances are treated as sparse.
 	 * 
-	 * @param instances
-	 *            the instances to test.
+	 * @param instances the instances to test.
 	 * @return <code>true</code> if the instances are treated as sparse.
 	 */
 	protected boolean isSparse(Instances instances) {
@@ -97,17 +94,14 @@ public abstract class Learner {
 	}
 
 	/**
-	 * Returns the column-oriented format of sparse dataset. This method
-	 * automatically removes attributes with close-to-zero variance.
+	 * Returns the column-oriented format of sparse dataset. This method automatically removes attributes with
+	 * close-to-zero variance.
 	 * 
-	 * @param instances
-	 *            the instances.
-	 * @param normalize
-	 *            <code>true</code> if all the columns are normalized.
+	 * @param instances the instances.
+	 * @param normalize <code>true</code> if all the columns are normalized.
 	 * @return the column-oriented format of sparse dataset.
 	 */
-	protected SparseDataset getSparseDataset(Instances instances,
-			boolean normalize) {
+	protected SparseDataset getSparseDataset(Instances instances, boolean normalize) {
 		List<Attribute> attributes = instances.getAttributes();
 		int maxAttrId = attributes.get(attributes.size() - 1).getIndex();
 		boolean[] included = new boolean[maxAttrId + 1];
@@ -184,17 +178,14 @@ public abstract class Learner {
 	}
 
 	/**
-	 * Returns the column-oriented format of dense dataset. This method
-	 * automatically removes attributes with close-to-zero variance.
+	 * Returns the column-oriented format of dense dataset. This method automatically removes attributes with
+	 * close-to-zero variance.
 	 * 
-	 * @param instances
-	 *            the instances.
-	 * @param normalize
-	 *            <code>true</code> if all the columns are normalized.
+	 * @param instances the instances.
+	 * @param normalize <code>true</code> if all the columns are normalized.
 	 * @return the column-oriented format of dense dataset.
 	 */
-	protected DenseDataset getDenseDataset(Instances instances,
-			boolean normalize) {
+	protected DenseDataset getDenseDataset(Instances instances, boolean normalize) {
 		List<Attribute> attributes = instances.getAttributes();
 		final int p = instances.dimension();
 		final int n = instances.size();
@@ -252,8 +243,8 @@ public abstract class Learner {
 		public List<Double> stdList;
 		public List<Double> cList;
 
-		SparseDataset(int[] attrs, int[][] indices, double[][] values,
-				double[] y, List<Double> stdList, List<Double> cList) {
+		SparseDataset(int[] attrs, int[][] indices, double[][] values, double[] y, List<Double> stdList,
+				List<Double> cList) {
 			this.attrs = attrs;
 			this.indices = indices;
 			this.values = values;
@@ -272,8 +263,7 @@ public abstract class Learner {
 		public List<Double> stdList;
 		public List<Double> cList;
 
-		DenseDataset(int[] attrs, double[][] x, double[] y,
-				List<Double> stdList, List<Double> cList) {
+		DenseDataset(int[] attrs, double[][] x, double[] y, List<Double> stdList, List<Double> cList) {
 			this.attrs = attrs;
 			this.x = x;
 			this.y = y;

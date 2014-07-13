@@ -14,10 +14,8 @@ public class LongPair {
 	/**
 	 * Constructor.
 	 * 
-	 * @param v1
-	 *            the 1st <code>long</code>.
-	 * @param v2
-	 *            the 2nd <code>long</code>.
+	 * @param v1 the 1st <code>long</code>.
+	 * @param v2 the 2nd <code>long</code>.
 	 */
 	public LongPair(long v1, long v2) {
 		this.v1 = v1;

@@ -73,8 +73,7 @@ public class GAM implements ProbabilisticClassifier, Regressor {
 	/**
 	 * Sets the intercept.
 	 * 
-	 * @param intercept
-	 *            the new intercept.
+	 * @param intercept the new intercept.
 	 */
 	public void setIntercept(double intercept) {
 		this.intercept = intercept;
@@ -93,8 +92,7 @@ public class GAM implements ProbabilisticClassifier, Regressor {
 			in.readLine();
 
 			String line = in.readLine();
-			String regressorName = line.substring(1, line.length() - 1).split(
-					": ")[1];
+			String regressorName = line.substring(1, line.length() - 1).split(": ")[1];
 			Class<?> clazz = Class.forName(regressorName);
 			Regressor regressor = (Regressor) clazz.newInstance();
 			regressor.read(in);
@@ -118,13 +116,10 @@ public class GAM implements ProbabilisticClassifier, Regressor {
 	}
 
 	/**
-	 * Adds a new term into this GAM. The term is an array of attribute indices
-	 * that are used in the regressor.
+	 * Adds a new term into this GAM. The term is an array of attribute indices that are used in the regressor.
 	 * 
-	 * @param term
-	 *            the new term to add.
-	 * @param regressor
-	 *            the new regressor to add.
+	 * @param term the new term to add.
+	 * @param regressor the new regressor to add.
 	 */
 	public void add(int[] term, Regressor regressor) {
 		terms.add(term);

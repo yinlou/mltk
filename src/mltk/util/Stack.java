@@ -25,16 +25,14 @@ public class Stack<T> {
 	/**
 	 * Inserts an item into the stack.
 	 * 
-	 * @param item
-	 *            the item.
+	 * @param item the item.
 	 */
 	public void push(T item) {
 		list.add(item);
 	}
 
 	/**
-	 * Looks at the object at the top of this stack without removing it from the
-	 * stack.
+	 * Looks at the object at the top of this stack without removing it from the stack.
 	 * 
 	 * @return the top element in the stack.
 	 */
@@ -46,8 +44,7 @@ public class Stack<T> {
 	}
 
 	/**
-	 * Removes the object at the top of this stack and returns that object as
-	 * the value of this function.
+	 * Removes the object at the top of this stack and returns that object as the value of this function.
 	 * 
 	 * @return the top element in the stack.
 	 */

@@ -15,10 +15,8 @@ public class VectorUtils {
 	/**
 	 * Adds a constant to all elements in the array.
 	 * 
-	 * @param a
-	 *            the vector.
-	 * @param v
-	 *            the constant.
+	 * @param a the vector.
+	 * @param v the constant.
 	 */
 	public static void add(double[] a, double v) {
 		for (int i = 0; i < a.length; i++) {
@@ -29,10 +27,8 @@ public class VectorUtils {
 	/**
 	 * Subtracts a constant from all elements in the array.
 	 * 
-	 * @param a
-	 *            the vector.
-	 * @param v
-	 *            the constant.
+	 * @param a the vector.
+	 * @param v the constant.
 	 */
 	public static void subtract(double[] a, double v) {
 		for (int i = 0; i < a.length; i++) {
@@ -43,10 +39,8 @@ public class VectorUtils {
 	/**
 	 * Multiplies a constant to all elements in the array.
 	 * 
-	 * @param a
-	 *            the vector.
-	 * @param v
-	 *            the constant.
+	 * @param a the vector.
+	 * @param v the constant.
 	 */
 	public static void multiply(double[] a, double v) {
 		for (int i = 0; i < a.length; i++) {
@@ -57,10 +51,8 @@ public class VectorUtils {
 	/**
 	 * Divides a constant to all elements in the array.
 	 * 
-	 * @param a
-	 *            the vector.
-	 * @param v
-	 *            the constant.
+	 * @param a the vector.
+	 * @param v the constant.
 	 */
 	public static void divide(double[] a, double v) {
 		for (int i = 0; i < a.length; i++) {
@@ -71,8 +63,7 @@ public class VectorUtils {
 	/**
 	 * Returns the L2 norm of a vector.
 	 * 
-	 * @param a
-	 *            the vector.
+	 * @param a the vector.
 	 * @return the L2 norm of a vector.
 	 */
 	public static double l2norm(double[] a) {
@@ -82,8 +73,7 @@ public class VectorUtils {
 	/**
 	 * Returns the L2 norm of a vector.
 	 * 
-	 * @param v
-	 *            the vector.
+	 * @param v the vector.
 	 * @return the L2 norm of a vector.
 	 */
 	public static double l2norm(Vector v) {
@@ -93,8 +83,7 @@ public class VectorUtils {
 	/**
 	 * Returns the L1 norm of a vector.
 	 * 
-	 * @param a
-	 *            the vector.
+	 * @param a the vector.
 	 * @return the L1 norm of a vector.
 	 */
 	public static double l1norm(double[] a) {
@@ -108,8 +97,7 @@ public class VectorUtils {
 	/**
 	 * Returns the L1 norm of a vector.
 	 * 
-	 * @param v
-	 *            the vector.
+	 * @param v the vector.
 	 * @return the L1 norm of a vector.
 	 */
 	public static double l1norm(Vector v) {
@@ -119,10 +107,8 @@ public class VectorUtils {
 	/**
 	 * Returns the dot product of two vectors.
 	 * 
-	 * @param a
-	 *            the 1st vector.
-	 * @param b
-	 *            the 2nd vector.
+	 * @param a the 1st vector.
+	 * @param b the 2nd vector.
 	 * @return the dot product of two vectors.
 	 */
 	public static double dotProduct(double[] a, double[] b) {
@@ -136,10 +122,8 @@ public class VectorUtils {
 	/**
 	 * Returns the dot product of two vectors.
 	 * 
-	 * @param a
-	 *            the 1st vector.
-	 * @param b
-	 *            the 2nd vector.
+	 * @param a the 1st vector.
+	 * @param b the 2nd vector.
 	 * @return the dot product of two vectors.
 	 */
 	public static double dotProduct(DenseVector a, DenseVector b) {
@@ -149,10 +133,8 @@ public class VectorUtils {
 	/**
 	 * Returns the dot product of two vectors.
 	 * 
-	 * @param a
-	 *            the 1st vector.
-	 * @param b
-	 *            the 2nd vector.
+	 * @param a the 1st vector.
+	 * @param b the 2nd vector.
 	 * @return the dot product of two vectors.
 	 */
 	public static double dotProduct(SparseVector a, DenseVector b) {
@@ -169,10 +151,8 @@ public class VectorUtils {
 	/**
 	 * Returns the dot product of two vectors.
 	 * 
-	 * @param a
-	 *            the 1st vector.
-	 * @param b
-	 *            the 2nd vector.
+	 * @param a the 1st vector.
+	 * @param b the 2nd vector.
 	 * @return the dot product of two vectors.
 	 */
 	public static double dotProduct(DenseVector a, SparseVector b) {
@@ -182,10 +162,8 @@ public class VectorUtils {
 	/**
 	 * Returns the dot product of two vectors.
 	 * 
-	 * @param a
-	 *            the 1st vector.
-	 * @param b
-	 *            the 2nd vector.
+	 * @param a the 1st vector.
+	 * @param b the 2nd vector.
 	 * @return the dot product of two vectors.
 	 */
 	public static double dotProduct(SparseVector a, SparseVector b) {

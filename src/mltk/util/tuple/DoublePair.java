@@ -14,10 +14,8 @@ public class DoublePair {
 	/**
 	 * Constructor.
 	 * 
-	 * @param v1
-	 *            the 1st <code>double</code>.
-	 * @param v2
-	 *            the 2nd <code>double</code>.
+	 * @param v1 the 1st <code>double</code>.
+	 * @param v2 the 2nd <code>double</code>.
 	 */
 	public DoublePair(double v1, double v2) {
 		this.v1 = v1;

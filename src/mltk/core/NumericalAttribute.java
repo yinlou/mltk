@@ -11,8 +11,7 @@ public class NumericalAttribute extends Attribute {
 	/**
 	 * Constructor.
 	 * 
-	 * @param name
-	 *            the name of this attribute.
+	 * @param name the name of this attribute.
 	 */
 	public NumericalAttribute(String name) {
 		this(name, -1);
@@ -21,10 +20,8 @@ public class NumericalAttribute extends Attribute {
 	/**
 	 * Constructor.
 	 * 
-	 * @param name
-	 *            the name of this attribute.
-	 * @param index
-	 *            the index of this attribute.
+	 * @param name the name of this attribute.
+	 * @param index the index of this attribute.
 	 */
 	public NumericalAttribute(String name, int index) {
 		this.name = name;
@@ -45,8 +42,7 @@ public class NumericalAttribute extends Attribute {
 	/**
 	 * Parses a numerical attribute object from a string.
 	 * 
-	 * @param str
-	 *            the string.
+	 * @param str the string.
 	 * @return a parsed numerical attribute.
 	 */
 	public static NumericalAttribute parse(String str) {

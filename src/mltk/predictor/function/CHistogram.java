@@ -14,8 +14,7 @@ public class CHistogram {
 	/**
 	 * Constructor.
 	 * 
-	 * @param n
-	 *            the size of this cumulative histogram.
+	 * @param n the size of this cumulative histogram.
 	 */
 	public CHistogram(int n) {
 		sum = new double[n];

@@ -13,8 +13,7 @@ public class Permutation {
 	/**
 	 * Initializes a permutation of length n.
 	 * 
-	 * @param n
-	 *            the length of a permutation.
+	 * @param n the length of a permutation.
 	 */
 	public Permutation(int n) {
 		a = new int[n];

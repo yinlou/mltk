@@ -158,38 +158,31 @@ public class LassoLearner extends Learner {
 			maxNumIters = instances.dimension() * 20;
 		}
 		switch (task) {
-		case REGRESSION:
-			glm = buildRegressor(instances, maxNumIters, lambda);
-			break;
-		case CLASSIFICATION:
-			glm = buildClassifier(instances, maxNumIters, lambda);
-			break;
-		default:
-			break;
+			case REGRESSION:
+				glm = buildRegressor(instances, maxNumIters, lambda);
+				break;
+			case CLASSIFICATION:
+				glm = buildClassifier(instances, maxNumIters, lambda);
+				break;
+			default:
+				break;
 		}
 		return glm;
 	}
 
 	/**
-	 * Builds an L1-regularized binary classifier. Each row in the input matrix
-	 * x represents a feature (instead of a data point). Thus the input matrix
-	 * is the transpose of the row-oriented data matrix. This procedure does not
+	 * Builds an L1-regularized binary classifier. Each row in the input matrix x represents a feature (instead of a
+	 * data point). Thus the input matrix is the transpose of the row-oriented data matrix. This procedure does not
 	 * assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param x
-	 *            the inputs.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param attrs the attribute list.
+	 * @param x the inputs.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L1-regularized classifier.
 	 */
-	public GLM buildBinaryClassifier(int[] attrs, double[][] x, int[] y,
-			int maxNumIters, double lambda) {
+	public GLM buildBinaryClassifier(int[] attrs, double[][] x, int[] y, int maxNumIters, double lambda) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -215,8 +208,7 @@ public class LassoLearner extends Learner {
 
 			doOnePass(x, theta, y, tl1, w, pTrain, rTrain);
 
-			double currLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w,
-					lambda);
+			double currLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 
 			if (verbose) {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
@@ -232,27 +224,20 @@ public class LassoLearner extends Learner {
 	}
 
 	/**
-	 * Builds an L1-regularized binary classifier on sparse inputs. Each row of
-	 * the input represents a feature (instead of a data point), i.e., in
-	 * column-oriented format. This procedure does not assume the data is
-	 * normalized or centered.
+	 * Builds an L1-regularized binary classifier on sparse inputs. Each row of the input represents a feature (instead
+	 * of a data point), i.e., in column-oriented format. This procedure does not assume the data is normalized or
+	 * centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param attrs the attribute list.
+	 * @param indices the indices.
+	 * @param values the values.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L1-regularized classifier.
 	 */
-	public GLM buildBinaryClassifier(int[] attrs, int[][] indices,
-			double[][] values, int[] y, int maxNumIters, double lambda) {
+	public GLM buildBinaryClassifier(int[] attrs, int[][] indices, double[][] values, int[] y, int maxNumIters,
+			double lambda) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -278,8 +263,7 @@ public class LassoLearner extends Learner {
 
 			doOnePass(indices, values, theta, y, tl1, w, pTrain, rTrain);
 
-			double currLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w,
-					lambda);
+			double currLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 
 			if (verbose) {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
@@ -295,28 +279,20 @@ public class LassoLearner extends Learner {
 	}
 
 	/**
-	 * Builds L1-regularized binary classifiers for a sequence of regularization
-	 * parameter lambdas. Each row in the input matrix x represents a feature
-	 * (instead of a data point). Thus the input matrix is the transpose of the
-	 * row-oriented data matrix. This procedure does not assume the data is
-	 * normalized or centered.
+	 * Builds L1-regularized binary classifiers for a sequence of regularization parameter lambdas. Each row in the
+	 * input matrix x represents a feature (instead of a data point). Thus the input matrix is the transpose of the
+	 * row-oriented data matrix. This procedure does not assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param x
-	 *            the values.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
+	 * @param attrs the attribute list.
+	 * @param x the values.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return L1-regularized classifiers.
 	 */
-	public List<GLM> buildBinaryClassifiers(int[] attrs, double[][] x, int[] y,
-			int maxNumIters, int numLambdas, double minLambdaRatio) {
+	public List<GLM> buildBinaryClassifiers(int[] attrs, double[][] x, int[] y, int maxNumIters, int numLambdas,
+			double minLambdaRatio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -344,8 +320,7 @@ public class LassoLearner extends Learner {
 		for (int g = 0; g < numLambdas; g++) {
 			// Coordinate descent
 			final double tl1 = lambda * y.length;
-			double prevLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w,
-					lambda);
+			double prevLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
 					intercept += GLMOptimUtils.fitIntercept(pTrain, y);
@@ -353,12 +328,10 @@ public class LassoLearner extends Learner {
 
 				doOnePass(x, theta, y, tl1, w, pTrain, rTrain);
 
-				double currLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w,
-						lambda);
+				double currLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 
 				if (verbose) {
-					System.out.println("Iteration " + iter + ": " + " "
-							+ currLoss);
+					System.out.println("Iteration " + iter + ": " + " " + currLoss);
 				}
 
 				if (prevLoss - currLoss < epsilon) {
@@ -389,30 +362,21 @@ public class LassoLearner extends Learner {
 	}
 
 	/**
-	 * Builds L1-regularized binary classifiers for a sequence of regularization
-	 * parameter lambdas on sparse format. Each row of the input represents a
-	 * feature (instead of a data point), i.e., in column-oriented format. This
+	 * Builds L1-regularized binary classifiers for a sequence of regularization parameter lambdas on sparse format.
+	 * Each row of the input represents a feature (instead of a data point), i.e., in column-oriented format. This
 	 * procedure does not assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
+	 * @param attrs the attribute list.
+	 * @param indices the indices.
+	 * @param values the values.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return L1-regularized classifiers.
 	 */
-	public List<GLM> buildBinaryClassifiers(int[] attrs, int[][] indices,
-			double[][] values, int[] y, int maxNumIters, int numLambdas,
-			double minLambdaRatio) {
+	public List<GLM> buildBinaryClassifiers(int[] attrs, int[][] indices, double[][] values, int[] y, int maxNumIters,
+			int numLambdas, double minLambdaRatio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -440,8 +404,7 @@ public class LassoLearner extends Learner {
 		for (int g = 0; g < numLambdas; g++) {
 			// Coordinate descent
 			final double tl1 = lambda * y.length;
-			double prevLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w,
-					lambda);
+			double prevLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
 					intercept += GLMOptimUtils.fitIntercept(pTrain, y);
@@ -449,12 +412,10 @@ public class LassoLearner extends Learner {
 
 				doOnePass(indices, values, theta, y, tl1, w, pTrain, rTrain);
 
-				double currLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w,
-						lambda);
+				double currLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 
 				if (verbose) {
-					System.out.println("Iteration " + iter + ": " + " "
-							+ currLoss);
+					System.out.println("Iteration " + iter + ": " + " " + currLoss);
 				}
 
 				if (prevLoss - currLoss < epsilon) {
@@ -471,8 +432,7 @@ public class LassoLearner extends Learner {
 				}
 				ModelStructure structure = new ModelStructure(selected);
 				if (!structures.contains(structure)) {
-					GLM glm = refit(attrs, selected, indices, values, y,
-							maxNumIters);
+					GLM glm = refit(attrs, selected, indices, values, y, maxNumIters);
 					glms.add(glm);
 					structures.add(structure);
 				}
@@ -488,22 +448,16 @@ public class LassoLearner extends Learner {
 	/**
 	 * Builds an L1-regularized classifier.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param isSparse
-	 *            <code>true</code> if the training set is treated as sparse.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param trainSet the training set.
+	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L1-regularized classifer.
 	 */
-	public GLM buildClassifier(Instances trainSet, boolean isSparse,
-			int maxNumIters, double lambda) {
+	public GLM buildClassifier(Instances trainSet, boolean isSparse, int maxNumIters, double lambda) {
 		Attribute classAttribute = trainSet.getTargetAttribute();
 		if (classAttribute.getType() != Attribute.Type.NOMINAL) {
-			throw new IllegalArgumentException(
-					"Class attribute must be nominal.");
+			throw new IllegalArgumentException("Class attribute must be nominal.");
 		}
 		NominalAttribute clazz = (NominalAttribute) classAttribute;
 		int numClasses = clazz.getStates().length;
@@ -522,8 +476,7 @@ public class LassoLearner extends Learner {
 					y[i] = label == 0 ? 1 : 0;
 				}
 
-				GLM glm = buildBinaryClassifier(attrs, indices, values, y,
-						maxNumIters, lambda);
+				GLM glm = buildBinaryClassifier(attrs, indices, values, y, maxNumIters, lambda);
 
 				double[] w = glm.w[0];
 				for (int i = 0; i < cList.size(); i++) {
@@ -543,8 +496,7 @@ public class LassoLearner extends Learner {
 						y[i] = label == k ? 1 : 0;
 					}
 
-					GLM binaryClassifier = buildBinaryClassifier(attrs,
-							indices, values, y, maxNumIters, lambda);
+					GLM binaryClassifier = buildBinaryClassifier(attrs, indices, values, y, maxNumIters, lambda);
 
 					double[] w = binaryClassifier.w[0];
 					for (int i = 0; i < cList.size(); i++) {
@@ -569,8 +521,7 @@ public class LassoLearner extends Learner {
 					y[i] = label == 0 ? 1 : 0;
 				}
 
-				GLM glm = buildBinaryClassifier(attrs, x, y, maxNumIters,
-						lambda);
+				GLM glm = buildBinaryClassifier(attrs, x, y, maxNumIters, lambda);
 
 				double[] w = glm.w[0];
 				for (int i = 0; i < cList.size(); i++) {
@@ -591,8 +542,7 @@ public class LassoLearner extends Learner {
 						y[i] = label == k ? 1 : 0;
 					}
 
-					GLM binaryClassifier = buildBinaryClassifier(attrs, x, y,
-							maxNumIters, lambda);
+					GLM binaryClassifier = buildBinaryClassifier(attrs, x, y, maxNumIters, lambda);
 
 					double[] w = binaryClassifier.w[0];
 					for (int i = 0; i < cList.size(); i++) {
@@ -610,42 +560,30 @@ public class LassoLearner extends Learner {
 	/**
 	 * Builds an L1-regularized classifier.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L1-regularized classifer.
 	 */
-	public GLM buildClassifier(Instances trainSet, int maxNumIters,
-			double lambda) {
-		return buildClassifier(trainSet, isSparse(trainSet), maxNumIters,
-				lambda);
+	public GLM buildClassifier(Instances trainSet, int maxNumIters, double lambda) {
+		return buildClassifier(trainSet, isSparse(trainSet), maxNumIters, lambda);
 	}
 
 	/**
-	 * Builds L1-regularized classifiers for a sequence of regularization
-	 * parameter lambdas.
+	 * Builds L1-regularized classifiers for a sequence of regularization parameter lambdas.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param isSparse
-	 *            <code>true</code> if the training set is treated as sparse.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
+	 * @param trainSet the training set.
+	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return L1-regularized classifiers.
 	 */
-	public List<GLM> buildClassifiers(Instances trainSet, boolean isSparse,
-			int maxNumIters, int numLambdas, double minLambdaRatio) {
+	public List<GLM> buildClassifiers(Instances trainSet, boolean isSparse, int maxNumIters, int numLambdas,
+			double minLambdaRatio) {
 		Attribute classAttribute = trainSet.getTargetAttribute();
 		if (classAttribute.getType() != Attribute.Type.NOMINAL) {
-			throw new IllegalArgumentException(
-					"Class attribute must be nominal.");
+			throw new IllegalArgumentException("Class attribute must be nominal.");
 		}
 		NominalAttribute clazz = (NominalAttribute) classAttribute;
 		int numClasses = clazz.getStates().length;
@@ -664,8 +602,8 @@ public class LassoLearner extends Learner {
 					y[i] = label == 0 ? 1 : 0;
 				}
 
-				List<GLM> glms = buildBinaryClassifiers(attrs, indices, values,
-						y, maxNumIters, numLambdas, minLambdaRatio);
+				List<GLM> glms = buildBinaryClassifiers(attrs, indices, values, y, maxNumIters, numLambdas,
+						minLambdaRatio);
 
 				for (GLM glm : glms) {
 					double[] w = glm.w[0];
@@ -695,9 +633,8 @@ public class LassoLearner extends Learner {
 						y[i] = label == k ? 1 : 0;
 					}
 
-					List<GLM> binaryClassifiers = buildBinaryClassifiers(attrs,
-							indices, values, y, maxNumIters, numLambdas,
-							minLambdaRatio);
+					List<GLM> binaryClassifiers = buildBinaryClassifiers(attrs, indices, values, y, maxNumIters,
+							numLambdas, minLambdaRatio);
 
 					for (int l = 0; l < numLambdas; l++) {
 						GLM binaryClassifier = binaryClassifiers.get(l);
@@ -730,8 +667,7 @@ public class LassoLearner extends Learner {
 					y[i] = label == 0 ? 1 : 0;
 				}
 
-				List<GLM> glms = buildBinaryClassifiers(attrs, x, y,
-						maxNumIters, numLambdas, minLambdaRatio);
+				List<GLM> glms = buildBinaryClassifiers(attrs, x, y, maxNumIters, numLambdas, minLambdaRatio);
 
 				for (GLM glm : glms) {
 					double[] w = glm.w[0];
@@ -761,8 +697,8 @@ public class LassoLearner extends Learner {
 						y[i] = label == k ? 1 : 0;
 					}
 
-					List<GLM> binaryClassifiers = buildBinaryClassifiers(attrs,
-							x, y, maxNumIters, numLambdas, minLambdaRatio);
+					List<GLM> binaryClassifiers = buildBinaryClassifiers(attrs, x, y, maxNumIters, numLambdas,
+							minLambdaRatio);
 
 					for (int l = 0; l < numLambdas; l++) {
 						GLM binaryClassifier = binaryClassifiers.get(l);
@@ -785,46 +721,33 @@ public class LassoLearner extends Learner {
 	}
 
 	/**
-	 * Builds L1-regularized classifiers for a sequence of regularization
-	 * parameter lambdas.
+	 * Builds L1-regularized classifiers for a sequence of regularization parameter lambdas.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return L1-regularized classifiers.
 	 */
-	public List<GLM> buildClassifiers(Instances trainSet, int maxNumIters,
-			int numLambdas, double minLambdaRatio) {
-		return buildClassifiers(trainSet, isSparse(trainSet), maxNumIters,
-				numLambdas, minLambdaRatio);
+	public List<GLM> buildClassifiers(Instances trainSet, int maxNumIters, int numLambdas, double minLambdaRatio) {
+		return buildClassifiers(trainSet, isSparse(trainSet), maxNumIters, numLambdas, minLambdaRatio);
 	}
 
 	/**
 	 * Builds an L1-regularized regressor.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param isSparse
-	 *            <code>true</code> if the training set is treated as sparse.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param trainSet the training set.
+	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L1-regularized regressor.
 	 */
-	public GLM buildRegressor(Instances trainSet, boolean isSparse,
-			int maxNumIters, double lambda) {
+	public GLM buildRegressor(Instances trainSet, boolean isSparse, int maxNumIters, double lambda) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
 			List<Double> cList = sd.cList;
 
-			GLM glm = buildRegressor(sd.attrs, sd.indices, sd.values, sd.y,
-					maxNumIters, lambda);
+			GLM glm = buildRegressor(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, lambda);
 
 			double[] w = glm.w[0];
 			for (int i = 0; i < cList.size(); i++) {
@@ -852,12 +775,9 @@ public class LassoLearner extends Learner {
 	/**
 	 * Builds an L1-regularized regressor.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L1-regularized regressor.
 	 */
 	public GLM buildRegressor(Instances trainSet, int maxNumIters, double lambda) {
@@ -865,25 +785,18 @@ public class LassoLearner extends Learner {
 	}
 
 	/**
-	 * Builds an L1-regularized regressor. Each row in the input matrix x
-	 * represents a feature (instead of a data point). Thus the input matrix is
-	 * the transpose of the row-oriented data matrix. This procedure does not
-	 * assume the data is normalized or centered.
+	 * Builds an L1-regularized regressor. Each row in the input matrix x represents a feature (instead of a data
+	 * point). Thus the input matrix is the transpose of the row-oriented data matrix. This procedure does not assume
+	 * the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param x
-	 *            the inputs.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param attrs the attribute list.
+	 * @param x the inputs.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L1-regularized penalized regressor.
 	 */
-	public GLM buildRegressor(int[] attrs, double[][] x, double[] y,
-			int maxNumIters, double lambda) {
+	public GLM buildRegressor(int[] attrs, double[][] x, double[] y, int maxNumIters, double lambda) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -925,27 +838,19 @@ public class LassoLearner extends Learner {
 	}
 
 	/**
-	 * Builds an L1-regularized regressor on sparse inputs. Each row of the
-	 * input represents a feature (instead of a data point), i.e., in
-	 * column-oriented format. This procedure does not assume the data is
-	 * normalized or centered.
+	 * Builds an L1-regularized regressor on sparse inputs. Each row of the input represents a feature (instead of a
+	 * data point), i.e., in column-oriented format. This procedure does not assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param lambda
-	 *            the lambda.
+	 * @param attrs the attribute list.
+	 * @param indices the indices.
+	 * @param values the values.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param lambda the lambda.
 	 * @return an L1-regularized regressor.
 	 */
-	public GLM buildRegressor(int[] attrs, int[][] indices, double[][] values,
-			double[] y, int maxNumIters, double lambda) {
+	public GLM buildRegressor(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
+			double lambda) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -987,29 +892,23 @@ public class LassoLearner extends Learner {
 	}
 
 	/**
-	 * Builds L1-regularized regressors for a sequence of regularization
-	 * parameter lambdas.
+	 * Builds L1-regularized regressors for a sequence of regularization parameter lambdas.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param isSparse
-	 *            <code>true</code> if the training set is treated as sparse.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
+	 * @param trainSet the training set.
+	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return L1-regularized regressors.
 	 */
-	public List<GLM> buildRegressors(Instances trainSet, boolean isSparse,
-			int maxNumIters, int numLambdas, double minLambdaRatio) {
+	public List<GLM> buildRegressors(Instances trainSet, boolean isSparse, int maxNumIters, int numLambdas,
+			double minLambdaRatio) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
 			List<Double> cList = sd.cList;
 
-			List<GLM> glms = buildRegressors(sd.attrs, sd.indices, sd.values,
-					sd.y, maxNumIters, numLambdas, minLambdaRatio);
+			List<GLM> glms = buildRegressors(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, numLambdas,
+					minLambdaRatio);
 
 			for (GLM glm : glms) {
 				double[] w = glm.w[0];
@@ -1025,8 +924,7 @@ public class LassoLearner extends Learner {
 			DenseDataset dd = getDenseDataset(trainSet, true);
 			List<Double> cList = dd.cList;
 
-			List<GLM> glms = buildRegressors(dd.attrs, dd.x, dd.y, maxNumIters,
-					numLambdas, minLambdaRatio);
+			List<GLM> glms = buildRegressors(dd.attrs, dd.x, dd.y, maxNumIters, numLambdas, minLambdaRatio);
 
 			for (GLM glm : glms) {
 				double[] w = glm.w[0];
@@ -1042,48 +940,33 @@ public class LassoLearner extends Learner {
 	}
 
 	/**
-	 * Builds L1-regularized regressors for a sequence of regularization
-	 * parameter lambdas.
+	 * Builds L1-regularized regressors for a sequence of regularization parameter lambdas.
 	 * 
-	 * @param trainSet
-	 *            the training set.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return L1-regularized regressors.
 	 */
-	public List<GLM> buildRegressors(Instances trainSet, int maxNumIters,
-			int numLambdas, double minLambdaRatio) {
-		return buildRegressors(trainSet, isSparse(trainSet), maxNumIters,
-				numLambdas, minLambdaRatio);
+	public List<GLM> buildRegressors(Instances trainSet, int maxNumIters, int numLambdas, double minLambdaRatio) {
+		return buildRegressors(trainSet, isSparse(trainSet), maxNumIters, numLambdas, minLambdaRatio);
 	}
 
 	/**
-	 * Builds L1-regularized regressors for a sequence of regularization
-	 * parameter lambdas. Each row in the input matrix x represents a feature
-	 * (instead of a data point). Thus the input matrix is the transpose of the
-	 * row-oriented data matrix. This procedure does not assume the data is
-	 * normalized or centered.
+	 * Builds L1-regularized regressors for a sequence of regularization parameter lambdas. Each row in the input matrix
+	 * x represents a feature (instead of a data point). Thus the input matrix is the transpose of the row-oriented data
+	 * matrix. This procedure does not assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param x
-	 *            the inputs.
-	 * @param y
-	 *            the targets.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
+	 * @param attrs the attribute list.
+	 * @param x the inputs.
+	 * @param y the targets.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return L1-regularized regressors.
 	 */
-	public List<GLM> buildRegressors(int[] attrs, double[][] x, double[] y,
-			int maxNumIters, int numLambdas, double minLambdaRatio) {
+	public List<GLM> buildRegressors(int[] attrs, double[][] x, double[] y, int maxNumIters, int numLambdas,
+			double minLambdaRatio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -1120,8 +1003,7 @@ public class LassoLearner extends Learner {
 
 				doOnePass(x, sq, tl1, w, rTrain);
 
-				double currLoss = GLMOptimUtils.computeLassoLoss(rTrain, w,
-						lambda);
+				double currLoss = GLMOptimUtils.computeLassoLoss(rTrain, w, lambda);
 
 				if (prevLoss - currLoss < epsilon) {
 					break;
@@ -1151,28 +1033,20 @@ public class LassoLearner extends Learner {
 	}
 
 	/**
-	 * Builds L1-regularized regressors for a sequence of regularization
-	 * parameter lambdas on sparse format. Each row of the input represents a
-	 * feature (instead of a data point), i.e., in column-oriented format. This
-	 * procedure does not assume the data is normalized or centered.
+	 * Builds L1-regularized regressors for a sequence of regularization parameter lambdas on sparse format. Each row of
+	 * the input represents a feature (instead of a data point), i.e., in column-oriented format. This procedure does
+	 * not assume the data is normalized or centered.
 	 * 
-	 * @param attrs
-	 *            the attribute list.
-	 * @param indices
-	 *            the indices.
-	 * @param values
-	 *            the values.
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
-	 * @param numLambdas
-	 *            the number of lambdas.
-	 * @param minLambdaRatio
-	 *            the minimum lambda is minLambdaRatio * max lambda.
+	 * @param attrs the attribute list.
+	 * @param indices the indices.
+	 * @param values the values.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @param numLambdas the number of lambdas.
+	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return L1-regularized regressors.
 	 */
-	public List<GLM> buildRegressors(int[] attrs, int[][] indices,
-			double[][] values, double[] y, int maxNumIters, int numLambdas,
-			double minLambdaRatio) {
+	public List<GLM> buildRegressors(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
+			int numLambdas, double minLambdaRatio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -1209,8 +1083,7 @@ public class LassoLearner extends Learner {
 
 				doOnePass(indices, values, sq, tl1, w, rTrain);
 
-				double currLoss = GLMOptimUtils.computeLassoLoss(rTrain, w,
-						lambda);
+				double currLoss = GLMOptimUtils.computeLassoLoss(rTrain, w, lambda);
 
 				if (prevLoss - currLoss < epsilon) {
 					break;
@@ -1226,8 +1099,7 @@ public class LassoLearner extends Learner {
 				}
 				ModelStructure structure = new ModelStructure(selected);
 				if (!structures.contains(structure)) {
-					GLM glm = refit(attrs, selected, indices, values, y,
-							maxNumIters);
+					GLM glm = refit(attrs, selected, indices, values, y, maxNumIters);
 					glms.add(glm);
 					structures.add(structure);
 				}
@@ -1240,8 +1112,7 @@ public class LassoLearner extends Learner {
 		return glms;
 	}
 
-	protected void doOnePass(double[][] x, double[] sq, final double tl1,
-			double[] w, double[] rTrain) {
+	protected void doOnePass(double[][] x, double[] sq, final double tl1, double[] w, double[] rTrain) {
 		for (int j = 0; j < x.length; j++) {
 			double[] v = x[j];
 			// Calculate weight updates using naive updates
@@ -1266,8 +1137,8 @@ public class LassoLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(double[][] x, double[] theta, int[] y,
-			final double tl1, double[] w, double[] pTrain, double[] rTrain) {
+	protected void doOnePass(double[][] x, double[] theta, int[] y, final double tl1, double[] w, double[] pTrain,
+			double[] rTrain) {
 		for (int j = 0; j < x.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
 				continue;
@@ -1297,8 +1168,8 @@ public class LassoLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(int[][] indices, double[][] values, double[] sq,
-			final double tl1, double[] w, double[] rTrain) {
+	protected void doOnePass(int[][] indices, double[][] values, double[] sq, final double tl1, double[] w,
+			double[] rTrain) {
 		for (int j = 0; j < indices.length; j++) {
 			// Calculate weight updates using naive updates
 			double wNew = w[j] * sq[j];
@@ -1327,8 +1198,7 @@ public class LassoLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(int[][] indices, double[][] values,
-			double[] theta, int[] y, final double tl1, double[] w,
+	protected void doOnePass(int[][] indices, double[][] values, double[] theta, int[] y, final double tl1, double[] w,
 			double[] pTrain, double[] rTrain) {
 		for (int j = 0; j < indices.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
@@ -1410,8 +1280,7 @@ public class LassoLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(int[][] indices, double[][] values,
-			double[] y) {
+	protected double findMaxLambda(int[][] indices, double[][] values, double[] y) {
 		double mean = 0;
 		if (fitIntercept) {
 			mean = GLMOptimUtils.fitIntercept(y);
@@ -1423,8 +1292,7 @@ public class LassoLearner extends Learner {
 		for (int i = 0; i < indices.length; i++) {
 			int[] index = indices[i];
 			double[] value = values[i];
-			double dot = Math.abs(VectorUtils.dotProduct(new SparseVector(
-					index, value), v));
+			double dot = Math.abs(VectorUtils.dotProduct(new SparseVector(index, value), v));
 			if (dot > maxLambda) {
 				maxLambda = dot;
 			}
@@ -1436,8 +1304,7 @@ public class LassoLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(int[][] indices, double[][] values, int[] y,
-			double[] pTrain) {
+	protected double findMaxLambda(int[][] indices, double[][] values, int[] y, double[] pTrain) {
 		if (fitIntercept) {
 			GLMOptimUtils.fitIntercept(pTrain, y);
 		}
@@ -1476,8 +1343,7 @@ public class LassoLearner extends Learner {
 	/**
 	 * Sets whether we fit intercept.
 	 * 
-	 * @param fitIntercept
-	 *            whether we fit intercept.
+	 * @param fitIntercept whether we fit intercept.
 	 */
 	public void fitIntercept(boolean fitIntercept) {
 		this.fitIntercept = fitIntercept;
@@ -1549,15 +1415,13 @@ public class LassoLearner extends Learner {
 	/**
 	 * Sets whether we refit the model.
 	 * 
-	 * @param refit
-	 *            <code>true</code> if we refit the model.
+	 * @param refit <code>true</code> if we refit the model.
 	 */
 	public void refit(boolean refit) {
 		this.refit = refit;
 	}
 
-	protected GLM refit(int[] attrs, boolean[] selected, double[][] x,
-			double[] y, int maxNumIters) {
+	protected GLM refit(int[] attrs, boolean[] selected, double[][] x, double[] y, int maxNumIters) {
 		List<double[]> xList = new ArrayList<>();
 		for (int j = 0; j < attrs.length; j++) {
 			if (selected[j]) {
@@ -1586,8 +1450,7 @@ public class LassoLearner extends Learner {
 		glmLearner.fitIntercept(fitIntercept);
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
-		GLM glm = glmLearner.buildRegressor(attrsNew, xNew, y, maxNumIters,
-				1e-8);
+		GLM glm = glmLearner.buildRegressor(attrsNew, xNew, y, maxNumIters, 1e-8);
 		double[] w = new double[attrs.length];
 		double[] coef = glm.coefficients(0);
 		int k = 0;
@@ -1600,8 +1463,7 @@ public class LassoLearner extends Learner {
 		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0));
 	}
 
-	protected GLM refit(int[] attrs, boolean[] selected, double[][] x, int[] y,
-			int maxNumIters) {
+	protected GLM refit(int[] attrs, boolean[] selected, double[][] x, int[] y, int maxNumIters) {
 		List<double[]> xList = new ArrayList<>();
 		for (int j = 0; j < attrs.length; j++) {
 			if (selected[j]) {
@@ -1624,8 +1486,7 @@ public class LassoLearner extends Learner {
 		glmLearner.fitIntercept(fitIntercept);
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
-		GLM glm = glmLearner.buildBinaryClassifier(attrsNew, xNew, y,
-				maxNumIters, 1e-8);
+		GLM glm = glmLearner.buildBinaryClassifier(attrsNew, xNew, y, maxNumIters, 1e-8);
 		double[] w = new double[attrs.length];
 		double[] coef = glm.coefficients(0);
 		int k = 0;
@@ -1638,8 +1499,7 @@ public class LassoLearner extends Learner {
 		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0));
 	}
 
-	protected GLM refit(int[] attrs, boolean[] selected, int[][] indices,
-			double[][] values, double[] y, int maxNumIters) {
+	protected GLM refit(int[] attrs, boolean[] selected, int[][] indices, double[][] values, double[] y, int maxNumIters) {
 		List<int[]> indicesList = new ArrayList<>();
 		List<double[]> valuesList = new ArrayList<>();
 		for (int j = 0; j < attrs.length; j++) {
@@ -1674,8 +1534,7 @@ public class LassoLearner extends Learner {
 		glmLearner.fitIntercept(fitIntercept);
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
-		GLM glm = glmLearner.buildRegressor(attrsNew, indicesNew, valuesNew, y,
-				maxNumIters, 1e-8);
+		GLM glm = glmLearner.buildRegressor(attrsNew, indicesNew, valuesNew, y, maxNumIters, 1e-8);
 		double[] w = new double[attrs.length];
 		double[] coef = glm.coefficients(0);
 		int k = 0;
@@ -1688,8 +1547,7 @@ public class LassoLearner extends Learner {
 		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0));
 	}
 
-	protected GLM refit(int[] attrs, boolean[] selected, int[][] indices,
-			double[][] values, int[] y, int maxNumIters) {
+	protected GLM refit(int[] attrs, boolean[] selected, int[][] indices, double[][] values, int[] y, int maxNumIters) {
 		List<int[]> indicesList = new ArrayList<>();
 		List<double[]> valuesList = new ArrayList<>();
 		for (int j = 0; j < attrs.length; j++) {
@@ -1718,8 +1576,7 @@ public class LassoLearner extends Learner {
 		glmLearner.fitIntercept(fitIntercept);
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
-		GLM glm = glmLearner.buildBinaryClassifier(attrsNew, indicesNew,
-				valuesNew, y, maxNumIters, 1e-8);
+		GLM glm = glmLearner.buildBinaryClassifier(attrsNew, indicesNew, valuesNew, y, maxNumIters, 1e-8);
 		double[] w = new double[attrs.length];
 		double[] coef = glm.coefficients(0);
 		int k = 0;
@@ -1735,8 +1592,7 @@ public class LassoLearner extends Learner {
 	/**
 	 * Sets the convergence threshold epsilon.
 	 * 
-	 * @param epsilon
-	 *            the convergence threshold epsilon.
+	 * @param epsilon the convergence threshold epsilon.
 	 */
 	public void setEpsilon(double epsilon) {
 		this.epsilon = epsilon;
@@ -1745,8 +1601,7 @@ public class LassoLearner extends Learner {
 	/**
 	 * Sets the lambda.
 	 * 
-	 * @param lambda
-	 *            the lambda.
+	 * @param lambda the lambda.
 	 */
 	public void setLambda(double lambda) {
 		this.lambda = lambda;
@@ -1755,8 +1610,7 @@ public class LassoLearner extends Learner {
 	/**
 	 * Sets the maximum number of iterations.
 	 * 
-	 * @param maxNumIters
-	 *            the maximum number of iterations.
+	 * @param maxNumIters the maximum number of iterations.
 	 */
 	public void setMaxNumIters(int maxNumIters) {
 		this.maxNumIters = maxNumIters;
@@ -1765,8 +1619,7 @@ public class LassoLearner extends Learner {
 	/**
 	 * Sets the number of lambdas.
 	 * 
-	 * @param numLambdas
-	 *            the number of lambdas.
+	 * @param numLambdas the number of lambdas.
 	 */
 	public void setNumLambdas(int numLambdas) {
 		this.numLambdas = numLambdas;
@@ -1775,8 +1628,7 @@ public class LassoLearner extends Learner {
 	/**
 	 * Sets the task of this learner.
 	 * 
-	 * @param task
-	 *            the task of this learner.
+	 * @param task the task of this learner.
 	 */
 	public void setTask(Task task) {
 		this.task = task;
@@ -1785,8 +1637,7 @@ public class LassoLearner extends Learner {
 	/**
 	 * Sets whether we output something during the training.
 	 * 
-	 * @param verbose
-	 *            the switch if we output things during training.
+	 * @param verbose the switch if we output things during training.
 	 */
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;

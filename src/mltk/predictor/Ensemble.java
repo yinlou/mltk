@@ -25,8 +25,7 @@ public abstract class Ensemble implements Classifier, Regressor {
 	/**
 	 * Constructor.
 	 * 
-	 * @param capacity
-	 *            the capacity of this ensemble.
+	 * @param capacity the capacity of this ensemble.
 	 */
 	public Ensemble(int capacity) {
 		predictors = new ArrayList<>(capacity);
@@ -35,8 +34,7 @@ public abstract class Ensemble implements Classifier, Regressor {
 	/**
 	 * Returns a particular predictor.
 	 * 
-	 * @param index
-	 *            the index of predictor.
+	 * @param index the index of predictor.
 	 * @return a particular predictor.
 	 */
 	public Predictor get(int index) {
@@ -55,8 +53,7 @@ public abstract class Ensemble implements Classifier, Regressor {
 	/**
 	 * Adds a new predictor to the ensemble.
 	 * 
-	 * @param predictor
-	 *            the new predictor.
+	 * @param predictor the new predictor.
 	 */
 	public void add(Predictor predictor) {
 		predictors.add(predictor);
@@ -85,8 +82,7 @@ public abstract class Ensemble implements Classifier, Regressor {
 		in.readLine();
 		for (int i = 0; i < capacity; i++) {
 			String line = in.readLine();
-			String predictorName = line.substring(1, line.length() - 1).split(
-					": ")[1];
+			String predictorName = line.substring(1, line.length() - 1).split(": ")[1];
 			Class<?> clazz = Class.forName(predictorName);
 			Predictor predictor = (Predictor) clazz.newInstance();
 			predictor.read(in);

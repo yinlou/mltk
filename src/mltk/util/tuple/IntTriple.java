@@ -15,12 +15,9 @@ public class IntTriple {
 	/**
 	 * Constructor.
 	 * 
-	 * @param v1
-	 *            the 1st <code>int</code>.
-	 * @param v2
-	 *            the 2nd <code>int</code>.
-	 * @param v3
-	 *            the 3rd <code>int</code>.
+	 * @param v1 the 1st <code>int</code>.
+	 * @param v2 the 2nd <code>int</code>.
+	 * @param v3 the 3rd <code>int</code>.
 	 */
 	public IntTriple(int v1, int v2, int v3) {
 		this.v1 = v1;
