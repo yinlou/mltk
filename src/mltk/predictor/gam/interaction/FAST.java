@@ -73,8 +73,8 @@ public class FAST {
 		@Argument(name = "-r", description = "attribute file path")
 		String attPath = null;
 
-		@Argument(name = "-t", description = "dataset path", required = true)
-		String trainPath = null;
+		@Argument(name = "-d", description = "dataset path", required = true)
+		String datasetPath = null;
 
 		@Argument(name = "-R", description = "residual path", required = true)
 		String residualPath = null;
@@ -95,7 +95,7 @@ public class FAST {
 	 * 
 	 * <pre>
 	 * Usage: FAST
-	 * -t	dataset path
+	 * -d	dataset path
 	 * -R	residual path
 	 * -o	output path
 	 * [-r]	attribute file path
@@ -118,7 +118,7 @@ public class FAST {
 			System.exit(1);
 		}
 
-		Instances instances = InstancesReader.read(opts.attPath, opts.trainPath);
+		Instances instances = InstancesReader.read(opts.attPath, opts.datasetPath);
 
 		System.out.println("Reading residuals...");
 		BufferedReader br = new BufferedReader(new FileReader(opts.residualPath), 65535);

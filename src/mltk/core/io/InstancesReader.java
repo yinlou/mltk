@@ -24,7 +24,8 @@ import mltk.util.tuple.Pair;
 public class InstancesReader {
 
 	/**
-	 * Reads a set of instances from attribute file and data file. Attribute file can be null. Default delimiter is whitespace.
+	 * Reads a set of instances from attribute file and data file. Attribute file can be null. Default delimiter is
+	 * whitespace.
 	 * 
 	 * @param attFile the attribute file.
 	 * @param dataFile the data file.
@@ -82,7 +83,7 @@ public class InstancesReader {
 			List<Attribute> attributes = new ArrayList<>();
 			Instances instances = new Instances(attributes);
 			int totalLength = -1;
-			
+
 			TreeSet<Integer> attrSet = new TreeSet<>();
 			BufferedReader br = new BufferedReader(new FileReader(dataFile), 65535);
 			for (;;) {
@@ -102,7 +103,7 @@ public class InstancesReader {
 					} else if (data.length == totalLength) {
 						instance = parseDenseInstance(data, -1);
 					}
-					
+
 				}
 				if (instance != null) {
 					instances.add(instance);
@@ -140,7 +141,7 @@ public class InstancesReader {
 	public static Instances read(String file, int classIndex) throws IOException {
 		return read(file, classIndex, "\\s+");
 	}
-	
+
 	/**
 	 * Reads a set of dense instances from data file.
 	 * 
@@ -230,7 +231,7 @@ public class InstancesReader {
 		}
 		return new Instance(indices, values, classValue);
 	}
-	
+
 	/**
 	 * Parses a sparse instance from strings.
 	 * 

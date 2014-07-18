@@ -72,7 +72,7 @@ MLTK provides two classes to perform reading/writing of datasets: `mltk.core.io.
 ```
 Instances instances = InstancesReader.read(< attr file path >, < dataset file path >)
 ```
-It reads a dataset from attribute file and data file. Attribute file can be null. When attribute file is not provided, if the data file follows dense format, no class attribute will be assigned, if the data file follows sparse format, the class attribute will be nominal if all class values are integers, or continuous attribute otherwise.
+It reads a dataset from attribute file and data file. Attribute file can be `null`. When attribute file is not provided, if the data file follows dense format, no class attribute will be assigned, if the data file follows sparse format, the class attribute will be nominal if all class values are integers, or continuous attribute otherwise.
 
 ```
 Instances instances = InstancesReader.read(< dataset file path >, < class index >)
@@ -134,8 +134,9 @@ Usage: Evaluator
 -m	model path
 [-r]	attribute file path
 [-e]	AUC (a), Error (c), RMSE (r) (default: r)
-Currently MLTK supports area-under-curve (AUC), classification error (Error) and root-mean-squared error (RMSE).
 ```
+
+Currently MLTK supports area-under-curve (AUC), classification error (Error) and root-mean-squared error (RMSE).
 
 ### Evaluating Models in Java Code
 
