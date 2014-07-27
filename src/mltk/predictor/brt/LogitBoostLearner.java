@@ -13,13 +13,10 @@ import mltk.core.io.InstancesReader;
 import mltk.predictor.Learner;
 import mltk.predictor.io.PredictorWriter;
 import mltk.predictor.tree.RegressionTree;
-import mltk.predictor.tree.RegressionTreeLearner;
 import mltk.predictor.tree.RegressionTreeLearner.Mode;
 import mltk.util.MathUtils;
 import mltk.util.Permutation;
 import mltk.util.Random;
-import mltk.util.StatUtils;
-import mltk.util.VectorUtils;
 
 /**
  * Class for logit boost learner.
@@ -134,7 +131,7 @@ public class LogitBoostLearner extends Learner {
 		NominalAttribute clazz = (NominalAttribute) classAttribute;
 		final int numClasses = clazz.getStates().length;
 		final int n = trainSet.size();
-		final int baseClass = numClasses - 1;
+		final double l = learningRate * (numClasses - 1.0) / numClasses;
 
 		BRT brt = new BRT(numClasses);
 
@@ -156,17 +153,19 @@ public class LogitBoostLearner extends Learner {
 		}
 
 		// Initialization
-		double[][] pred = new double[n][numClasses];
-		double[][] prob = new double[n][numClasses];
-		int[][] r = new int[n][numClasses];
-		for (int i = 0; i < n; i++) {
-			for (int k = 0; k < numClasses; k++) {
-				r[i][k] = MathUtils.indicator(target[i] == k);
-				prob[i][k] = 1.0 / numClasses;
+		double[][] predTrain = new double[numClasses][n];
+		double[][] probTrain = new double[numClasses][n];
+		int[][] rTrain = new int[numClasses][n];
+		for (int k = 0; k < numClasses; k++) {
+			int[] rkTrain = rTrain[k];
+			double[] probkTrain = probTrain[k];
+			for (int i = 0; i < n; i++) {
+				rkTrain[i] = MathUtils.indicator(target[i] == k);
+				probkTrain[i] = 1.0 / numClasses;
 			}
 		}
 
-		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
+		RobustRegressionTreeLearner rtLearner = new RobustRegressionTreeLearner();
 		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
 		rtLearner.setMaxNumLeaves(maxNumLeaves);
 
@@ -182,27 +181,27 @@ public class LogitBoostLearner extends Learner {
 				trainSet.setAttributes(attList);
 			}
 
-			for (int k = 0; k < numClasses - 1; k++) {
+			for (int k = 0; k < numClasses; k++) {
 				// Prepare training set
+				int[] rkTrain = rTrain[k];
+				double[] probkTrain = probTrain[k];
 				for (int i = 0; i < n; i++) {
 					Instance instance = trainSet.get(i);
-					double pk = prob[i][k];
-					double pb = prob[i][baseClass];
-					double t = r[i][k] - pk - (r[i][baseClass] - pb);
-					double w = pb * (1 - pb) + pk * (1 - pk) + 2 * pk * pb;
+					double pk = probkTrain[i];
+					double t = rkTrain[i] - pk;
+					double w = pk * (1 - pk);
 					instance.setTarget(t);
 					instance.setWeight(w);
 				}
 
 				RegressionTree rt = rtLearner.build(trainSet);
-				if (learningRate != 1) {
-					rt.multiply(learningRate);
-				}
+				rt.multiply(l);
 				brt.trees[k].add(rt);
 
+				double[] predkTrain = predTrain[k];
 				for (int i = 0; i < n; i++) {
 					double p = rt.regress(trainSet.get(i));
-					pred[i][k] += p;
+					predkTrain[i] += p;
 				}
 			}
 
@@ -212,20 +211,24 @@ public class LogitBoostLearner extends Learner {
 			}
 
 			// Update probabilities
-			for (int i = 0; i < n; i++) {
-				predictProbabilities(pred[i], prob[i]);
-			}
+			predictProbabilities(predTrain, probTrain);
 
 			if (verbose) {
 				double error = 0;
 				for (int i = 0; i < n; i++) {
-					double p = StatUtils.indexOfMax(prob[i]);
+					double p = 0;
+					double maxProb = -1;
+					for (int k = 0; k < numClasses; k++) {
+						if (probTrain[k][i] > maxProb) {
+							maxProb = probTrain[k][i];
+							p = k;
+						}
+					}
 					if (p != target[i]) {
 						error++;
 					}
 				}
 				error /= n;
-				// double rmse = StatUtils.rms(residualTrain);
 				System.out.println("Iteration " + iter + ": " + error);
 			}
 		}
@@ -240,14 +243,24 @@ public class LogitBoostLearner extends Learner {
 		return brt;
 	}
 
-	protected void predictProbabilities(double[] pred, double[] prob) {
-		double max = StatUtils.max(pred);
-		double sum = 0;
-		for (int i = 0; i < prob.length; i++) {
-			prob[i] = Math.exp(pred[i] - max);
-			sum += prob[i];
+	protected void predictProbabilities(double[][] pred, double[][] prob) {
+		for (int i = 0; i < pred[0].length; i++) {
+			double max = Double.NEGATIVE_INFINITY;
+			for (int k = 0; k < pred.length; k++) {
+				if (max < pred[k][i]) {
+					max = pred[k][i];
+				}
+			}
+			double sum = 0;
+			for (int k = 0; k < pred.length; k++) {
+				double p = Math.exp(pred[k][i] - max);
+				prob[k][i] = p;
+				sum += p;
+			}
+			for (int k = 0; k < pred.length; k++) {
+				prob[k][i] /= sum;
+			}
 		}
-		VectorUtils.divide(prob, sum);
 	}
 
 	@Override

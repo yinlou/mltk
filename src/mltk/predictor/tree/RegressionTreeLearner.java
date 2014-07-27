@@ -296,11 +296,7 @@ public class RegressionTreeLearner extends Learner {
 	}
 
 	protected RegressionTree buildAlphaLimitedTree(Instances instances, double alpha) {
-		double totalWeight = 0;
-		for (Instance instance : instances) {
-			totalWeight += instance.getWeight();
-		}
-		final int limit = (int) (alpha * totalWeight);
+		final int limit = (int) (alpha * instances.size());
 		return buildMinLeafSizeLimitedTree(instances, limit);
 	}
 
@@ -373,7 +369,7 @@ public class RegressionTreeLearner extends Learner {
 		final double sum = totalWeights * weightedMean;
 
 		// 1. Check basic leaf conditions
-		if (stats[0] < limit || stdIs0) {
+		if (dataset.instances.size() < limit || stdIs0) {
 			RegressionTreeNode node = new RegressionTreeLeaf(weightedMean);
 			return node;
 		}
@@ -455,8 +451,6 @@ public class RegressionTreeLearner extends Learner {
 		double lastValue = pairs.get(0).v2;
 		double totalWeight = instances.get(pairs.get(0).v1).getWeight();
 		double sum = instances.get(pairs.get(0).v1).getTarget() * totalWeight;
-		double lastResp = instances.get(pairs.get(0).v1).getTarget();
-		boolean isStd0 = true;
 
 		for (int i = 1; i < pairs.size(); i++) {
 			IntDoublePair pair = pairs.get(i);
@@ -469,12 +463,9 @@ public class RegressionTreeLearner extends Learner {
 				lastValue = value;
 				totalWeight = weight;
 				sum = resp * weight;
-				lastResp = resp;
-				isStd0 = true;
 			} else {
 				totalWeight += weight;
 				sum += resp * weight;
-				isStd0 = isStd0 && (lastResp == resp);
 			}
 		}
 		uniqueValues.add(lastValue);
