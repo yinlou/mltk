@@ -155,17 +155,17 @@ public class AdditiveGrovesLearner extends Learner {
 		}
 
 	}
-	
-	public int bestNumTrees;
-	public int bestBaggingIters;
-	public double bestAlpha;
+
+	private int bestNumTrees;
+	private int bestBaggingIters;
+	private double bestAlpha;
 
 	private boolean verbose;
 	private int numTrees;
 	private int baggingIters;
 	private double minAlpha;
 	private Metric metric;
-	
+
 	/**
 	 * Constructor.
 	 */
@@ -176,7 +176,7 @@ public class AdditiveGrovesLearner extends Learner {
 		minAlpha = 0.01;
 		metric = new RMSE();
 	}
-	
+
 	/**
 	 * Returns the metric.
 	 * 
@@ -185,9 +185,10 @@ public class AdditiveGrovesLearner extends Learner {
 	public Metric getMetric() {
 		return metric;
 	}
-	
+
 	/**
-	 * Sets the metric. Currently only support {@link mltk.predictor.evaluation.RMSE RMSE} and {@link mltk.predictor.evaluation.AUC AUC}.
+	 * Sets the metric. Currently only support {@link mltk.predictor.evaluation.RMSE RMSE} and
+	 * {@link mltk.predictor.evaluation.AUC AUC}.
 	 * 
 	 * @param metric the metric.
 	 */
@@ -200,7 +201,7 @@ public class AdditiveGrovesLearner extends Learner {
 	/**
 	 * Returns the best number of trees in a grove from latest run.
 	 * 
-	 * @returnthe best number of trees in a grove from latest run.
+	 * @return the best number of trees in a grove from latest run.
 	 */
 	public int getBestNumTrees() {
 		return bestNumTrees;
@@ -644,7 +645,7 @@ public class AdditiveGrovesLearner extends Learner {
 
 		@Argument(name = "-o", description = "output model path")
 		String outputModelPath = null;
-		
+
 		@Argument(name = "-e", description = "AUC (a), RMSE (r) (default: r)")
 		String metric = null;
 
@@ -689,7 +690,7 @@ public class AdditiveGrovesLearner extends Learner {
 		learner.setMinAlpha(opts.a);
 		learner.setMetric(metric);
 		learner.setVerbose(true);
-		
+
 		long start = System.currentTimeMillis();
 		AdditiveGroves ag = learner.buildRegressor(trainSet, validSet);
 		long end = System.currentTimeMillis();
