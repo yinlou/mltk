@@ -1,4 +1,4 @@
-package mltk.predictor.tree;
+package mltk.predictor.tree.ensemble.rf;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,6 +13,11 @@ import mltk.core.io.InstancesReader;
 import mltk.predictor.BaggedEnsemble;
 import mltk.predictor.BaggedEnsembleLearner;
 import mltk.predictor.io.PredictorWriter;
+import mltk.predictor.tree.RegressionTree;
+import mltk.predictor.tree.RegressionTreeInteriorNode;
+import mltk.predictor.tree.RegressionTreeLeaf;
+import mltk.predictor.tree.RegressionTreeLearner;
+import mltk.predictor.tree.RegressionTreeNode;
 import mltk.util.Permutation;
 import mltk.util.Random;
 import mltk.util.tuple.DoublePair;
@@ -107,10 +112,10 @@ public class RandomRegressionTreeLearner extends RegressionTreeLearner {
 		}
 		for (int i = 0; i < attributes.size(); i++) {
 			Attribute attribute = attributes.get(i);
-			int attIndex = attribute.getIndex();
 			if (!selected.contains(i)) {
 				continue;
 			}
+			int attIndex = attribute.getIndex();
 			List<IntDoublePair> sortedList = dataset.sortedLists.get(i);
 			List<Double> uniqueValues = new ArrayList<>(sortedList.size());
 			List<DoublePair> histogram = new ArrayList<>(sortedList.size());

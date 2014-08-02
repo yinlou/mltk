@@ -1,4 +1,4 @@
-package mltk.predictor.brt;
+package mltk.predictor.tree.ensemble.brt;
 
 import java.util.Arrays;
 import java.util.List;
