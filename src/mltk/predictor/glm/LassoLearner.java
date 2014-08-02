@@ -203,7 +203,7 @@ public class LassoLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += GLMOptimUtils.fitIntercept(pTrain, y);
+				intercept += OptimUtils.fitIntercept(pTrain, y);
 			}
 
 			doOnePass(x, theta, y, tl1, w, pTrain, rTrain);
@@ -258,7 +258,7 @@ public class LassoLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += GLMOptimUtils.fitIntercept(pTrain, y);
+				intercept += OptimUtils.fitIntercept(pTrain, y);
 			}
 
 			doOnePass(indices, values, theta, y, tl1, w, pTrain, rTrain);
@@ -323,7 +323,7 @@ public class LassoLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += GLMOptimUtils.fitIntercept(pTrain, y);
+					intercept += OptimUtils.fitIntercept(pTrain, y);
 				}
 
 				doOnePass(x, theta, y, tl1, w, pTrain, rTrain);
@@ -407,7 +407,7 @@ public class LassoLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += GLMOptimUtils.fitIntercept(pTrain, y);
+					intercept += OptimUtils.fitIntercept(pTrain, y);
 				}
 
 				doOnePass(indices, values, theta, y, tl1, w, pTrain, rTrain);
@@ -817,7 +817,7 @@ public class LassoLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeLassoLoss(rTrain, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += GLMOptimUtils.fitIntercept(rTrain);
+				intercept += OptimUtils.fitIntercept(rTrain);
 			}
 
 			doOnePass(x, sq, tl1, w, rTrain);
@@ -871,7 +871,7 @@ public class LassoLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeLassoLoss(rTrain, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += GLMOptimUtils.fitIntercept(rTrain);
+				intercept += OptimUtils.fitIntercept(rTrain);
 			}
 
 			doOnePass(indices, values, sq, tl1, w, rTrain);
@@ -998,7 +998,7 @@ public class LassoLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeLassoLoss(rTrain, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += GLMOptimUtils.fitIntercept(rTrain);
+					intercept += OptimUtils.fitIntercept(rTrain);
 				}
 
 				doOnePass(x, sq, tl1, w, rTrain);
@@ -1078,7 +1078,7 @@ public class LassoLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeLassoLoss(rTrain, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += GLMOptimUtils.fitIntercept(rTrain);
+					intercept += OptimUtils.fitIntercept(rTrain);
 				}
 
 				doOnePass(indices, values, sq, tl1, w, rTrain);
@@ -1238,7 +1238,7 @@ public class LassoLearner extends Learner {
 	protected double findMaxLambda(double[][] x, double[] y) {
 		double mean = 0;
 		if (fitIntercept) {
-			mean = GLMOptimUtils.fitIntercept(y);
+			mean = OptimUtils.fitIntercept(y);
 		}
 		// Determine max lambda
 		double maxLambda = 0;
@@ -1257,7 +1257,7 @@ public class LassoLearner extends Learner {
 
 	protected double findMaxLambda(double[][] x, int[] y, double[] pTrain) {
 		if (fitIntercept) {
-			GLMOptimUtils.fitIntercept(pTrain, y);
+			OptimUtils.fitIntercept(pTrain, y);
 		}
 		double maxLambda = 0;
 		for (double[] col : x) {
@@ -1283,7 +1283,7 @@ public class LassoLearner extends Learner {
 	protected double findMaxLambda(int[][] indices, double[][] values, double[] y) {
 		double mean = 0;
 		if (fitIntercept) {
-			mean = GLMOptimUtils.fitIntercept(y);
+			mean = OptimUtils.fitIntercept(y);
 		}
 
 		DenseVector v = new DenseVector(y);
@@ -1306,7 +1306,7 @@ public class LassoLearner extends Learner {
 
 	protected double findMaxLambda(int[][] indices, double[][] values, int[] y, double[] pTrain) {
 		if (fitIntercept) {
-			GLMOptimUtils.fitIntercept(pTrain, y);
+			OptimUtils.fitIntercept(pTrain, y);
 		}
 		double maxLambda = 0;
 		for (int k = 0; k < values.length; k++) {

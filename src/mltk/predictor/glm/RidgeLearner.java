@@ -162,7 +162,7 @@ public class RidgeLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += GLMOptimUtils.fitIntercept(pTrain, y);
+				intercept += OptimUtils.fitIntercept(pTrain, y);
 			}
 
 			doOnePass(x, theta, y, tl2, w, pTrain, rTrain);
@@ -170,8 +170,7 @@ public class RidgeLearner extends Learner {
 			double currLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 
 			if (verbose) {
-				double error = GLMOptimUtils.evalError(y, pTrain);
-				System.out.println("Iteration " + iter + ": " + " " + currLoss + " " + error);
+				System.out.println("Iteration " + iter + ": " + " " + currLoss);
 			}
 
 			if (prevLoss - currLoss < epsilon) {
@@ -218,7 +217,7 @@ public class RidgeLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += GLMOptimUtils.fitIntercept(pTrain, y);
+				intercept += OptimUtils.fitIntercept(pTrain, y);
 			}
 
 			doOnePass(indices, values, theta, y, tl2, w, pTrain, rTrain);
@@ -276,7 +275,7 @@ public class RidgeLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += GLMOptimUtils.fitIntercept(pTrain, y);
+					intercept += OptimUtils.fitIntercept(pTrain, y);
 				}
 
 				doOnePass(x, theta, y, tl2, w, pTrain, rTrain);
@@ -284,8 +283,7 @@ public class RidgeLearner extends Learner {
 				double currLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 
 				if (verbose & iter % 10 == 0) {
-					double error = GLMOptimUtils.evalError(y, pTrain);
-					System.out.println("Iteration " + iter + ": " + " " + currLoss + " " + error);
+					System.out.println("Iteration " + iter + ": " + " " + currLoss);
 				}
 
 				if (prevLoss - currLoss < epsilon) {
@@ -341,7 +339,7 @@ public class RidgeLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += GLMOptimUtils.fitIntercept(pTrain, y);
+					intercept += OptimUtils.fitIntercept(pTrain, y);
 				}
 
 				doOnePass(indices, values, theta, y, tl2, w, pTrain, rTrain);
@@ -715,7 +713,7 @@ public class RidgeLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += GLMOptimUtils.fitIntercept(residualTrain);
+				intercept += OptimUtils.fitIntercept(residualTrain);
 			}
 
 			doOnePass(x, sq, tl2, w, residualTrain);
@@ -769,7 +767,7 @@ public class RidgeLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += GLMOptimUtils.fitIntercept(residualTrain);
+				intercept += OptimUtils.fitIntercept(residualTrain);
 			}
 
 			doOnePass(indices, values, sq, tl2, w, residualTrain);
@@ -886,7 +884,7 @@ public class RidgeLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += GLMOptimUtils.fitIntercept(residualTrain);
+					intercept += OptimUtils.fitIntercept(residualTrain);
 				}
 
 				doOnePass(x, sq, tl2, w, residualTrain);
@@ -950,7 +948,7 @@ public class RidgeLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += GLMOptimUtils.fitIntercept(residualTrain);
+					intercept += OptimUtils.fitIntercept(residualTrain);
 				}
 
 				doOnePass(indices, values, sq, tl2, w, residualTrain);

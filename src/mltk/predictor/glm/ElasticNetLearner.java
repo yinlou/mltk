@@ -176,7 +176,7 @@ public class ElasticNetLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += GLMOptimUtils.fitIntercept(pTrain, y);
+				intercept += OptimUtils.fitIntercept(pTrain, y);
 			}
 
 			doOnePass(x, theta, y, tl1, tl2, w, pTrain, rTrain);
@@ -236,7 +236,7 @@ public class ElasticNetLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += GLMOptimUtils.fitIntercept(pTrain, y);
+				intercept += OptimUtils.fitIntercept(pTrain, y);
 			}
 
 			doOnePass(indices, values, theta, y, tl1, tl2, w, pTrain, rTrain);
@@ -304,7 +304,7 @@ public class ElasticNetLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += GLMOptimUtils.fitIntercept(pTrain, y);
+					intercept += OptimUtils.fitIntercept(pTrain, y);
 				}
 
 				doOnePass(x, theta, y, tl1, tl2, w, pTrain, rTrain);
@@ -377,7 +377,7 @@ public class ElasticNetLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += GLMOptimUtils.fitIntercept(pTrain, y);
+					intercept += OptimUtils.fitIntercept(pTrain, y);
 				}
 
 				doOnePass(indices, values, theta, y, tl1, tl2, w, pTrain, rTrain);
@@ -771,7 +771,7 @@ public class ElasticNetLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += GLMOptimUtils.fitIntercept(rTrain);
+				intercept += OptimUtils.fitIntercept(rTrain);
 			}
 
 			doOnePass(x, sq, tl1, tl2, w, rTrain);
@@ -831,7 +831,7 @@ public class ElasticNetLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += GLMOptimUtils.fitIntercept(rTrain);
+				intercept += OptimUtils.fitIntercept(rTrain);
 			}
 
 			doOnePass(indices, values, sq, tl1, tl2, w, rTrain);
@@ -966,7 +966,7 @@ public class ElasticNetLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += GLMOptimUtils.fitIntercept(rTrain);
+					intercept += OptimUtils.fitIntercept(rTrain);
 				}
 
 				doOnePass(x, sq, tl1, tl2, w, rTrain);
@@ -1046,7 +1046,7 @@ public class ElasticNetLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += GLMOptimUtils.fitIntercept(rTrain);
+					intercept += OptimUtils.fitIntercept(rTrain);
 				}
 
 				doOnePass(indices, values, sq, tl1, tl2, w, rTrain);
@@ -1201,7 +1201,7 @@ public class ElasticNetLearner extends Learner {
 	protected double findMaxLambda(double[][] x, double[] y, double l1Ratio) {
 		double mean = 0;
 		if (fitIntercept) {
-			mean = GLMOptimUtils.fitIntercept(y);
+			mean = OptimUtils.fitIntercept(y);
 		}
 		// Determine max lambda
 		double maxLambda = 0;
@@ -1221,7 +1221,7 @@ public class ElasticNetLearner extends Learner {
 
 	protected double findMaxLambda(double[][] x, int[] y, double[] predictionTrain, double l1Ratio) {
 		if (fitIntercept) {
-			GLMOptimUtils.fitIntercept(predictionTrain, y);
+			OptimUtils.fitIntercept(predictionTrain, y);
 		}
 		double maxLambda = 0;
 		for (double[] col : x) {
@@ -1248,7 +1248,7 @@ public class ElasticNetLearner extends Learner {
 	protected double findMaxLambda(int[][] indices, double[][] values, double[] y, double l1Ratio) {
 		double mean = 0;
 		if (fitIntercept) {
-			mean = GLMOptimUtils.fitIntercept(y);
+			mean = OptimUtils.fitIntercept(y);
 		}
 
 		DenseVector v = new DenseVector(y);
@@ -1272,7 +1272,7 @@ public class ElasticNetLearner extends Learner {
 
 	protected double findMaxLambda(int[][] indices, double[][] values, int[] y, double[] predictionTrain, double l1Ratio) {
 		if (fitIntercept) {
-			GLMOptimUtils.fitIntercept(predictionTrain, y);
+			OptimUtils.fitIntercept(predictionTrain, y);
 		}
 		double maxLambda = 0;
 		for (int k = 0; k < values.length; k++) {
