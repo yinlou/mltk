@@ -1,7 +1,5 @@
 package mltk.predictor.evaluation;
 
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 import mltk.cmdline.Argument;
@@ -13,7 +11,6 @@ import mltk.predictor.ProbabilisticClassifier;
 import mltk.predictor.Classifier;
 import mltk.predictor.Regressor;
 import mltk.predictor.io.PredictorReader;
-import mltk.util.tuple.DoublePair;
 
 /**
  * Class for making evaluations.
@@ -22,156 +19,6 @@ import mltk.util.tuple.DoublePair;
  * 
  */
 public class Evaluator {
-
-	/**
-	 * Returns the area under ROC curve.
-	 * 
-	 * @param probs probability of positive class
-	 * @param targets 0/1 targets
-	 * @return the area under ROC curve.
-	 */
-	public static double evalAreaUnderROC(double[] probs, double[] targets) {
-		DoublePair[] a = new DoublePair[probs.length];
-		for (int i = 0; i < probs.length; i++) {
-			a[i] = new DoublePair(probs[i], targets[i]);
-		}
-		Arrays.sort(a, new Comparator<DoublePair>() {
-
-			@Override
-			public int compare(DoublePair o1, DoublePair o2) {
-				if (o1.v1 < o2.v1) {
-					return -1;
-				} else if (o1.v1 > o2.v1) {
-					return 1;
-				} else {
-					if (o1.v2 < o2.v2) {
-						return -1;
-					} else if (o1.v2 > o2.v2) {
-						return 1;
-					} else {
-						return 0;
-					}
-				}
-			}
-
-		});
-
-		double[] fraction = new double[a.length];
-		for (int idx = 0; idx < fraction.length;) {
-			int begin = idx;
-			double pos = 0;
-			for (; idx < fraction.length && a[idx].v1 == a[begin].v1; idx++) {
-				pos += a[idx].v2;
-			}
-			double frac = pos / (idx - begin);
-			for (int i = begin; i < idx; i++) {
-				fraction[i] = frac;
-			}
-		}
-
-		double tt = 0;
-		double tf = 0;
-		double ft = 0;
-		double ff = 0;
-
-		for (int i = 0; i < a.length; i++) {
-			tf += a[i].v2;
-			ff += 1 - a[i].v2;
-		}
-
-		double area = 0;
-		double tpfPrev = 0;
-		double fpfPrev = 0;
-
-		for (int i = a.length - 1; i >= 0; i--) {
-			tt += fraction[i];
-			tf -= fraction[i];
-			ft += 1 - fraction[i];
-			ff -= 1 - fraction[i];
-			double tpf = tt / (tt + tf);
-			double fpf = 1.0 - ff / (ft + ff);
-			area += 0.5 * (tpf + tpfPrev) * (fpf - fpfPrev);
-			tpfPrev = tpf;
-			fpfPrev = fpf;
-		}
-
-		return area;
-	}
-
-	/**
-	 * Returns the area under ROC curve.
-	 * 
-	 * @param probs probability of positive class
-	 * @param targets 0/1 targets
-	 * @return the area under ROC curve.
-	 */
-	public static double evalAreaUnderROC(List<Double> probs, List<Double> targets) {
-		DoublePair[] a = new DoublePair[probs.size()];
-		for (int i = 0; i < probs.size(); i++) {
-			a[i] = new DoublePair(probs.get(i), targets.get(i));
-		}
-		Arrays.sort(a, new Comparator<DoublePair>() {
-
-			@Override
-			public int compare(DoublePair o1, DoublePair o2) {
-				if (o1.v1 < o2.v1) {
-					return -1;
-				} else if (o1.v1 > o2.v1) {
-					return 1;
-				} else {
-					if (o1.v2 < o2.v2) {
-						return -1;
-					} else if (o1.v2 > o2.v2) {
-						return 1;
-					} else {
-						return 0;
-					}
-				}
-			}
-
-		});
-
-		double[] fraction = new double[a.length];
-		for (int idx = 0; idx < fraction.length;) {
-			int begin = idx;
-			double pos = 0;
-			for (; idx < fraction.length && a[idx].v1 == a[begin].v1; idx++) {
-				pos += a[idx].v2;
-			}
-			double frac = pos / (idx - begin);
-			for (int i = begin; i < idx; i++) {
-				fraction[i] = frac;
-			}
-		}
-
-		double tt = 0;
-		double tf = 0;
-		double ft = 0;
-		double ff = 0;
-
-		for (int i = 0; i < a.length; i++) {
-			tf += a[i].v2;
-			ff += 1 - a[i].v2;
-		}
-
-		double area = 0;
-		double tpfPrev = 0;
-		double fpfPrev = 0;
-
-		for (int i = a.length - 1; i >= 0; i--) {
-			tt += fraction[i];
-			tf -= fraction[i];
-			ft += 1 - fraction[i];
-			ff -= 1 - fraction[i];
-			double tpf = tt / (tt + tf);
-			double fpf = 1.0 - ff / (ft + ff);
-			area += 0.5 * (tpf + tpfPrev) * (fpf - fpfPrev);
-			tpfPrev = tpf;
-			fpfPrev = fpf;
-		}
-
-		return area;
-	}
 
 	/**
 	 * Returns the area under ROC curve.
@@ -188,24 +35,7 @@ public class Evaluator {
 			probs[i] = classifier.predictProbabilities(instance)[1];
 			targets[i] = instance.getTarget();
 		}
-		return evalAreaUnderROC(probs, targets);
-	}
-
-	/**
-	 * Returns the root mean squared error.
-	 * 
-	 * @param preds the predictions.
-	 * @param targets the targets.
-	 * @return the root mean squared error.
-	 */
-	public static double evalRMSE(double[] preds, double[] targets) {
-		double rmse = 0;
-		for (int i = 0; i < preds.length; i++) {
-			double d = targets[i] - preds[i];
-			rmse += d * d;
-		}
-		rmse = Math.sqrt(rmse / preds.length);
-		return rmse;
+		return new AUC().eval(probs, targets);
 	}
 
 	/**
