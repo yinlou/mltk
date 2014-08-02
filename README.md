@@ -11,8 +11,10 @@ Currently MLTK supports:
   * Elastic Net
 * Generalized Additive Models
 * Regression Trees
-* Random Forests
-* Boosted Trees
+* Tree Ensembles
+  * Random Forests
+  * Boosted Trees
+  * Additive Groves
 
 ## Dataset Format
 

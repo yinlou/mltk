@@ -1,4 +1,4 @@
-package mltk.predictor.tree.ensemble;
+package mltk.predictor.tree.ensemble.brt;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -8,12 +8,12 @@ import mltk.core.Instance;
 import mltk.predictor.tree.RegressionTree;
 
 /**
- * Class for boosted regression trees. This is a base class for tree ensembles.
+ * Class for boosted regression trees. This is a base class for BRT.
  * 
  * @author Yin Lou
  * 
  */
-public class BoostedRegressionTrees implements Iterable<RegressionTree> {
+class BoostedRegressionTrees implements Iterable<RegressionTree> {
 
 	protected List<RegressionTree> trees;
 

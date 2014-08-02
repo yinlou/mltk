@@ -7,7 +7,6 @@ import mltk.core.Instance;
 import mltk.predictor.ProbabilisticClassifier;
 import mltk.predictor.Regressor;
 import mltk.predictor.tree.RegressionTree;
-import mltk.predictor.tree.ensemble.BoostedRegressionTrees;
 import mltk.util.StatUtils;
 import mltk.util.VectorUtils;
 

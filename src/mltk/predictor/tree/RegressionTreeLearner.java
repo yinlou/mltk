@@ -34,6 +34,17 @@ import mltk.util.tuple.IntDoublePairComparator;
  */
 public class RegressionTreeLearner extends Learner {
 
+	/**
+	 * Enumeration of construction mode.
+	 *
+	 * @author Yin Lou
+	 *
+	 */
+	public enum Mode {
+
+		DEPTH_LIMITED, NUM_LEAVES_LIMITED, ALPHA_LIMITED, MIN_LEAF_SIZE_LIMITED;
+	}
+
 	protected static class Dataset {
 
 		static Dataset create(Instances instances) {
@@ -79,7 +90,6 @@ public class RegressionTreeLearner extends Learner {
 		}
 
 		public Instances instances;
-
 		public List<List<IntDoublePair>> sortedLists;
 
 		Dataset(Instances instances) {
@@ -122,17 +132,7 @@ public class RegressionTreeLearner extends Learner {
 		}
 
 	}
-
-	/**
-	 * Enumeration of construction mode.
-	 *
-	 * @author Yin Lou
-	 *
-	 */
-	public enum Mode {
-
-		DEPTH_LIMITED, NUM_LEAVES_LIMITED, ALPHA_LIMITED, MIN_LEAF_SIZE_LIMITED;
-	}
+	
 	static class Options {
 
 		@Argument(name = "-r", description = "attribute file path", required = true)
@@ -151,6 +151,7 @@ public class RegressionTreeLearner extends Learner {
 		long seed = 0L;
 
 	}
+	
 	/**
 	 * Trains a regression tree.
 	 *
@@ -217,6 +218,7 @@ public class RegressionTreeLearner extends Learner {
 			PredictorWriter.write(rt, opts.outputModelPath);
 		}
 	}
+	
 	protected int maxDepth;
 	protected int maxNumLeaves;
 	protected int minLeafSize;
@@ -251,6 +253,96 @@ public class RegressionTreeLearner extends Learner {
 				break;
 		}
 		return rt;
+	}
+
+	/**
+	 * Returns the alpha.
+	 *
+	 * @return the alpha.
+	 */
+	public double getAlpha() {
+		return alpha;
+	}
+
+	/**
+	 * Returns the construction mode.
+	 *
+	 * @return the construction mode.
+	 */
+	public Mode getConstructionMode() {
+		return mode;
+	}
+
+	/**
+	 * Returns the maximum depth.
+	 *
+	 * @return the maximum depth.
+	 */
+	public int getMaxDepth() {
+		return maxDepth;
+	}
+
+	/**
+	 * Returns the maximum number of leaves.
+	 *
+	 * @return the maximum number of leaves.
+	 */
+	public int getMaxNumLeaves() {
+		return maxNumLeaves;
+	}
+
+	/**
+	 * Returns the minimum leaf size.
+	 *
+	 * @return the minimum leaf size.
+	 */
+	public int getMinLeafSize() {
+		return minLeafSize;
+	}
+
+	/**
+	 * Sets the alpha. Alpha is the maximum proportion of the training set in the leaf node.
+	 *
+	 * @param alpha the alpha.
+	 */
+	public void setAlpha(double alpha) {
+		this.alpha = alpha;
+	}
+
+	/**
+	 * Sets the construction mode.
+	 *
+	 * @param mode the construction mode.
+	 */
+	public void setConstructionMode(Mode mode) {
+		this.mode = mode;
+	}
+
+	/**
+	 * Sets the maximum depth.
+	 *
+	 * @param maxDepth the maximum depth.
+	 */
+	public void setMaxDepth(int maxDepth) {
+		this.maxDepth = maxDepth;
+	}
+
+	/**
+	 * Sets the maximum number of leaves.
+	 *
+	 * @param maxNumLeaves the maximum number of leaves.
+	 */
+	public void setMaxNumLeaves(int maxNumLeaves) {
+		this.maxNumLeaves = maxNumLeaves;
+	}
+
+	/**
+	 * Sets the minimum leaf size.
+	 *
+	 * @param minLeafSize
+	 */
+	public void setMinLeafSize(int minLeafSize) {
+		this.minLeafSize = minLeafSize;
 	}
 
 	protected RegressionTree buildAlphaLimitedTree(Instances instances, double alpha) {
@@ -462,24 +554,6 @@ public class RegressionTreeLearner extends Learner {
 		}
 	}
 
-	/**
-	 * Returns the alpha.
-	 *
-	 * @return the alpha.
-	 */
-	public double getAlpha() {
-		return alpha;
-	}
-
-	/**
-	 * Returns the construction mode.
-	 *
-	 * @return the construction mode.
-	 */
-	public Mode getConstructionMode() {
-		return mode;
-	}
-
 	protected void getHistogram(Instances instances, List<IntDoublePair> pairs, List<Double> uniqueValues, double w,
 			double s, List<DoublePair> histogram) {
 		if (pairs.size() == 0) {
@@ -528,33 +602,6 @@ public class RegressionTreeLearner extends Learner {
 		}
 	}
 
-	/**
-	 * Returns the maximum depth.
-	 *
-	 * @return the maximum depth.
-	 */
-	public int getMaxDepth() {
-		return maxDepth;
-	}
-
-	/**
-	 * Returns the maximum number of leaves.
-	 *
-	 * @return the maximum number of leaves.
-	 */
-	public int getMaxNumLeaves() {
-		return maxNumLeaves;
-	}
-
-	/**
-	 * Returns the minimum leaf size.
-	 *
-	 * @return the minimum leaf size.
-	 */
-	public int getMinLeafSize() {
-		return minLeafSize;
-	}
-
 	protected boolean getStats(Instances instances, double[] stats) {
 		stats[0] = stats[1] = 0;
 		if (instances.size() == 0) {
@@ -573,51 +620,6 @@ public class RegressionTreeLearner extends Learner {
 		}
 		stats[1] /= stats[0];
 		return stdIs0;
-	}
-
-	/**
-	 * Sets the alpha. Alpha is the maximum proportion of the training set in the leaf node.
-	 *
-	 * @param alpha the alpha.
-	 */
-	public void setAlpha(double alpha) {
-		this.alpha = alpha;
-	}
-
-	/**
-	 * Sets the construction mode.
-	 *
-	 * @param mode the construction mode.
-	 */
-	public void setConstructionMode(Mode mode) {
-		this.mode = mode;
-	}
-
-	/**
-	 * Sets the maximum depth.
-	 *
-	 * @param maxDepth the maximum depth.
-	 */
-	public void setMaxDepth(int maxDepth) {
-		this.maxDepth = maxDepth;
-	}
-
-	/**
-	 * Sets the maximum number of leaves.
-	 *
-	 * @param maxNumLeaves the maximum number of leaves.
-	 */
-	public void setMaxNumLeaves(int maxNumLeaves) {
-		this.maxNumLeaves = maxNumLeaves;
-	}
-
-	/**
-	 * Sets the minimum leaf size.
-	 *
-	 * @param minLeafSize
-	 */
-	public void setMinLeafSize(int minLeafSize) {
-		this.minLeafSize = minLeafSize;
 	}
 
 	protected DoublePair split(List<Double> uniqueValues, List<DoublePair> hist, double totalWeights, double sum) {
