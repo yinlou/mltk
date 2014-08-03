@@ -381,19 +381,19 @@ public class SquareCutter extends Learner {
 			double t = Math.abs(target);
 			if (v1 <= c1) {
 				if (v2 <= c21) {
-					numerator[0] += target;
-					denominator[0] += t * (1 - t);
+					numerator[0] += target * instance.getWeight();
+					denominator[0] += t * (1 - t) * instance.getWeight();
 				} else {
-					numerator[1] += target;
-					denominator[1] += t * (1 - t);
+					numerator[1] += target * instance.getWeight();
+					denominator[1] += t * (1 - t) * instance.getWeight();
 				}
 			} else {
 				if (v2 <= c22) {
-					numerator[2] += target;
-					denominator[2] += t * (1 - t);
+					numerator[2] += target * instance.getWeight();
+					denominator[2] += t * (1 - t) * instance.getWeight();
 				} else {
-					numerator[3] += target;
-					denominator[3] += t * (1 - t);
+					numerator[3] += target * instance.getWeight();
+					denominator[3] += t * (1 - t) * instance.getWeight();
 				}
 			}
 		}
