@@ -720,7 +720,7 @@ public class RidgeLearner extends Learner {
 
 			double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
 
-			if (verbose & iter % 100 == 0) {
+			if (verbose) {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
 			}
 

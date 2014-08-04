@@ -8,6 +8,7 @@ import mltk.core.Instance;
 import mltk.core.Instances;
 import mltk.core.NominalAttribute;
 import mltk.predictor.Learner;
+import mltk.util.MathUtils;
 import mltk.util.tuple.IntDoublePair;
 import mltk.util.tuple.Pair;
 
@@ -15,7 +16,7 @@ import mltk.util.tuple.Pair;
  * Class for cutting squares.
  * 
  * @author Yin Lou
- * 
+ *
  */
 public class SquareCutter extends Learner {
 
@@ -32,7 +33,6 @@ public class SquareCutter extends Learner {
 
 	private int attIndex1;
 	private int attIndex2;
-
 	private boolean lineSearch;
 
 	/**
@@ -338,34 +338,50 @@ public class SquareCutter extends Learner {
 		double[][] predictions = null;
 		if (v2[0] < v2[1]) {
 			splits2 = new double[] { v2[0], v2[1], Double.POSITIVE_INFINITY };
-			predictions = new double[][] { { predInt[0], predInt[1], predInt[1] },
-					{ predInt[2], predInt[2], predInt[3] } };
+			predictions = new double[][] { 
+					{ predInt[0], predInt[1], predInt[1] },
+					{ predInt[2], predInt[2], predInt[3] } 
+			};
 		} else if (v2[0] > v2[1]) {
 			splits2 = new double[] { v2[1], v2[0], Double.POSITIVE_INFINITY };
-			predictions = new double[][] { { predInt[0], predInt[0], predInt[1] },
-					{ predInt[2], predInt[3], predInt[3] } };
+			predictions = new double[][] { 
+					{ predInt[0], predInt[0], predInt[1] },
+					{ predInt[2], predInt[3], predInt[3] } 
+			};
 		} else {
 			splits2 = new double[] { v2[0], Double.POSITIVE_INFINITY };
-			predictions = new double[][] { { predInt[0], predInt[1] }, { predInt[2], predInt[3] } };
+			predictions = new double[][] { 
+					{ predInt[0], predInt[1] }, 
+					{ predInt[2], predInt[3] }
+			};
 		}
 		return new Function2D(attIndex1, attIndex2, splits1, splits2, predictions);
 	}
 
 	protected static Function2D getFunction2D(int attIndex1, int attIndex2, int[] v1, int v2, double[] predInt) {
 		double[] splits1 = null;
-		double[] splits2 = new double[] { v2 + 0.5, Double.POSITIVE_INFINITY };
+		double[] splits2 = new double[] { v2, Double.POSITIVE_INFINITY };
 		double[][] predictions = null;
 		if (v1[0] < v1[1]) {
-			splits1 = new double[] { v1[0] + 0.5, v1[1] + 0.5, Double.POSITIVE_INFINITY };
-			predictions = new double[][] { { predInt[0], predInt[2] }, { predInt[1], predInt[2] },
-					{ predInt[1], predInt[3] } };
+			splits1 = new double[] { v1[0], v1[1], Double.POSITIVE_INFINITY };
+			predictions = new double[][] { 
+					{ predInt[0], predInt[2] }, 
+					{ predInt[1], predInt[2] },
+					{ predInt[1], predInt[3] }
+			};
 		} else if (v1[0] > v1[1]) {
-			splits1 = new double[] { v1[1] + 0.5, v1[0] + 0.5, Double.POSITIVE_INFINITY };
-			predictions = new double[][] { { predInt[0], predInt[2] }, { predInt[0], predInt[3] },
-					{ predInt[1], predInt[3] } };
+			splits1 = new double[] { v1[1], v1[0], Double.POSITIVE_INFINITY };
+			predictions = new double[][] { 
+					{ predInt[0], predInt[2] }, 
+					{ predInt[0], predInt[3] },
+					{ predInt[1], predInt[3] } 
+			};
 		} else {
-			splits1 = new double[] { v1[0] + 0.5, Double.POSITIVE_INFINITY };
-			predictions = new double[][] { { predInt[0], predInt[1] }, { predInt[2], predInt[3] } };
+			splits1 = new double[] { v1[0], Double.POSITIVE_INFINITY };
+			predictions = new double[][] { 
+					{ predInt[0], predInt[2] }, 
+					{ predInt[1], predInt[3] } 
+			};
 		}
 		return new Function2D(attIndex1, attIndex2, splits1, splits2, predictions);
 	}
@@ -398,7 +414,7 @@ public class SquareCutter extends Learner {
 			}
 		}
 		for (int i = 0; i < numerator.length; i++) {
-			predictions[i] = denominator[i] == 0 ? 0.0 : numerator[i] / denominator[i];
+			predictions[i] = Math.abs(denominator[i]) < MathUtils.EPSILON ? 0.0 : numerator[i] / denominator[i];
 		}
 	}
 
