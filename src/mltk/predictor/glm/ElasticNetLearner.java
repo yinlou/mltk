@@ -157,9 +157,7 @@ public class ElasticNetLearner extends Learner {
 
 		double[] pTrain = new double[y.length];
 		double[] rTrain = new double[y.length];
-		for (int i = 0; i < rTrain.length; i++) {
-			rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], y[i]);
-		}
+		OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 
 		// Calculate theta's
 		double[] theta = new double[x.length];
@@ -176,7 +174,7 @@ public class ElasticNetLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += OptimUtils.fitIntercept(pTrain, y);
+				intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 			}
 
 			doOnePass(x, theta, y, tl1, tl2, w, pTrain, rTrain);
@@ -187,7 +185,7 @@ public class ElasticNetLearner extends Learner {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
 			}
 
-			if (prevLoss - currLoss < epsilon) {
+			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
 			prevLoss = currLoss;
@@ -217,9 +215,7 @@ public class ElasticNetLearner extends Learner {
 
 		double[] pTrain = new double[y.length];
 		double[] rTrain = new double[y.length];
-		for (int i = 0; i < rTrain.length; i++) {
-			rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], y[i]);
-		}
+		OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 
 		// Calculate theta's
 		double[] theta = new double[values.length];
@@ -236,7 +232,7 @@ public class ElasticNetLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += OptimUtils.fitIntercept(pTrain, y);
+				intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 			}
 
 			doOnePass(indices, values, theta, y, tl1, tl2, w, pTrain, rTrain);
@@ -247,7 +243,7 @@ public class ElasticNetLearner extends Learner {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
 			}
 
-			if (prevLoss - currLoss < epsilon) {
+			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
 			prevLoss = currLoss;
@@ -277,9 +273,7 @@ public class ElasticNetLearner extends Learner {
 
 		double[] pTrain = new double[y.length];
 		double[] rTrain = new double[y.length];
-		for (int i = 0; i < rTrain.length; i++) {
-			rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], y[i]);
-		}
+		OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 
 		// Calculate theta's
 		double[] theta = new double[x.length];
@@ -287,7 +281,7 @@ public class ElasticNetLearner extends Learner {
 			theta[i] = StatUtils.sumSq(x[i]) / 4;
 		}
 
-		double maxLambda = findMaxLambda(x, y, pTrain, l1Ratio);
+		double maxLambda = findMaxLambda(x, y, pTrain, rTrain, l1Ratio);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -304,7 +298,7 @@ public class ElasticNetLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += OptimUtils.fitIntercept(pTrain, y);
+					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
 
 				doOnePass(x, theta, y, tl1, tl2, w, pTrain, rTrain);
@@ -315,7 +309,7 @@ public class ElasticNetLearner extends Learner {
 					System.out.println("Iteration " + iter + ": " + " " + currLoss);
 				}
 
-				if (prevLoss - currLoss < epsilon) {
+				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
 				prevLoss = currLoss;
@@ -350,9 +344,7 @@ public class ElasticNetLearner extends Learner {
 
 		double[] pTrain = new double[y.length];
 		double[] rTrain = new double[y.length];
-		for (int i = 0; i < rTrain.length; i++) {
-			rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], y[i]);
-		}
+		OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 
 		// Calculate theta's
 		double[] theta = new double[values.length];
@@ -360,7 +352,7 @@ public class ElasticNetLearner extends Learner {
 			theta[i] = StatUtils.sumSq(values[i]) / 4;
 		}
 
-		double maxLambda = findMaxLambda(indices, values, y, pTrain, l1Ratio);
+		double maxLambda = findMaxLambda(indices, values, y, pTrain, rTrain, l1Ratio);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -377,7 +369,7 @@ public class ElasticNetLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += OptimUtils.fitIntercept(pTrain, y);
+					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
 
 				doOnePass(indices, values, theta, y, tl1, tl2, w, pTrain, rTrain);
@@ -388,7 +380,7 @@ public class ElasticNetLearner extends Learner {
 					System.out.println("Iteration " + iter + ": " + " " + currLoss);
 				}
 
-				if (prevLoss - currLoss < epsilon) {
+				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
 				prevLoss = currLoss;
@@ -782,7 +774,7 @@ public class ElasticNetLearner extends Learner {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
 			}
 
-			if (prevLoss - currLoss < epsilon) {
+			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
 			prevLoss = currLoss;
@@ -842,7 +834,7 @@ public class ElasticNetLearner extends Learner {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
 			}
 
-			if (prevLoss - currLoss < epsilon) {
+			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
 			prevLoss = currLoss;
@@ -977,7 +969,7 @@ public class ElasticNetLearner extends Learner {
 					System.out.println("Iteration " + iter + ": " + currLoss);
 				}
 
-				if (prevLoss - currLoss < epsilon) {
+				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
 				prevLoss = currLoss;
@@ -1057,7 +1049,7 @@ public class ElasticNetLearner extends Learner {
 					System.out.println("Iteration " + iter + ": " + currLoss);
 				}
 
-				if (prevLoss - currLoss < epsilon) {
+				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
 				prevLoss = currLoss;
@@ -1219,17 +1211,15 @@ public class ElasticNetLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(double[][] x, int[] y, double[] predictionTrain, double l1Ratio) {
+	protected double findMaxLambda(double[][] x, int[] y, double[] pTrain, double[] rTrain, double l1Ratio) {
 		if (fitIntercept) {
-			OptimUtils.fitIntercept(predictionTrain, y);
+			OptimUtils.fitIntercept(pTrain, rTrain, y);
 		}
 		double maxLambda = 0;
 		for (double[] col : x) {
 			double eta = 0;
 			for (int i = 0; i < col.length; i++) {
-				double r = OptimUtils.getPseudoResidual(predictionTrain[i], y[i]);
-				r *= col[i];
-				eta += r;
+				eta += rTrain[i] * col[i];
 			}
 
 			double t = Math.abs(eta);
@@ -1240,7 +1230,8 @@ public class ElasticNetLearner extends Learner {
 		maxLambda /= y.length;
 		maxLambda /= l1Ratio;
 		if (fitIntercept) {
-			Arrays.fill(predictionTrain, 0);
+			Arrays.fill(pTrain, 0);
+			OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 		}
 		return maxLambda;
 	}
@@ -1270,9 +1261,9 @@ public class ElasticNetLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(int[][] indices, double[][] values, int[] y, double[] predictionTrain, double l1Ratio) {
+	protected double findMaxLambda(int[][] indices, double[][] values, int[] y, double[] pTrain, double[] rTrain, double l1Ratio) {
 		if (fitIntercept) {
-			OptimUtils.fitIntercept(predictionTrain, y);
+			OptimUtils.fitIntercept(pTrain, rTrain, y);
 		}
 		double maxLambda = 0;
 		for (int k = 0; k < values.length; k++) {
@@ -1281,7 +1272,7 @@ public class ElasticNetLearner extends Learner {
 			double[] value = values[k];
 			for (int i = 0; i < index.length; i++) {
 				int idx = index[i];
-				double r = OptimUtils.getPseudoResidual(predictionTrain[idx], y[idx]);
+				double r = OptimUtils.getPseudoResidual(pTrain[idx], y[idx]);
 				r *= value[i];
 				eta += r;
 			}
@@ -1293,7 +1284,8 @@ public class ElasticNetLearner extends Learner {
 		maxLambda /= y.length;
 		maxLambda /= l1Ratio;
 		if (fitIntercept) {
-			Arrays.fill(predictionTrain, 0);
+			Arrays.fill(pTrain, 0);
+			OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 		}
 		return maxLambda;
 	}

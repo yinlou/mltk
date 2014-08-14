@@ -7,7 +7,8 @@ import mltk.util.VectorUtils;
 class GLMOptimUtils {
 
 	static GLM getGLM(int[] attrs, double[] w, double intercept) {
-		GLM glm = attrs.length == 0 ? new GLM(0) : new GLM(attrs[attrs.length - 1] + 1);
+		final int p = attrs.length == 0 ? 0 : StatUtils.max(attrs) + 1;
+		GLM glm = new GLM(p);
 		for (int i = 0; i < attrs.length; i++) {
 			glm.w[0][attrs[i]] = w[i];
 		}
@@ -48,6 +49,22 @@ class GLMOptimUtils {
 	static double computeElasticNetLoss(double[] pred, int[] y, double[] w, double lambda1, double lambda2) {
 		double loss =  OptimUtils.computeLogisticLoss(pred, y);
 		loss += lambda1 * VectorUtils.l1norm(w) + lambda2 / 2 * StatUtils.sumSq(w);
+		return loss;
+	}
+	
+	static double computeGroupLassoLoss(double[] residual, double[][] w, double[] tl1) {
+		double loss =  OptimUtils.computeQuadraticLoss(residual);
+		for (int k = 0; k < w.length; k++) {
+			loss += tl1[k] * StatUtils.sumSq(w[k]);
+		}
+		return loss;
+	}
+
+	static double computeGroupLassoLoss(double[] pred, int[] y, double[][] w, double[] tl1) {
+		double loss =  OptimUtils.computeLogisticLoss(pred, y);
+		for (int k = 0; k < w.length; k++) {
+			loss += tl1[k] * StatUtils.sumSq(w[k]);
+		}
 		return loss;
 	}
 

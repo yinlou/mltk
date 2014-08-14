@@ -188,9 +188,7 @@ public class LassoLearner extends Learner {
 
 		double[] pTrain = new double[y.length];
 		double[] rTrain = new double[y.length];
-		for (int i = 0; i < rTrain.length; i++) {
-			rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], y[i]);
-		}
+		OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 
 		// Calculate theta's
 		double[] theta = new double[x.length];
@@ -203,7 +201,7 @@ public class LassoLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += OptimUtils.fitIntercept(pTrain, y);
+				intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 			}
 
 			doOnePass(x, theta, y, tl1, w, pTrain, rTrain);
@@ -214,7 +212,7 @@ public class LassoLearner extends Learner {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
 			}
 
-			if (prevLoss - currLoss < epsilon) {
+			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
 			prevLoss = currLoss;
@@ -243,9 +241,7 @@ public class LassoLearner extends Learner {
 
 		double[] pTrain = new double[y.length];
 		double[] rTrain = new double[y.length];
-		for (int i = 0; i < rTrain.length; i++) {
-			rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], y[i]);
-		}
+		OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 
 		// Calculate theta's
 		double[] theta = new double[values.length];
@@ -258,7 +254,7 @@ public class LassoLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += OptimUtils.fitIntercept(pTrain, y);
+				intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 			}
 
 			doOnePass(indices, values, theta, y, tl1, w, pTrain, rTrain);
@@ -269,7 +265,7 @@ public class LassoLearner extends Learner {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
 			}
 
-			if (prevLoss - currLoss < epsilon) {
+			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
 			prevLoss = currLoss;
@@ -298,9 +294,7 @@ public class LassoLearner extends Learner {
 
 		double[] pTrain = new double[y.length];
 		double[] rTrain = new double[y.length];
-		for (int i = 0; i < rTrain.length; i++) {
-			rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], y[i]);
-		}
+		OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 
 		// Calculate theta's
 		double[] theta = new double[x.length];
@@ -308,7 +302,7 @@ public class LassoLearner extends Learner {
 			theta[i] = StatUtils.sumSq(x[i]) / 4;
 		}
 
-		double maxLambda = findMaxLambda(x, y, pTrain);
+		double maxLambda = findMaxLambda(x, y, pTrain, rTrain);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -323,7 +317,7 @@ public class LassoLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += OptimUtils.fitIntercept(pTrain, y);
+					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
 
 				doOnePass(x, theta, y, tl1, w, pTrain, rTrain);
@@ -334,7 +328,7 @@ public class LassoLearner extends Learner {
 					System.out.println("Iteration " + iter + ": " + " " + currLoss);
 				}
 
-				if (prevLoss - currLoss < epsilon) {
+				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
 				prevLoss = currLoss;
@@ -382,9 +376,7 @@ public class LassoLearner extends Learner {
 
 		double[] pTrain = new double[y.length];
 		double[] rTrain = new double[y.length];
-		for (int i = 0; i < rTrain.length; i++) {
-			rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], y[i]);
-		}
+		OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 
 		// Calculate theta's
 		double[] theta = new double[values.length];
@@ -392,7 +384,7 @@ public class LassoLearner extends Learner {
 			theta[i] = StatUtils.sumSq(values[i]) / 4;
 		}
 
-		double maxLambda = findMaxLambda(indices, values, y, pTrain);
+		double maxLambda = findMaxLambda(indices, values, y, pTrain, rTrain);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -407,7 +399,7 @@ public class LassoLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += OptimUtils.fitIntercept(pTrain, y);
+					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
 
 				doOnePass(indices, values, theta, y, tl1, w, pTrain, rTrain);
@@ -418,7 +410,7 @@ public class LassoLearner extends Learner {
 					System.out.println("Iteration " + iter + ": " + " " + currLoss);
 				}
 
-				if (prevLoss - currLoss < epsilon) {
+				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
 				prevLoss = currLoss;
@@ -828,7 +820,7 @@ public class LassoLearner extends Learner {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
 			}
 
-			if (prevLoss - currLoss < epsilon) {
+			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
 			prevLoss = currLoss;
@@ -882,7 +874,7 @@ public class LassoLearner extends Learner {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
 			}
 
-			if (prevLoss - currLoss < epsilon) {
+			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
 			prevLoss = currLoss;
@@ -1005,7 +997,7 @@ public class LassoLearner extends Learner {
 
 				double currLoss = GLMOptimUtils.computeLassoLoss(rTrain, w, lambda);
 
-				if (prevLoss - currLoss < epsilon) {
+				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
 				prevLoss = currLoss;
@@ -1085,7 +1077,7 @@ public class LassoLearner extends Learner {
 
 				double currLoss = GLMOptimUtils.computeLassoLoss(rTrain, w, lambda);
 
-				if (prevLoss - currLoss < epsilon) {
+				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
 				prevLoss = currLoss;
@@ -1255,9 +1247,9 @@ public class LassoLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(double[][] x, int[] y, double[] pTrain) {
+	protected double findMaxLambda(double[][] x, int[] y, double[] pTrain, double[] rTrain) {
 		if (fitIntercept) {
-			OptimUtils.fitIntercept(pTrain, y);
+			OptimUtils.fitIntercept(pTrain, rTrain, y);
 		}
 		double maxLambda = 0;
 		for (double[] col : x) {
@@ -1276,6 +1268,7 @@ public class LassoLearner extends Learner {
 		maxLambda /= y.length;
 		if (fitIntercept) {
 			Arrays.fill(pTrain, 0);
+			OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 		}
 		return maxLambda;
 	}
@@ -1304,9 +1297,9 @@ public class LassoLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(int[][] indices, double[][] values, int[] y, double[] pTrain) {
+	protected double findMaxLambda(int[][] indices, double[][] values, int[] y, double[] pTrain, double[] rTrain) {
 		if (fitIntercept) {
-			OptimUtils.fitIntercept(pTrain, y);
+			OptimUtils.fitIntercept(pTrain, rTrain, y);
 		}
 		double maxLambda = 0;
 		for (int k = 0; k < values.length; k++) {
@@ -1327,6 +1320,7 @@ public class LassoLearner extends Learner {
 		maxLambda /= y.length;
 		if (fitIntercept) {
 			Arrays.fill(pTrain, 0);
+			OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 		}
 		return maxLambda;
 	}

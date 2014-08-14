@@ -147,9 +147,7 @@ public class RidgeLearner extends Learner {
 
 		double[] pTrain = new double[y.length];
 		double[] rTrain = new double[y.length];
-		for (int i = 0; i < rTrain.length; i++) {
-			rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], y[i]);
-		}
+		OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 
 		// Calculate theta's
 		double[] theta = new double[x.length];
@@ -162,7 +160,7 @@ public class RidgeLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += OptimUtils.fitIntercept(pTrain, y);
+				intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 			}
 
 			doOnePass(x, theta, y, tl2, w, pTrain, rTrain);
@@ -173,7 +171,7 @@ public class RidgeLearner extends Learner {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
 			}
 
-			if (prevLoss - currLoss < epsilon) {
+			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
 			prevLoss = currLoss;
@@ -202,9 +200,7 @@ public class RidgeLearner extends Learner {
 
 		double[] pTrain = new double[y.length];
 		double[] rTrain = new double[y.length];
-		for (int i = 0; i < rTrain.length; i++) {
-			rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], y[i]);
-		}
+		OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 
 		// Calculate theta's
 		double[] theta = new double[values.length];
@@ -217,7 +213,7 @@ public class RidgeLearner extends Learner {
 		double prevLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += OptimUtils.fitIntercept(pTrain, y);
+				intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 			}
 
 			doOnePass(indices, values, theta, y, tl2, w, pTrain, rTrain);
@@ -228,7 +224,7 @@ public class RidgeLearner extends Learner {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
 			}
 
-			if (prevLoss - currLoss < epsilon) {
+			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
 			prevLoss = currLoss;
@@ -255,9 +251,7 @@ public class RidgeLearner extends Learner {
 
 		double[] pTrain = new double[y.length];
 		double[] rTrain = new double[y.length];
-		for (int i = 0; i < rTrain.length; i++) {
-			rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], y[i]);
-		}
+		OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 
 		// Calculate theta's
 		double[] theta = new double[x.length];
@@ -275,7 +269,7 @@ public class RidgeLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += OptimUtils.fitIntercept(pTrain, y);
+					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
 
 				doOnePass(x, theta, y, tl2, w, pTrain, rTrain);
@@ -286,7 +280,7 @@ public class RidgeLearner extends Learner {
 					System.out.println("Iteration " + iter + ": " + " " + currLoss);
 				}
 
-				if (prevLoss - currLoss < epsilon) {
+				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
 				prevLoss = currLoss;
@@ -318,9 +312,7 @@ public class RidgeLearner extends Learner {
 
 		double[] pTrain = new double[y.length];
 		double[] rTrain = new double[y.length];
-		for (int i = 0; i < rTrain.length; i++) {
-			rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], y[i]);
-		}
+		OptimUtils.computePseudoResidual(pTrain, y, rTrain);
 
 		// Calculate theta's
 		double[] theta = new double[values.length];
@@ -339,7 +331,7 @@ public class RidgeLearner extends Learner {
 			double prevLoss = GLMOptimUtils.computeRidgeLoss(pTrain, y, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += OptimUtils.fitIntercept(pTrain, y);
+					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
 
 				doOnePass(indices, values, theta, y, tl2, w, pTrain, rTrain);
@@ -350,7 +342,7 @@ public class RidgeLearner extends Learner {
 					System.out.println("Iteration " + iter + ": " + " " + currLoss);
 				}
 
-				if (prevLoss - currLoss < epsilon) {
+				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
 				prevLoss = currLoss;
@@ -697,9 +689,9 @@ public class RidgeLearner extends Learner {
 		double intercept = 0;
 
 		// Initialize residuals
-		double[] residualTrain = new double[y.length];
-		for (int i = 0; i < residualTrain.length; i++) {
-			residualTrain[i] = y[i];
+		double[] rTrain = new double[y.length];
+		for (int i = 0; i < rTrain.length; i++) {
+			rTrain[i] = y[i];
 		}
 
 		// Calculate sum of squares
@@ -710,21 +702,21 @@ public class RidgeLearner extends Learner {
 
 		// Coordinate descent
 		final double tl2 = lambda * y.length;
-		double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
+		double prevLoss = GLMOptimUtils.computeRidgeLoss(rTrain, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += OptimUtils.fitIntercept(residualTrain);
+				intercept += OptimUtils.fitIntercept(rTrain);
 			}
 
-			doOnePass(x, sq, tl2, w, residualTrain);
+			doOnePass(x, sq, tl2, w, rTrain);
 
-			double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
+			double currLoss = GLMOptimUtils.computeRidgeLoss(rTrain, w, lambda);
 
 			if (verbose) {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
 			}
 
-			if (prevLoss - currLoss < epsilon) {
+			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
 			prevLoss = currLoss;
@@ -751,9 +743,9 @@ public class RidgeLearner extends Learner {
 		double intercept = 0;
 
 		// Initialize residuals
-		double[] residualTrain = new double[y.length];
-		for (int i = 0; i < residualTrain.length; i++) {
-			residualTrain[i] = y[i];
+		double[] rTrain = new double[y.length];
+		for (int i = 0; i < rTrain.length; i++) {
+			rTrain[i] = y[i];
 		}
 
 		// Calculate sum of squares
@@ -764,21 +756,21 @@ public class RidgeLearner extends Learner {
 
 		// Coordinate descent
 		final double tl2 = lambda * y.length;
-		double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
+		double prevLoss = GLMOptimUtils.computeRidgeLoss(rTrain, w, lambda);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			if (fitIntercept) {
-				intercept += OptimUtils.fitIntercept(residualTrain);
+				intercept += OptimUtils.fitIntercept(rTrain);
 			}
 
-			doOnePass(indices, values, sq, tl2, w, residualTrain);
+			doOnePass(indices, values, sq, tl2, w, rTrain);
 
-			double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
+			double currLoss = GLMOptimUtils.computeRidgeLoss(rTrain, w, lambda);
 
 			if (verbose) {
 				System.out.println("Iteration " + iter + ": " + " " + currLoss);
 			}
 
-			if (prevLoss - currLoss < epsilon) {
+			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
 			prevLoss = currLoss;
@@ -864,9 +856,9 @@ public class RidgeLearner extends Learner {
 		Arrays.sort(lambdas);
 
 		// Backup targets
-		double[] residualTrain = new double[y.length];
-		for (int i = 0; i < residualTrain.length; i++) {
-			residualTrain[i] = y[i];
+		double[] rTrain = new double[y.length];
+		for (int i = 0; i < rTrain.length; i++) {
+			rTrain[i] = y[i];
 		}
 
 		// Calculate sum of squares
@@ -881,24 +873,24 @@ public class RidgeLearner extends Learner {
 
 			// Coordinate descent
 			final double tl2 = lambda * y.length;
-			double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
+			double prevLoss = GLMOptimUtils.computeRidgeLoss(rTrain, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += OptimUtils.fitIntercept(residualTrain);
+					intercept += OptimUtils.fitIntercept(rTrain);
 				}
 
-				doOnePass(x, sq, tl2, w, residualTrain);
+				doOnePass(x, sq, tl2, w, rTrain);
 
-				double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
+				double currLoss = GLMOptimUtils.computeRidgeLoss(rTrain, w, lambda);
 
-				if (prevLoss - currLoss < epsilon) {
+				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
 				prevLoss = currLoss;
 			}
 
-			double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
-			System.out.println("Model " + g + ": " + lambda + " " + currLoss + " " + StatUtils.rms(residualTrain));
+			double currLoss = GLMOptimUtils.computeRidgeLoss(rTrain, w, lambda);
+			System.out.println("Model " + g + ": " + lambda + " " + currLoss + " " + StatUtils.rms(rTrain));
 
 			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept);
 		}
@@ -928,9 +920,9 @@ public class RidgeLearner extends Learner {
 		Arrays.sort(lambdas);
 
 		// Backup targets
-		double[] residualTrain = new double[y.length];
-		for (int i = 0; i < residualTrain.length; i++) {
-			residualTrain[i] = y[i];
+		double[] rTrain = new double[y.length];
+		for (int i = 0; i < rTrain.length; i++) {
+			rTrain[i] = y[i];
 		}
 
 		// Calculate sum of squares
@@ -945,24 +937,24 @@ public class RidgeLearner extends Learner {
 
 			// Coordinate descent
 			final double tl2 = lambda * y.length;
-			double prevLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
+			double prevLoss = GLMOptimUtils.computeRidgeLoss(rTrain, w, lambda);
 			for (int iter = 0; iter < maxNumIters; iter++) {
 				if (fitIntercept) {
-					intercept += OptimUtils.fitIntercept(residualTrain);
+					intercept += OptimUtils.fitIntercept(rTrain);
 				}
 
-				doOnePass(indices, values, sq, tl2, w, residualTrain);
+				doOnePass(indices, values, sq, tl2, w, rTrain);
 
-				double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
+				double currLoss = GLMOptimUtils.computeRidgeLoss(rTrain, w, lambda);
 
-				if (prevLoss - currLoss < epsilon) {
+				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
 				prevLoss = currLoss;
 			}
 
-			double currLoss = GLMOptimUtils.computeRidgeLoss(residualTrain, w, lambda);
-			System.out.println("Model " + g + ": " + lambda + " " + currLoss + " " + StatUtils.rms(residualTrain));
+			double currLoss = GLMOptimUtils.computeRidgeLoss(rTrain, w, lambda);
+			System.out.println("Model " + g + ": " + lambda + " " + currLoss + " " + StatUtils.rms(rTrain));
 
 			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept);
 		}

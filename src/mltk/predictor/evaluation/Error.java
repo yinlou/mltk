@@ -21,7 +21,9 @@ public class Error extends Metric {
 	public double eval(double[] preds, double[] targets) {
 		double error = 0;
 		for (int i = 0; i < preds.length; i++) {
-			if (preds[i] != targets[i]) {
+			// Handles both probability and predicted label
+			double cls = preds[i] <= 0 ? 0 : 1;
+			if (cls != targets[i]) {
 				error++;
 			}
 		}
@@ -32,7 +34,9 @@ public class Error extends Metric {
 	public double eval(double[] preds, Instances instances) {
 		double error = 0;
 		for (int i = 0; i < preds.length; i++) {
-			if (preds[i] != instances.get(i).getTarget()) {
+			// Handles both probability and predicted label
+			double cls = preds[i] <= 0 ? 0 : 1;
+			if (cls != instances.get(i).getTarget()) {
 				error++;
 			}
 		}

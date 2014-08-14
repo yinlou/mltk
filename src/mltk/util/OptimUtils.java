@@ -7,6 +7,16 @@ package mltk.util;
  * 
  */
 public class OptimUtils {
+	
+	/**
+	 * Returns the probability of being in positive class.
+	 * 
+	 * @param pred the prediction.
+	 * @return the probability of being in positive class.
+	 */
+	public static double getProbability(double pred) {
+		return 1.0 / (1.0 + Math.exp(-pred));
+	}
 
 	/**
 	 * Returns the residual.
@@ -35,16 +45,44 @@ public class OptimUtils {
 	}
 	
 	/**
+	 * Computes the pseudo residuals.
+	 * 
+	 * @param prediction the prediction array.
+	 * @param y the class label array.
+	 * @param residual the residual array.
+	 */
+	public static void computePseudoResidual(double[] prediction, int[] y, double[] residual) {
+		for (int i = 0; i < residual.length; i++) {
+			residual[i] = getPseudoResidual(prediction[i], y[i]);
+		}
+	}
+
+	/**
+	 * Computes the logistic loss for binary classification problems.
+	 * 
+	 * @param pred the prediction.
+	 * @param cls the class label.
+	 * @return the logistic loss for binary classification problems.
+	 */
+	public static double computeLogisticLoss(double pred, int cls) {
+		if (cls == 1) {
+			return Math.log(1 + Math.exp(-pred));
+		} else {
+			return Math.log(1 + Math.exp(pred));
+		}
+	}
+	
+	/**
 	 * Computes the logistic loss for binary classification problems.
 	 * 
 	 * @param pred the prediction array.
-	 * @param y the target array.
+	 * @param y the class label array.
 	 * @return the logistic loss for binary classification problems.
 	 */
 	public static double computeLogisticLoss(double[] pred, int[] y) {
 		double loss = 0;
 		for (int i = 0; i < pred.length; i++) {
-			loss += Math.log(1 + Math.exp(-(y[i] == 1 ? 1 : -1) * pred[i]));
+			loss += computeLogisticLoss(pred[i], y[i]);
 		}
 		return loss / y.length;
 	}
@@ -72,13 +110,14 @@ public class OptimUtils {
 	}
 
 	/**
-	 * Returns gradient on the intercept in binary classification problems. Predictions will be updated accordingly.
+	 * Returns gradient on the intercept in binary classification problems. Predictions and residuals will be updated accordingly.
 	 * 
 	 * @param prediction the prediction array.
-	 * @param y the target array.
+	 * @param residual the residual array.
+	 * @param y the class label array.
 	 * @return the fitted intercept.
 	 */
-	public static double fitIntercept(double[] prediction, int[] y) {
+	public static double fitIntercept(double[] prediction, double[] residual, int[] y) {
 		double delta = 0;
 		// Use Newton-Raphson's method to approximate
 		// 1st derivative
@@ -86,7 +125,7 @@ public class OptimUtils {
 		// 2nd derivative
 		double theta = 0;
 		for (int i = 0; i < prediction.length; i++) {
-			double r = getPseudoResidual(prediction[i], y[i]);
+			double r = residual[i];
 			double t = Math.abs(r);
 			eta += r;
 			theta += t * (1 - t);
@@ -96,6 +135,7 @@ public class OptimUtils {
 			delta = eta / theta;
 			// Update predictions
 			VectorUtils.add(prediction, delta);
+			computePseudoResidual(prediction, y, residual);
 		}
 		return delta;
 	}
@@ -117,6 +157,22 @@ public class OptimUtils {
 		}
 		error /= y.length;
 		return error;
+	}
+	
+	/**
+	 * Returns <code>true</code> if the relative improvement is less than a threshold.
+	 * 
+	 * @param prevLoss the previous loss.
+	 * @param currLoss the current loss.
+	 * @param epsilon the threshold.
+	 * @return <code>true</code> if the relative improvement is less than a threshold.
+	 */
+	public static boolean isConverged(double prevLoss, double currLoss, double epsilon) {
+		if (prevLoss < MathUtils.EPSILON) {
+			return true;
+		} else {
+			return (prevLoss - currLoss) / prevLoss < epsilon;
+		}
 	}
 
 }

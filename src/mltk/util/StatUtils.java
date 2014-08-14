@@ -7,6 +7,22 @@ package mltk.util;
  * 
  */
 public class StatUtils {
+	
+	/**
+	 * Returns the maximum element in an array.
+	 * 
+	 * @param a the array.
+	 * @return the maximum element in an array.
+	 */
+	public static int max(int[] a) {
+		int max = a[0];
+		for (int i = 1; i < a.length; i++) {
+			if (a[i] > max) {
+				max = a[i];
+			}
+		}
+		return max;
+	}
 
 	/**
 	 * Returns the maximum element in an array.
@@ -22,6 +38,23 @@ public class StatUtils {
 			}
 		}
 		return max;
+	}
+	
+	/**
+	 * Returns the index of maximum element.
+	 * 
+	 * @return the index of maximum element.
+	 */
+	public static int indexOfMax(int[] a) {
+		int max = a[0];
+		int idx = 0;
+		for (int i = 1; i < a.length; i++) {
+			if (a[i] > max) {
+				max = a[i];
+				idx = i;
+			}
+		}
+		return idx;
 	}
 
 	/**
@@ -40,6 +73,22 @@ public class StatUtils {
 		}
 		return idx;
 	}
+	
+	/**
+	 * Returns the minimum element in an array.
+	 * 
+	 * @param a the array.
+	 * @return the minimum element in an array.
+	 */
+	public static int min(int[] a) {
+		int min = a[0];
+		for (int i = 1; i < a.length; i++) {
+			if (a[i] < min) {
+				min = a[i];
+			}
+		}
+		return min;
+	}
 
 	/**
 	 * Returns the minimum element in an array.
@@ -55,6 +104,23 @@ public class StatUtils {
 			}
 		}
 		return min;
+	}
+	
+	/**
+	 * Returns the index of minimum element.
+	 * 
+	 * @return the index of minimum element.
+	 */
+	public static int indexOfMin(int[] a) {
+		int min = a[0];
+		int idx = 0;
+		for (int i = 1; i < a.length; i++) {
+			if (a[i] < min) {
+				min = a[i];
+				idx = i;
+			}
+		}
+		return idx;
 	}
 
 	/**

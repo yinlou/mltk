@@ -6,6 +6,12 @@ import java.io.PrintWriter;
 import mltk.core.Instance;
 import mltk.predictor.Regressor;
 
+/**
+ * Class for linear functions.
+ * 
+ * @author Yin Lou
+ *
+ */
 public class LinearFunction implements Regressor, UnivariateFunction {
 
 	/**

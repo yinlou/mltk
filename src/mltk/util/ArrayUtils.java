@@ -9,6 +9,38 @@ import java.util.Arrays;
  * 
  */
 public class ArrayUtils {
+	
+	/**
+	 * Converts a double array to an int array.
+	 * 
+	 * @param a the double array.
+	 * @return an int array.
+	 */
+	public static int[] toIntArray(double[] a) {
+		int[] b = new int[a.length];
+		for (int i = 0; i < a.length; i++) {
+			b[i] = (int) a[i];
+		}
+		return b;
+	}
+	
+	/**
+	 * Returns a string representation of the contents of the specified sub-array.
+	 * 
+	 * @param a the array.
+	 * @param start the starting index (inclusive).
+	 * @param end the ending index (exclusive).
+	 * @return Returns a string representation of the contents of the specified sub-array.
+	 */
+	public static String toString(double[] a, int start, int end) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("[").append(a[start]);
+		for (int i = start + 1; i < end; i++) {
+			sb.append(", ").append(a[i]);
+		}
+		sb.append("]");
+		return sb.toString();
+	}
 
 	/**
 	 * Parses a double array from a string (default delimiter: ",").
