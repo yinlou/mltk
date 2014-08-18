@@ -7,7 +7,7 @@ import mltk.util.VectorUtils;
 class GLMOptimUtils {
 
 	static GLM getGLM(int[] attrs, double[] w, double intercept) {
-		final int p = attrs.length == 0 ? 0 : StatUtils.max(attrs) + 1;
+		final int p = attrs.length == 0 ? 0 : (StatUtils.max(attrs) + 1);
 		GLM glm = new GLM(p);
 		for (int i = 0; i < attrs.length; i++) {
 			glm.w[0][attrs[i]] = w[i];

@@ -1,7 +1,6 @@
 package mltk.predictor.glm;
 
 import java.util.Arrays;
-import java.util.List;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
@@ -417,7 +416,7 @@ public class ElasticNetLearner extends Learner {
 			int[][] indices = sd.indices;
 			double[][] values = sd.values;
 			int[] y = new int[sd.y.length];
-			List<Double> cList = sd.cList;
+			double[] cList = sd.cList;
 
 			if (numClasses == 2) {
 				for (int i = 0; i < y.length; i++) {
@@ -428,9 +427,9 @@ public class ElasticNetLearner extends Learner {
 				GLM glm = buildBinaryClassifier(attrs, indices, values, y, maxNumIters, lambda, l1Ratio);
 
 				double[] w = glm.w[0];
-				for (int i = 0; i < cList.size(); i++) {
-					int attIndex = attrs[i];
-					w[attIndex] *= cList.get(i);
+				for (int j = 0; j < cList.length; j++) {
+					int attIndex = attrs[j];
+					w[attIndex] *= cList[j];
 				}
 
 				return glm;
@@ -449,9 +448,9 @@ public class ElasticNetLearner extends Learner {
 							l1Ratio);
 
 					double[] w = binaryClassifier.w[0];
-					for (int i = 0; i < cList.size(); i++) {
-						int attIndex = attrs[i];
-						glm.w[k][attIndex] = w[attIndex] * cList.get(i);
+					for (int j = 0; j < cList.length; j++) {
+						int attIndex = attrs[j];
+						glm.w[k][attIndex] = w[attIndex] * cList[j];
 					}
 					glm.intercept[k] = binaryClassifier.intercept[0];
 				}
@@ -463,7 +462,7 @@ public class ElasticNetLearner extends Learner {
 			int[] attrs = dd.attrs;
 			double[][] x = dd.x;
 			int[] y = new int[dd.y.length];
-			List<Double> cList = dd.cList;
+			double[] cList = dd.cList;
 
 			if (numClasses == 2) {
 				for (int i = 0; i < y.length; i++) {
@@ -474,15 +473,14 @@ public class ElasticNetLearner extends Learner {
 				GLM glm = buildBinaryClassifier(attrs, x, y, maxNumIters, lambda, l1Ratio);
 
 				double[] w = glm.w[0];
-				for (int i = 0; i < cList.size(); i++) {
-					int attr = attrs[i];
-					double c = cList.get(i);
-					w[attr] *= c;
+				for (int j = 0; j < cList.length; j++) {
+					int attIndex = attrs[j];
+					w[attIndex] *= cList[j];
 				}
 
 				return glm;
 			} else {
-				int p = attrs.length == 0 ? 0 : attrs[attrs.length - 1] + 1;
+				int p = attrs.length == 0 ? 0 : (StatUtils.max(attrs) + 1);
 				GLM glm = new GLM(numClasses, p);
 
 				for (int k = 0; k < numClasses; k++) {
@@ -495,9 +493,9 @@ public class ElasticNetLearner extends Learner {
 					GLM binaryClassifier = buildBinaryClassifier(attrs, x, y, maxNumIters, lambda, l1Ratio);
 
 					double[] w = binaryClassifier.w[0];
-					for (int i = 0; i < cList.size(); i++) {
-						int attIndex = attrs[i];
-						glm.w[k][attIndex] = w[attIndex] * cList.get(i);
+					for (int j = 0; j < cList.length; j++) {
+						int attIndex = attrs[j];
+						glm.w[k][attIndex] = w[attIndex] * cList[j];
 					}
 					glm.intercept[k] = binaryClassifier.intercept[0];
 				}
@@ -546,7 +544,7 @@ public class ElasticNetLearner extends Learner {
 			int[][] indices = sd.indices;
 			double[][] values = sd.values;
 			int[] y = new int[sd.y.length];
-			List<Double> cList = sd.cList;
+			double[] cList = sd.cList;
 
 			if (numClasses == 2) {
 				for (int i = 0; i < y.length; i++) {
@@ -559,15 +557,15 @@ public class ElasticNetLearner extends Learner {
 
 				for (GLM glm : glms) {
 					double[] w = glm.w[0];
-					for (int i = 0; i < cList.size(); i++) {
-						int attIndex = attrs[i];
-						w[attIndex] *= cList.get(i);
+					for (int j = 0; j < cList.length; j++) {
+						int attIndex = attrs[j];
+						w[attIndex] *= cList[j];
 					}
 				}
 
 				return glms;
 			} else {
-				int p = attrs.length == 0 ? 0 : attrs[attrs.length - 1] + 1;
+				int p = attrs.length == 0 ? 0 : (StatUtils.max(attrs) + 1);
 				GLM[] glms = new GLM[numLambdas];
 				for (int i = 0; i < glms.length; i++) {
 					glms[i] = new GLM(numClasses, p);
@@ -587,9 +585,9 @@ public class ElasticNetLearner extends Learner {
 						GLM binaryClassifier = binaryClassifiers[l];
 						GLM glm = glms[l];
 						double[] w = binaryClassifier.w[0];
-						for (int i = 0; i < cList.size(); i++) {
-							int attIndex = attrs[i];
-							glm.w[k][attIndex] = w[attIndex] * cList.get(i);
+						for (int j = 0; j < cList.length; j++) {
+							int attIndex = attrs[j];
+							glm.w[k][attIndex] = w[attIndex] * cList[j];
 						}
 						glm.intercept[k] = binaryClassifier.intercept[0];
 					}
@@ -602,7 +600,7 @@ public class ElasticNetLearner extends Learner {
 			int[] attrs = dd.attrs;
 			double[][] x = dd.x;
 			int[] y = new int[dd.y.length];
-			List<Double> cList = dd.cList;
+			double[] cList = dd.cList;
 
 			if (numClasses == 2) {
 				for (int i = 0; i < y.length; i++) {
@@ -614,16 +612,15 @@ public class ElasticNetLearner extends Learner {
 
 				for (GLM glm : glms) {
 					double[] w = glm.w[0];
-					for (int i = 0; i < cList.size(); i++) {
-						int attr = attrs[i];
-						double c = cList.get(i);
-						w[attr] *= c;
+					for (int j = 0; j < cList.length; j++) {
+						int attIndex = attrs[j];
+						w[attIndex] *= cList[j];
 					}
 				}
 
 				return glms;
 			} else {
-				int p = attrs.length == 0 ? 0 : attrs[attrs.length - 1] + 1;
+				int p = attrs.length == 0 ? 0 : (StatUtils.max(attrs) + 1);
 				GLM[] glms = new GLM[numLambdas];
 				for (int i = 0; i < glms.length; i++) {
 					glms[i] = new GLM(numClasses, p);
@@ -643,9 +640,9 @@ public class ElasticNetLearner extends Learner {
 						GLM binaryClassifier = binaryClassifiers[l];
 						GLM glm = glms[l];
 						double[] w = binaryClassifier.w[0];
-						for (int i = 0; i < cList.size(); i++) {
-							int attIndex = attrs[i];
-							glm.w[k][attIndex] = w[attIndex] * cList.get(i);
+						for (int j = 0; j < cList.length; j++) {
+							int attIndex = attrs[j];
+							glm.w[k][attIndex] = w[attIndex] * cList[j];
 						}
 						glm.intercept[k] = binaryClassifier.intercept[0];
 					}
@@ -685,28 +682,27 @@ public class ElasticNetLearner extends Learner {
 	public GLM buildRegressor(Instances trainSet, boolean isSparse, int maxNumIters, double lambda, double l1Ratio) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
-			List<Double> cList = sd.cList;
+			double[] cList = sd.cList;
 
 			GLM glm = buildRegressor(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, lambda, l1Ratio);
 
 			double[] w = glm.w[0];
-			for (int i = 0; i < cList.size(); i++) {
-				int attIndex = sd.attrs[i];
-				w[attIndex] *= cList.get(i);
+			for (int j = 0; j < cList.length; j++) {
+				int attIndex = sd.attrs[j];
+				w[attIndex] *= cList[j];
 			}
 
 			return glm;
 		} else {
 			DenseDataset dd = getDenseDataset(trainSet, true);
-			List<Double> cList = dd.cList;
+			double[] cList = dd.cList;
 
 			GLM glm = buildRegressor(dd.attrs, dd.x, dd.y, maxNumIters, lambda, l1Ratio);
 
 			double[] w = glm.w[0];
-			for (int i = 0; i < cList.size(); i++) {
-				int attr = dd.attrs[i];
-				double c = cList.get(i);
-				w[attr] *= c;
+			for (int j = 0; j < cList.length; j++) {
+				int attIndex = dd.attrs[j];
+				w[attIndex] *= cList[j];
 			}
 			return glm;
 		}
@@ -858,32 +854,31 @@ public class ElasticNetLearner extends Learner {
 			double minLambdaRatio, double l1Ratio) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
-			List<Double> cList = sd.cList;
+			double[] cList = sd.cList;
 
 			GLM[] glms = buildRegressors(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, numLambdas,
 					minLambdaRatio, l1Ratio);
 
 			for (GLM glm : glms) {
 				double[] w = glm.w[0];
-				for (int i = 0; i < cList.size(); i++) {
-					int attIndex = sd.attrs[i];
-					w[attIndex] *= cList.get(i);
+				for (int j = 0; j < cList.length; j++) {
+					int attIndex = sd.attrs[j];
+					w[attIndex] *= cList[j];
 				}
 			}
 
 			return glms;
 		} else {
 			DenseDataset dd = getDenseDataset(trainSet, true);
-			List<Double> cList = dd.cList;
+			double[] cList = dd.cList;
 
 			GLM[] glms = buildRegressors(dd.attrs, dd.x, dd.y, maxNumIters, numLambdas, minLambdaRatio, l1Ratio);
 
 			for (GLM glm : glms) {
 				double[] w = glm.w[0];
-				for (int i = 0; i < cList.size(); i++) {
-					int attr = dd.attrs[i];
-					double c = cList.get(i);
-					w[attr] *= c;
+				for (int j = 0; j < cList.length; j++) {
+					int attIndex = dd.attrs[j];
+					w[attIndex] *= cList[j];
 				}
 			}
 

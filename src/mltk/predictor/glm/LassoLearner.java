@@ -460,7 +460,7 @@ public class LassoLearner extends Learner {
 			int[][] indices = sd.indices;
 			double[][] values = sd.values;
 			int[] y = new int[sd.y.length];
-			List<Double> cList = sd.cList;
+			double[] cList = sd.cList;
 
 			if (numClasses == 2) {
 				for (int i = 0; i < y.length; i++) {
@@ -471,14 +471,14 @@ public class LassoLearner extends Learner {
 				GLM glm = buildBinaryClassifier(attrs, indices, values, y, maxNumIters, lambda);
 
 				double[] w = glm.w[0];
-				for (int i = 0; i < cList.size(); i++) {
-					int attIndex = sd.attrs[i];
-					w[attIndex] *= cList.get(i);
+				for (int j = 0; j < cList.length; j++) {
+					int attIndex = sd.attrs[j];
+					w[attIndex] *= cList[j];
 				}
 
 				return glm;
 			} else {
-				int p = attrs.length == 0 ? 0 : attrs[attrs.length - 1] + 1;
+				int p = attrs.length == 0 ? 0 : (StatUtils.max(attrs) + 1);
 				GLM glm = new GLM(numClasses, p);
 
 				for (int k = 0; k < numClasses; k++) {
@@ -491,9 +491,9 @@ public class LassoLearner extends Learner {
 					GLM binaryClassifier = buildBinaryClassifier(attrs, indices, values, y, maxNumIters, lambda);
 
 					double[] w = binaryClassifier.w[0];
-					for (int i = 0; i < cList.size(); i++) {
-						int attIndex = attrs[i];
-						glm.w[k][attIndex] = w[attIndex] * cList.get(i);
+					for (int j = 0; j < cList.length; j++) {
+						int attIndex = attrs[j];
+						glm.w[k][attIndex] = w[attIndex] * cList[j];
 					}
 					glm.intercept[k] = binaryClassifier.intercept[0];
 				}
@@ -505,7 +505,7 @@ public class LassoLearner extends Learner {
 			int[] attrs = dd.attrs;
 			double[][] x = dd.x;
 			int[] y = new int[dd.y.length];
-			List<Double> cList = dd.cList;
+			double[] cList = dd.cList;
 
 			if (numClasses == 2) {
 				for (int i = 0; i < y.length; i++) {
@@ -516,15 +516,14 @@ public class LassoLearner extends Learner {
 				GLM glm = buildBinaryClassifier(attrs, x, y, maxNumIters, lambda);
 
 				double[] w = glm.w[0];
-				for (int i = 0; i < cList.size(); i++) {
-					int attr = attrs[i];
-					double c = cList.get(i);
-					w[attr] *= c;
+				for (int j = 0; j < cList.length; j++) {
+					int attIndex = attrs[j];
+					w[attIndex] *= cList[j];
 				}
 
 				return glm;
 			} else {
-				int p = attrs.length == 0 ? 0 : attrs[attrs.length - 1] + 1;
+				int p = attrs.length == 0 ? 0 : (StatUtils.max(attrs) + 1);
 				GLM glm = new GLM(numClasses, p);
 
 				for (int k = 0; k < numClasses; k++) {
@@ -537,9 +536,9 @@ public class LassoLearner extends Learner {
 					GLM binaryClassifier = buildBinaryClassifier(attrs, x, y, maxNumIters, lambda);
 
 					double[] w = binaryClassifier.w[0];
-					for (int i = 0; i < cList.size(); i++) {
-						int attIndex = attrs[i];
-						glm.w[k][attIndex] = w[attIndex] * cList.get(i);
+					for (int j = 0; j < cList.length; j++) {
+						int attIndex = attrs[j];
+						glm.w[k][attIndex] = w[attIndex] * cList[j];
 					}
 					glm.intercept[k] = binaryClassifier.intercept[0];
 				}
@@ -586,7 +585,7 @@ public class LassoLearner extends Learner {
 			int[][] indices = sd.indices;
 			double[][] values = sd.values;
 			int[] y = new int[sd.y.length];
-			List<Double> cList = sd.cList;
+			double[] cList = sd.cList;
 
 			if (numClasses == 2) {
 				for (int i = 0; i < y.length; i++) {
@@ -599,9 +598,9 @@ public class LassoLearner extends Learner {
 
 				for (GLM glm : glms) {
 					double[] w = glm.w[0];
-					for (int i = 0; i < cList.size(); i++) {
-						int attIndex = sd.attrs[i];
-						w[attIndex] *= cList.get(i);
+					for (int j = 0; j < cList.length; j++) {
+						int attIndex = sd.attrs[j];
+						w[attIndex] *= cList[j];
 					}
 				}
 
@@ -611,7 +610,7 @@ public class LassoLearner extends Learner {
 				this.refit = false; // Not supported in multiclass
 									// classification
 
-				int p = attrs.length == 0 ? 0 : attrs[attrs.length - 1] + 1;
+				int p = attrs.length == 0 ? 0 : (StatUtils.max(attrs) + 1);
 				List<GLM> glms = new ArrayList<>();
 				for (int i = 0; i < numLambdas; i++) {
 					GLM glm = new GLM(numClasses, p);
@@ -632,9 +631,9 @@ public class LassoLearner extends Learner {
 						GLM binaryClassifier = binaryClassifiers.get(l);
 						GLM glm = glms.get(l);
 						double[] w = binaryClassifier.w[0];
-						for (int i = 0; i < cList.size(); i++) {
-							int attIndex = attrs[i];
-							glm.w[k][attIndex] = w[attIndex] * cList.get(i);
+						for (int j = 0; j < cList.length; j++) {
+							int attIndex = attrs[j];
+							glm.w[k][attIndex] = w[attIndex] * cList[j];
 						}
 						glm.intercept[k] = binaryClassifier.intercept[0];
 					}
@@ -651,7 +650,7 @@ public class LassoLearner extends Learner {
 			int[] attrs = dd.attrs;
 			double[][] x = dd.x;
 			int[] y = new int[dd.y.length];
-			List<Double> cList = dd.cList;
+			double[] cList = dd.cList;
 
 			if (numClasses == 2) {
 				for (int i = 0; i < y.length; i++) {
@@ -663,9 +662,9 @@ public class LassoLearner extends Learner {
 
 				for (GLM glm : glms) {
 					double[] w = glm.w[0];
-					for (int i = 0; i < cList.size(); i++) {
-						int attIndex = dd.attrs[i];
-						w[attIndex] *= cList.get(i);
+					for (int j = 0; j < cList.length; j++) {
+						int attIndex = dd.attrs[j];
+						w[attIndex] *= cList[j];
 					}
 				}
 
@@ -675,7 +674,7 @@ public class LassoLearner extends Learner {
 				this.refit = false; // Not supported in multiclass
 									// classification
 
-				int p = attrs.length == 0 ? 0 : attrs[attrs.length - 1] + 1;
+				int p = attrs.length == 0 ? 0 : (StatUtils.max(attrs) + 1);
 				List<GLM> glms = new ArrayList<>();
 				for (int i = 0; i < numLambdas; i++) {
 					GLM glm = new GLM(numClasses, p);
@@ -696,9 +695,9 @@ public class LassoLearner extends Learner {
 						GLM binaryClassifier = binaryClassifiers.get(l);
 						GLM glm = glms.get(l);
 						double[] w = binaryClassifier.w[0];
-						for (int i = 0; i < cList.size(); i++) {
-							int attIndex = attrs[i];
-							glm.w[k][attIndex] = w[attIndex] * cList.get(i);
+						for (int j = 0; j < cList.length; j++) {
+							int attIndex = attrs[j];
+							glm.w[k][attIndex] = w[attIndex] * cList[j];
 						}
 						glm.intercept[k] = binaryClassifier.intercept[0];
 					}
@@ -737,28 +736,27 @@ public class LassoLearner extends Learner {
 	public GLM buildRegressor(Instances trainSet, boolean isSparse, int maxNumIters, double lambda) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
-			List<Double> cList = sd.cList;
+			double[] cList = sd.cList;
 
 			GLM glm = buildRegressor(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, lambda);
 
 			double[] w = glm.w[0];
-			for (int i = 0; i < cList.size(); i++) {
-				int attIndex = sd.attrs[i];
-				w[attIndex] *= cList.get(i);
+			for (int j = 0; j < cList.length; j++) {
+				int attIndex = sd.attrs[j];
+				w[attIndex] *= cList[j];
 			}
 
 			return glm;
 		} else {
 			DenseDataset dd = getDenseDataset(trainSet, true);
-			List<Double> cList = dd.cList;
+			double[] cList = dd.cList;
 
 			GLM glm = buildRegressor(dd.attrs, dd.x, dd.y, maxNumIters, lambda);
 
 			double[] w = glm.w[0];
-			for (int i = 0; i < cList.size(); i++) {
-				int attr = dd.attrs[i];
-				double c = cList.get(i);
-				w[attr] *= c;
+			for (int j = 0; j < cList.length; j++) {
+				int attIndex = dd.attrs[j];
+				w[attIndex] *= cList[j];
 			}
 			return glm;
 		}
@@ -897,33 +895,31 @@ public class LassoLearner extends Learner {
 			double minLambdaRatio) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
-			List<Double> cList = sd.cList;
+			double[] cList = sd.cList;
 
 			List<GLM> glms = buildRegressors(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, numLambdas,
 					minLambdaRatio);
 
 			for (GLM glm : glms) {
 				double[] w = glm.w[0];
-				for (int i = 0; i < cList.size(); i++) {
-					int attr = sd.attrs[i];
-					double c = cList.get(i);
-					w[attr] *= c;
+				for (int i = 0; i < cList.length; i++) {
+					int attIndex = sd.attrs[i];
+					w[attIndex] *= cList[i];
 				}
 			}
 
 			return glms;
 		} else {
 			DenseDataset dd = getDenseDataset(trainSet, true);
-			List<Double> cList = dd.cList;
+			double[] cList = dd.cList;
 
 			List<GLM> glms = buildRegressors(dd.attrs, dd.x, dd.y, maxNumIters, numLambdas, minLambdaRatio);
 
 			for (GLM glm : glms) {
 				double[] w = glm.w[0];
-				for (int i = 0; i < cList.size(); i++) {
-					int attr = dd.attrs[i];
-					double c = cList.get(i);
-					w[attr] *= c;
+				for (int j = 0; j < cList.length; j++) {
+					int attIndex = dd.attrs[j];
+					w[attIndex] *= cList[j];
 				}
 			}
 

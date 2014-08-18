@@ -168,13 +168,25 @@ public abstract class Learner {
 		int[] attrs = new int[p];
 		int[][] indices = new int[p][];
 		double[][] values = new double[p][];
-		for (int i = 0; i < p; i++) {
-			attrs[i] = attrsList.get(i);
-			indices[i] = indicesList.get(i);
-			values[i] = valuesList.get(i);
+		for (int j = 0; j < p; j++) {
+			attrs[j] = attrsList.get(j);
+			indices[j] = indicesList.get(j);
+			values[j] = valuesList.get(j);
+		}
+		
+		double[] std = new double[stdList.size()];
+		for (int j = 0; j < std.length; j++) {
+			std[j] = stdList.get(j);
+		}
+		double[] c = null;
+		if (cList != null) {
+			c = new double[cList.size()];
+			for (int j = 0; j < c.length; j++) {
+				c[j] = cList.get(j);
+			}
 		}
 
-		return new SparseDataset(attrs, indices, values, y, stdList, cList);
+		return new SparseDataset(attrs, indices, values, y, std, c);
 	}
 
 	/**
@@ -226,12 +238,24 @@ public abstract class Learner {
 
 		int[] attrs = new int[attrsList.size()];
 		double[][] x = new double[attrsList.size()][];
-		for (int i = 0; i < attrs.length; i++) {
-			attrs[i] = attrsList.get(i);
-			x[i] = xList.get(i);
+		for (int j = 0; j < attrs.length; j++) {
+			attrs[j] = attrsList.get(j);
+			x[j] = xList.get(j);
+		}
+		
+		double[] std = new double[stdList.size()];
+		for (int j = 0; j < std.length; j++) {
+			std[j] = stdList.get(j);
+		}
+		double[] c = null;
+		if (cList != null) {
+			c = new double[cList.size()];
+			for (int j = 0; j < c.length; j++) {
+				c[j] = cList.get(j);
+			}
 		}
 
-		return new DenseDataset(attrs, x, y, stdList, cList);
+		return new DenseDataset(attrs, x, y, std, c);
 	}
 
 	protected class SparseDataset {
@@ -240,11 +264,11 @@ public abstract class Learner {
 		public int[][] indices;
 		public double[][] values;
 		public double[] y;
-		public List<Double> stdList;
-		public List<Double> cList;
+		public double[] stdList;
+		public double[] cList;
 
-		SparseDataset(int[] attrs, int[][] indices, double[][] values, double[] y, List<Double> stdList,
-				List<Double> cList) {
+		SparseDataset(int[] attrs, int[][] indices, double[][] values, double[] y, double[] stdList,
+				double[] cList) {
 			this.attrs = attrs;
 			this.indices = indices;
 			this.values = values;
@@ -260,10 +284,10 @@ public abstract class Learner {
 		public int[] attrs;
 		public double[][] x;
 		public double[] y;
-		public List<Double> stdList;
-		public List<Double> cList;
+		public double[] stdList;
+		public double[] cList;
 
-		DenseDataset(int[] attrs, double[][] x, double[] y, List<Double> stdList, List<Double> cList) {
+		DenseDataset(int[] attrs, double[][] x, double[] y, double[] stdList, double[] cList) {
 			this.attrs = attrs;
 			this.x = x;
 			this.y = y;
