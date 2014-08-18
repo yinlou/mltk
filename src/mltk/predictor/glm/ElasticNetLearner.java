@@ -171,8 +171,9 @@ public class ElasticNetLearner extends Learner {
 		final double tl2 = lambda2 * y.length;
 
 		// Coordinate descent
-		double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 		for (int iter = 0; iter < maxNumIters; iter++) {
+			double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
+			
 			if (fitIntercept) {
 				intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 			}
@@ -188,7 +189,6 @@ public class ElasticNetLearner extends Learner {
 			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
-			prevLoss = currLoss;
 		}
 
 		return GLMOptimUtils.getGLM(attrs, w, intercept);
@@ -229,8 +229,9 @@ public class ElasticNetLearner extends Learner {
 		final double tl2 = lambda2 * y.length;
 
 		// Coordinate descent
-		double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 		for (int iter = 0; iter < maxNumIters; iter++) {
+			double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
+			
 			if (fitIntercept) {
 				intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 			}
@@ -246,7 +247,6 @@ public class ElasticNetLearner extends Learner {
 			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
-			prevLoss = currLoss;
 		}
 
 		return GLMOptimUtils.getGLM(attrs, w, intercept);
@@ -295,8 +295,9 @@ public class ElasticNetLearner extends Learner {
 			final double tl2 = lambda2 * y.length;
 
 			// Coordinate descent
-			double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 			for (int iter = 0; iter < maxNumIters; iter++) {
+				double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
+				
 				if (fitIntercept) {
 					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
@@ -312,7 +313,6 @@ public class ElasticNetLearner extends Learner {
 				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
-				prevLoss = currLoss;
 			}
 
 			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept);
@@ -366,8 +366,9 @@ public class ElasticNetLearner extends Learner {
 			final double tl2 = lambda2 * y.length;
 
 			// Coordinate descent
-			double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 			for (int iter = 0; iter < maxNumIters; iter++) {
+				double prevLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
+				
 				if (fitIntercept) {
 					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
@@ -383,7 +384,6 @@ public class ElasticNetLearner extends Learner {
 				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
-				prevLoss = currLoss;
 			}
 
 			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept);
@@ -760,8 +760,9 @@ public class ElasticNetLearner extends Learner {
 		final double tl2 = lambda2 * y.length;
 
 		// Coordinate descent
-		double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 		for (int iter = 0; iter < maxNumIters; iter++) {
+			double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
+			
 			if (fitIntercept) {
 				intercept += OptimUtils.fitIntercept(rTrain);
 			}
@@ -777,7 +778,6 @@ public class ElasticNetLearner extends Learner {
 			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
-			prevLoss = currLoss;
 		}
 
 		return GLMOptimUtils.getGLM(attrs, w, intercept);
@@ -820,8 +820,9 @@ public class ElasticNetLearner extends Learner {
 		final double tl2 = lambda2 * y.length;
 
 		// Coordinate descent
-		double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 		for (int iter = 0; iter < maxNumIters; iter++) {
+			double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
+			
 			if (fitIntercept) {
 				intercept += OptimUtils.fitIntercept(rTrain);
 			}
@@ -837,7 +838,6 @@ public class ElasticNetLearner extends Learner {
 			if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 				break;
 			}
-			prevLoss = currLoss;
 		}
 
 		return GLMOptimUtils.getGLM(attrs, w, intercept);
@@ -955,8 +955,9 @@ public class ElasticNetLearner extends Learner {
 			final double tl2 = lambda2 * y.length;
 
 			// Coordinate descent
-			double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 			for (int iter = 0; iter < maxNumIters; iter++) {
+				double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
+				
 				if (fitIntercept) {
 					intercept += OptimUtils.fitIntercept(rTrain);
 				}
@@ -972,11 +973,7 @@ public class ElasticNetLearner extends Learner {
 				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
-				prevLoss = currLoss;
 			}
-
-			double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
-			System.out.println("Model " + g + ": " + lambda + " " + currLoss + " " + StatUtils.rms(rTrain));
 
 			lambda *= alpha;
 			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept);
@@ -1035,8 +1032,9 @@ public class ElasticNetLearner extends Learner {
 			final double tl2 = lambda2 * y.length;
 
 			// Coordinate descent
-			double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 			for (int iter = 0; iter < maxNumIters; iter++) {
+				double prevLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
+				
 				if (fitIntercept) {
 					intercept += OptimUtils.fitIntercept(rTrain);
 				}
@@ -1052,12 +1050,8 @@ public class ElasticNetLearner extends Learner {
 				if (OptimUtils.isConverged(prevLoss, currLoss, epsilon)) {
 					break;
 				}
-				prevLoss = currLoss;
 			}
-
-			double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
-			System.out.println("Model " + g + ": " + lambda + " " + currLoss + " " + StatUtils.rms(rTrain));
-
+			
 			lambda *= alpha;
 			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept);
 		}
