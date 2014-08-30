@@ -72,14 +72,14 @@ public class RidgeLearner extends Learner {
 		}
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
 
-		RidgeLearner ridgeLearner = new RidgeLearner();
-		ridgeLearner.setVerbose(true);
-		ridgeLearner.setTask(task);
-		ridgeLearner.setLambda(opts.lambda);
-		ridgeLearner.setMaxNumIters(opts.maxIter);
+		RidgeLearner learner = new RidgeLearner();
+		learner.setVerbose(true);
+		learner.setTask(task);
+		learner.setLambda(opts.lambda);
+		learner.setMaxNumIters(opts.maxIter);
 
 		long start = System.currentTimeMillis();
-		GLM glm = ridgeLearner.build(trainSet);
+		GLM glm = learner.build(trainSet);
 		long end = System.currentTimeMillis();
 		System.out.println("Time: " + (end - start) / 1000.0);
 
@@ -140,7 +140,7 @@ public class RidgeLearner extends Learner {
 	 * @param lambda the lambda.
 	 * @return an L2-regularized binary classifier.
 	 */
-	public GLM buildBinaryClassifier(int[] attrs, double[][] x, int[] y, int maxNumIters, double lambda) {
+	public GLM buildBinaryClassifier(int[] attrs, double[][] x, double[] y, int maxNumIters, double lambda) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -192,7 +192,7 @@ public class RidgeLearner extends Learner {
 	 * @param lambda the lambda.
 	 * @return an L2-regularized classifier.
 	 */
-	public GLM buildBinaryClassifier(int[] attrs, int[][] indices, double[][] values, int[] y, int maxNumIters,
+	public GLM buildBinaryClassifier(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
 			double lambda) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
@@ -244,7 +244,7 @@ public class RidgeLearner extends Learner {
 	 * @param lambdas the lambdas array.
 	 * @return L2-regularized classifiers.
 	 */
-	public GLM[] buildBinaryClassifiers(int[] attrs, double[][] x, int[] y, int maxNumIters, double[] lambdas) {
+	public GLM[] buildBinaryClassifiers(int[] attrs, double[][] x, double[] y, int maxNumIters, double[] lambdas) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -304,7 +304,7 @@ public class RidgeLearner extends Learner {
 	 * @param lambdas the lambdas array.
 	 * @return L2-regularized classifiers.
 	 */
-	public GLM[] buildBinaryClassifiers(int[] attrs, int[][] indices, double[][] values, int[] y, int maxNumIters,
+	public GLM[] buildBinaryClassifiers(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
 			double[] lambdas) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
@@ -375,7 +375,7 @@ public class RidgeLearner extends Learner {
 			int[] attrs = sd.attrs;
 			int[][] indices = sd.indices;
 			double[][] values = sd.values;
-			int[] y = new int[sd.y.length];
+			double[] y = new double[sd.y.length];
 			double[] cList = sd.cList;
 
 			if (numClasses == 2) {
@@ -420,7 +420,7 @@ public class RidgeLearner extends Learner {
 			DenseDataset dd = getDenseDataset(trainSet, true);
 			int[] attrs = dd.attrs;
 			double[][] x = dd.x;
-			int[] y = new int[dd.y.length];
+			double[] y = new double[dd.y.length];
 			double[] cList = dd.cList;
 
 			if (numClasses == 2) {
@@ -498,7 +498,7 @@ public class RidgeLearner extends Learner {
 			int[] attrs = sd.attrs;
 			int[][] indices = sd.indices;
 			double[][] values = sd.values;
-			int[] y = new int[sd.y.length];
+			double[] y = new double[sd.y.length];
 			double[] cList = sd.cList;
 
 			if (numClasses == 2) {
@@ -553,7 +553,7 @@ public class RidgeLearner extends Learner {
 			DenseDataset dd = getDenseDataset(trainSet, true);
 			int[] attrs = dd.attrs;
 			double[][] x = dd.x;
-			int[] y = new int[dd.y.length];
+			double[] y = new double[dd.y.length];
 			double[] cList = dd.cList;
 
 			if (numClasses == 2) {
@@ -975,7 +975,7 @@ public class RidgeLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(double[][] x, double[] theta, int[] y, final double tl2, double[] w, double[] pTrain,
+	protected void doOnePass(double[][] x, double[] theta, double[] y, final double tl2, double[] w, double[] pTrain,
 			double[] rTrain) {
 		for (int j = 0; j < x.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
@@ -1019,7 +1019,7 @@ public class RidgeLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(int[][] indices, double[][] values, double[] theta, int[] y, final double tl2, double[] w,
+	protected void doOnePass(int[][] indices, double[][] values, double[] theta, double[] y, final double tl2, double[] w,
 			double[] pTrain, double[] rTrain) {
 		for (int j = 0; j < indices.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {

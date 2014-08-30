@@ -36,7 +36,7 @@ public class OptimUtils {
 	 * @param cls the class label.
 	 * @return the pseudo residual.
 	 */
-	public static double getPseudoResidual(double pred, int cls) {
+	public static double getPseudoResidual(double pred, double cls) {
 		if (cls == 1) {
 			return 1 / (1 + Math.exp(pred));
 		} else {
@@ -51,7 +51,7 @@ public class OptimUtils {
 	 * @param y the class label array.
 	 * @param residual the residual array.
 	 */
-	public static void computePseudoResidual(double[] prediction, int[] y, double[] residual) {
+	public static void computePseudoResidual(double[] prediction, double[] y, double[] residual) {
 		for (int i = 0; i < residual.length; i++) {
 			residual[i] = getPseudoResidual(prediction[i], y[i]);
 		}
@@ -64,7 +64,7 @@ public class OptimUtils {
 	 * @param cls the class label.
 	 * @return the logistic loss for binary classification problems.
 	 */
-	public static double computeLogisticLoss(double pred, int cls) {
+	public static double computeLogisticLoss(double pred, double cls) {
 		if (cls == 1) {
 			return Math.log(1 + Math.exp(-pred));
 		} else {
@@ -79,7 +79,7 @@ public class OptimUtils {
 	 * @param y the class label array.
 	 * @return the logistic loss for binary classification problems.
 	 */
-	public static double computeLogisticLoss(double[] pred, int[] y) {
+	public static double computeLogisticLoss(double[] pred, double[] y) {
 		double loss = 0;
 		for (int i = 0; i < pred.length; i++) {
 			loss += computeLogisticLoss(pred[i], y[i]);
@@ -117,7 +117,7 @@ public class OptimUtils {
 	 * @param y the class label array.
 	 * @return the fitted intercept.
 	 */
-	public static double fitIntercept(double[] prediction, double[] residual, int[] y) {
+	public static double fitIntercept(double[] prediction, double[] residual, double[] y) {
 		double delta = 0;
 		// Use Newton-Raphson's method to approximate
 		// 1st derivative
@@ -138,25 +138,6 @@ public class OptimUtils {
 			computePseudoResidual(prediction, y, residual);
 		}
 		return delta;
-	}
-	
-	/**
-	 * Returns the error rate for binary classification problems.
-	 * 
-	 * @param prediction the prediction array.
-	 * @param y the target array.
-	 * @return the error rate for binary classification problems.
-	 */
-	public static double evalError(double[] prediction, int[] y) {
-		double error = 0;
-		for (int i = 0; i < prediction.length; i++) {
-			int pred = prediction[i] >= 0 ? 1 : 0;
-			if (pred != y[i]) {
-				error++;
-			}
-		}
-		error /= y.length;
-		return error;
 	}
 	
 	/**

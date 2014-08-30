@@ -109,13 +109,13 @@ Using `LogitBoostLearner` as example, the following code builds a boosted tree m
 
 ```
 Instances trainSet = InstancesReader.read(...)
-LogitBoostLearner logitBoostLearner = new LogitBoostLearner();
-logitBoostLearner.setLearningRate(0.1);
-logitBoostLearner.setMaxNumIters(10000);
-logitBoostLearner.setMaxNumLeaves(2);
-logitBoostLearner.setVerbose(true);
+LogitBoostLearner learner = new LogitBoostLearner();
+learner.setLearningRate(0.1);
+learner.setMaxNumIters(10000);
+learner.setMaxNumLeaves(2);
+learner.setVerbose(true);
 		
-BRT brt = logitBoostLearner.build(trainSet);
+BRT brt = learner.build(trainSet);
 ```
 
 ## Evaluating Models
@@ -147,13 +147,13 @@ The following code builds a boosted tree model and evaluate the classification e
 ```
 Instances trainSet = InstancesReader.read(...)
 Instances testSet = InstancesReader.read(...)
-LogitBoostLearner logitBoostLearner = new LogitBoostLearner();
-logitBoostLearner.setLearningRate(0.1);
-logitBoostLearner.setMaxNumIters(10000);
-logitBoostLearner.setMaxNumLeaves(2);
-logitBoostLearner.setVerbose(true);
+LogitBoostLearner learner = new LogitBoostLearner();
+learner.setLearningRate(0.1);
+learner.setMaxNumIters(10000);
+learner.setMaxNumLeaves(2);
+learner.setVerbose(true);
 		
-BRT brt = logitBoostLearner.build(trainSet);
+BRT brt = learner.build(trainSet);
 
 double error = Evaluator.evalError(brt, testSet);
 ```

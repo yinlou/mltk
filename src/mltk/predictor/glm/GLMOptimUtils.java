@@ -22,7 +22,7 @@ class GLMOptimUtils {
 		return loss;
 	}
 
-	static double computeRidgeLoss(double[] pred, int[] y, double[] w, double lambda) {
+	static double computeRidgeLoss(double[] pred, double[] y, double[] w, double lambda) {
 		double loss = OptimUtils.computeLogisticLoss(pred, y);
 		loss += lambda / 2 * StatUtils.sumSq(w);
 		return loss;
@@ -34,7 +34,7 @@ class GLMOptimUtils {
 		return loss;
 	}
 
-	static double computeLassoLoss(double[] pred, int[] y, double[] w, double lambda) {
+	static double computeLassoLoss(double[] pred, double[] y, double[] w, double lambda) {
 		double loss =  OptimUtils.computeLogisticLoss(pred, y);
 		loss += lambda * VectorUtils.l1norm(w);
 		return loss;
@@ -46,7 +46,7 @@ class GLMOptimUtils {
 		return loss;
 	}
 
-	static double computeElasticNetLoss(double[] pred, int[] y, double[] w, double lambda1, double lambda2) {
+	static double computeElasticNetLoss(double[] pred, double[] y, double[] w, double lambda1, double lambda2) {
 		double loss =  OptimUtils.computeLogisticLoss(pred, y);
 		loss += lambda1 * VectorUtils.l1norm(w) + lambda2 / 2 * StatUtils.sumSq(w);
 		return loss;
@@ -60,7 +60,7 @@ class GLMOptimUtils {
 		return loss;
 	}
 
-	static double computeGroupLassoLoss(double[] pred, int[] y, double[][] w, double[] tl1) {
+	static double computeGroupLassoLoss(double[] pred, double[] y, double[][] w, double[] tl1) {
 		double loss =  OptimUtils.computeLogisticLoss(pred, y);
 		for (int k = 0; k < w.length; k++) {
 			loss += tl1[k] * StatUtils.sumSq(w[k]);

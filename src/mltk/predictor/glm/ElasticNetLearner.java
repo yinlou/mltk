@@ -78,15 +78,15 @@ public class ElasticNetLearner extends Learner {
 		}
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
 
-		ElasticNetLearner glmLearner = new ElasticNetLearner();
-		glmLearner.setVerbose(true);
-		glmLearner.setTask(task);
-		glmLearner.setLambda(opts.lambda);
-		glmLearner.setL1Ratio(opts.l1Ratio);
-		glmLearner.setMaxNumIters(opts.maxIter);
+		ElasticNetLearner learner = new ElasticNetLearner();
+		learner.setVerbose(true);
+		learner.setTask(task);
+		learner.setLambda(opts.lambda);
+		learner.setL1Ratio(opts.l1Ratio);
+		learner.setMaxNumIters(opts.maxIter);
 
 		long start = System.currentTimeMillis();
-		GLM glm = glmLearner.build(trainSet);
+		GLM glm = learner.build(trainSet);
 		long end = System.currentTimeMillis();
 		System.out.println("Time: " + (end - start) / 1000.0);
 
@@ -150,7 +150,7 @@ public class ElasticNetLearner extends Learner {
 	 * @param l1Ratio the L1 ratio.
 	 * @return an elastic-net penalized binary classifier.
 	 */
-	public GLM buildBinaryClassifier(int[] attrs, double[][] x, int[] y, int maxNumIters, double lambda, double l1Ratio) {
+	public GLM buildBinaryClassifier(int[] attrs, double[][] x, double[] y, int maxNumIters, double lambda, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -207,7 +207,7 @@ public class ElasticNetLearner extends Learner {
 	 * @param l1Ratio the L1 ratio.
 	 * @return an elastic-net penalized classifier.
 	 */
-	public GLM buildBinaryClassifier(int[] attrs, int[][] indices, double[][] values, int[] y, int maxNumIters,
+	public GLM buildBinaryClassifier(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
 			double lambda, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
@@ -265,7 +265,7 @@ public class ElasticNetLearner extends Learner {
 	 * @param l1Ratio the L1 ratio.
 	 * @return elastic-net penalized classifiers.
 	 */
-	public GLM[] buildBinaryClassifiers(int[] attrs, double[][] x, int[] y, int maxNumIters, int numLambdas,
+	public GLM[] buildBinaryClassifiers(int[] attrs, double[][] x, double[] y, int maxNumIters, int numLambdas,
 			double minLambdaRatio, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
@@ -336,7 +336,7 @@ public class ElasticNetLearner extends Learner {
 	 * @param l1Ratio the L1 ratio.
 	 * @return an elastic-net penalized classifier.
 	 */
-	public GLM[] buildBinaryClassifiers(int[] attrs, int[][] indices, double[][] values, int[] y, int maxNumIters,
+	public GLM[] buildBinaryClassifiers(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
 			int numLambdas, double minLambdaRatio, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
@@ -415,7 +415,7 @@ public class ElasticNetLearner extends Learner {
 			int[] attrs = sd.attrs;
 			int[][] indices = sd.indices;
 			double[][] values = sd.values;
-			int[] y = new int[sd.y.length];
+			double[] y = new double[sd.y.length];
 			double[] cList = sd.cList;
 
 			if (numClasses == 2) {
@@ -461,7 +461,7 @@ public class ElasticNetLearner extends Learner {
 			DenseDataset dd = getDenseDataset(trainSet, true);
 			int[] attrs = dd.attrs;
 			double[][] x = dd.x;
-			int[] y = new int[dd.y.length];
+			double[] y = new double[dd.y.length];
 			double[] cList = dd.cList;
 
 			if (numClasses == 2) {
@@ -543,7 +543,7 @@ public class ElasticNetLearner extends Learner {
 			int[] attrs = sd.attrs;
 			int[][] indices = sd.indices;
 			double[][] values = sd.values;
-			int[] y = new int[sd.y.length];
+			double[] y = new double[sd.y.length];
 			double[] cList = sd.cList;
 
 			if (numClasses == 2) {
@@ -599,7 +599,7 @@ public class ElasticNetLearner extends Learner {
 			DenseDataset dd = getDenseDataset(trainSet, true);
 			int[] attrs = dd.attrs;
 			double[][] x = dd.x;
-			int[] y = new int[dd.y.length];
+			double[] y = new double[dd.y.length];
 			double[] cList = dd.cList;
 
 			if (numClasses == 2) {
@@ -978,7 +978,7 @@ public class ElasticNetLearner extends Learner {
 	}
 
 	/**
-	 * Builds elastic-net penalized regressors for a sequence of regularization parameter lambdas. Each row of the input
+	 * Builds elastic-net penalized regressors on sparse inputs for a sequence of regularization parameter lambdas. Each row of the input
 	 * represents a feature (instead of a data point), i.e., in column-oriented format. This procedure does not assume
 	 * the data is normalized or centered.
 	 * 
@@ -1079,7 +1079,7 @@ public class ElasticNetLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(double[][] x, double[] theta, int[] y, final double tl1, final double tl2, double[] w,
+	protected void doOnePass(double[][] x, double[] theta, double[] y, final double tl1, final double tl2, double[] w,
 			double[] pTrain, double[] rTrain) {
 		for (int j = 0; j < x.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
@@ -1141,7 +1141,7 @@ public class ElasticNetLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(int[][] indices, double[][] values, double[] theta, int[] y, final double tl1,
+	protected void doOnePass(int[][] indices, double[][] values, double[] theta, double[] y, final double tl1,
 			final double tl2, double[] w, double[] pTrain, double[] rTrain) {
 		for (int j = 0; j < indices.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
@@ -1200,7 +1200,7 @@ public class ElasticNetLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(double[][] x, int[] y, double[] pTrain, double[] rTrain, double l1Ratio) {
+	protected double findMaxLambda(double[][] x, double[] y, double[] pTrain, double[] rTrain, double l1Ratio) {
 		if (fitIntercept) {
 			OptimUtils.fitIntercept(pTrain, rTrain, y);
 		}
@@ -1250,7 +1250,7 @@ public class ElasticNetLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(int[][] indices, double[][] values, int[] y, double[] pTrain, double[] rTrain, double l1Ratio) {
+	protected double findMaxLambda(int[][] indices, double[][] values, double[] y, double[] pTrain, double[] rTrain, double l1Ratio) {
 		if (fitIntercept) {
 			OptimUtils.fitIntercept(pTrain, rTrain, y);
 		}

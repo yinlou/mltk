@@ -110,14 +110,14 @@ public class LassoLearner extends Learner {
 		}
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
 
-		LassoLearner lassoLearner = new LassoLearner();
-		lassoLearner.setVerbose(true);
-		lassoLearner.setTask(task);
-		lassoLearner.setLambda(opts.lambda);
-		lassoLearner.setMaxNumIters(opts.maxIter);
+		LassoLearner learner = new LassoLearner();
+		learner.setVerbose(true);
+		learner.setTask(task);
+		learner.setLambda(opts.lambda);
+		learner.setMaxNumIters(opts.maxIter);
 
 		long start = System.currentTimeMillis();
-		GLM glm = lassoLearner.build(trainSet);
+		GLM glm = learner.build(trainSet);
 		long end = System.currentTimeMillis();
 		System.out.println("Time: " + (end - start) / 1000.0);
 
@@ -182,7 +182,7 @@ public class LassoLearner extends Learner {
 	 * @param lambda the lambda.
 	 * @return an L1-regularized classifier.
 	 */
-	public GLM buildBinaryClassifier(int[] attrs, double[][] x, int[] y, int maxNumIters, double lambda) {
+	public GLM buildBinaryClassifier(int[] attrs, double[][] x, double[] y, int maxNumIters, double lambda) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -217,8 +217,16 @@ public class LassoLearner extends Learner {
 				break;
 			}
 		}
-
-		return GLMOptimUtils.getGLM(attrs, w, intercept);
+		
+		if (refit) {
+			boolean[] selected = new boolean[attrs.length];
+			for (int i = 0; i < selected.length; i++) {
+				selected[i] = w[i] != 0;
+			}
+			return refitClassifier(attrs, selected, x, y, maxNumIters);
+		} else {
+			return GLMOptimUtils.getGLM(attrs, w, intercept);
+		}
 	}
 
 	/**
@@ -234,7 +242,7 @@ public class LassoLearner extends Learner {
 	 * @param lambda the lambda.
 	 * @return an L1-regularized classifier.
 	 */
-	public GLM buildBinaryClassifier(int[] attrs, int[][] indices, double[][] values, int[] y, int maxNumIters,
+	public GLM buildBinaryClassifier(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
 			double lambda) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
@@ -270,8 +278,16 @@ public class LassoLearner extends Learner {
 				break;
 			}
 		}
-
-		return GLMOptimUtils.getGLM(attrs, w, intercept);
+		
+		if (refit) {
+			boolean[] selected = new boolean[attrs.length];
+			for (int i = 0; i < selected.length; i++) {
+				selected[i] = w[i] != 0;
+			}
+			return refitClassifier(attrs, selected, indices, values, y, maxNumIters);
+		} else {
+			return GLMOptimUtils.getGLM(attrs, w, intercept);
+		}
 	}
 
 	/**
@@ -287,7 +303,7 @@ public class LassoLearner extends Learner {
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return L1-regularized classifiers.
 	 */
-	public List<GLM> buildBinaryClassifiers(int[] attrs, double[][] x, int[] y, int maxNumIters, int numLambdas,
+	public List<GLM> buildBinaryClassifiers(int[] attrs, double[][] x, double[] y, int maxNumIters, int numLambdas,
 			double minLambdaRatio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
@@ -342,7 +358,7 @@ public class LassoLearner extends Learner {
 				}
 				ModelStructure structure = new ModelStructure(selected);
 				if (!structures.contains(structure)) {
-					GLM glm = refit(attrs, selected, x, y, maxNumIters);
+					GLM glm = refitClassifier(attrs, selected, x, y, maxNumIters);
 					glms.add(glm);
 					structures.add(structure);
 				}
@@ -369,7 +385,7 @@ public class LassoLearner extends Learner {
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return L1-regularized classifiers.
 	 */
-	public List<GLM> buildBinaryClassifiers(int[] attrs, int[][] indices, double[][] values, int[] y, int maxNumIters,
+	public List<GLM> buildBinaryClassifiers(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
 			int numLambdas, double minLambdaRatio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
@@ -424,7 +440,7 @@ public class LassoLearner extends Learner {
 				}
 				ModelStructure structure = new ModelStructure(selected);
 				if (!structures.contains(structure)) {
-					GLM glm = refit(attrs, selected, indices, values, y, maxNumIters);
+					GLM glm = refitClassifier(attrs, selected, indices, values, y, maxNumIters);
 					glms.add(glm);
 					structures.add(structure);
 				}
@@ -459,7 +475,7 @@ public class LassoLearner extends Learner {
 			int[] attrs = sd.attrs;
 			int[][] indices = sd.indices;
 			double[][] values = sd.values;
-			int[] y = new int[sd.y.length];
+			double[] y = new double[sd.y.length];
 			double[] cList = sd.cList;
 
 			if (numClasses == 2) {
@@ -504,7 +520,7 @@ public class LassoLearner extends Learner {
 			DenseDataset dd = getDenseDataset(trainSet, true);
 			int[] attrs = dd.attrs;
 			double[][] x = dd.x;
-			int[] y = new int[dd.y.length];
+			double[] y = new double[dd.y.length];
 			double[] cList = dd.cList;
 
 			if (numClasses == 2) {
@@ -584,7 +600,7 @@ public class LassoLearner extends Learner {
 			int[] attrs = sd.attrs;
 			int[][] indices = sd.indices;
 			double[][] values = sd.values;
-			int[] y = new int[sd.y.length];
+			double[] y = new double[sd.y.length];
 			double[] cList = sd.cList;
 
 			if (numClasses == 2) {
@@ -649,7 +665,7 @@ public class LassoLearner extends Learner {
 			DenseDataset dd = getDenseDataset(trainSet, true);
 			int[] attrs = dd.attrs;
 			double[][] x = dd.x;
-			int[] y = new int[dd.y.length];
+			double[] y = new double[dd.y.length];
 			double[] cList = dd.cList;
 
 			if (numClasses == 2) {
@@ -823,8 +839,16 @@ public class LassoLearner extends Learner {
 				break;
 			}
 		}
-
-		return GLMOptimUtils.getGLM(attrs, w, intercept);
+		
+		if (refit) {
+			boolean[] selected = new boolean[attrs.length];
+			for (int i = 0; i < selected.length; i++) {
+				selected[i] = w[i] != 0;
+			}
+			return refitRegressor(attrs, selected, x, y, maxNumIters);
+		} else {
+			return GLMOptimUtils.getGLM(attrs, w, intercept);
+		}
 	}
 
 	/**
@@ -877,8 +901,16 @@ public class LassoLearner extends Learner {
 				break;
 			}
 		}
-
-		return GLMOptimUtils.getGLM(attrs, w, intercept);
+		
+		if (refit) {
+			boolean[] selected = new boolean[attrs.length];
+			for (int i = 0; i < selected.length; i++) {
+				selected[i] = w[i] != 0;
+			}
+			return refitRegressor(attrs, selected, indices, values, y, maxNumIters);
+		} else {
+			return GLMOptimUtils.getGLM(attrs, w, intercept);
+		}
 	}
 
 	/**
@@ -1011,7 +1043,7 @@ public class LassoLearner extends Learner {
 				}
 				ModelStructure structure = new ModelStructure(selected);
 				if (!structures.contains(structure)) {
-					GLM glm = refit(attrs, selected, x, y, maxNumIters);
+					GLM glm = refitRegressor(attrs, selected, x, y, maxNumIters);
 					glms.add(glm);
 					structures.add(structure);
 				}
@@ -1095,7 +1127,7 @@ public class LassoLearner extends Learner {
 				}
 				ModelStructure structure = new ModelStructure(selected);
 				if (!structures.contains(structure)) {
-					GLM glm = refit(attrs, selected, indices, values, y, maxNumIters);
+					GLM glm = refitRegressor(attrs, selected, indices, values, y, maxNumIters);
 					glms.add(glm);
 					structures.add(structure);
 				}
@@ -1133,7 +1165,7 @@ public class LassoLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(double[][] x, double[] theta, int[] y, final double tl1, double[] w, double[] pTrain,
+	protected void doOnePass(double[][] x, double[] theta, double[] y, final double tl1, double[] w, double[] pTrain,
 			double[] rTrain) {
 		for (int j = 0; j < x.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
@@ -1194,7 +1226,7 @@ public class LassoLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(int[][] indices, double[][] values, double[] theta, int[] y, final double tl1, double[] w,
+	protected void doOnePass(int[][] indices, double[][] values, double[] theta, double[] y, final double tl1, double[] w,
 			double[] pTrain, double[] rTrain) {
 		for (int j = 0; j < indices.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
@@ -1251,7 +1283,7 @@ public class LassoLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(double[][] x, int[] y, double[] pTrain, double[] rTrain) {
+	protected double findMaxLambda(double[][] x, double[] y, double[] pTrain, double[] rTrain) {
 		if (fitIntercept) {
 			OptimUtils.fitIntercept(pTrain, rTrain, y);
 		}
@@ -1301,7 +1333,7 @@ public class LassoLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(int[][] indices, double[][] values, int[] y, double[] pTrain, double[] rTrain) {
+	protected double findMaxLambda(int[][] indices, double[][] values, double[] y, double[] pTrain, double[] rTrain) {
 		if (fitIntercept) {
 			OptimUtils.fitIntercept(pTrain, rTrain, y);
 		}
@@ -1419,7 +1451,7 @@ public class LassoLearner extends Learner {
 		this.refit = refit;
 	}
 
-	protected GLM refit(int[] attrs, boolean[] selected, double[][] x, double[] y, int maxNumIters) {
+	protected GLM refitRegressor(int[] attrs, boolean[] selected, double[][] x, double[] y, int maxNumIters) {
 		List<double[]> xList = new ArrayList<>();
 		for (int j = 0; j < attrs.length; j++) {
 			if (selected[j]) {
@@ -1442,13 +1474,13 @@ public class LassoLearner extends Learner {
 			attrsNew[i] = i;
 		}
 
-		RidgeLearner glmLearner = new RidgeLearner();
-		glmLearner.setVerbose(verbose);
-		glmLearner.setEpsilon(epsilon);
-		glmLearner.fitIntercept(fitIntercept);
+		RidgeLearner learner = new RidgeLearner();
+		learner.setVerbose(verbose);
+		learner.setEpsilon(epsilon);
+		learner.fitIntercept(fitIntercept);
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
-		GLM glm = glmLearner.buildRegressor(attrsNew, xNew, y, maxNumIters, 1e-8);
+		GLM glm = learner.buildRegressor(attrsNew, xNew, y, maxNumIters, 1e-8);
 		double[] w = new double[attrs.length];
 		double[] coef = glm.coefficients(0);
 		int k = 0;
@@ -1460,44 +1492,9 @@ public class LassoLearner extends Learner {
 
 		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0));
 	}
+	
 
-	protected GLM refit(int[] attrs, boolean[] selected, double[][] x, int[] y, int maxNumIters) {
-		List<double[]> xList = new ArrayList<>();
-		for (int j = 0; j < attrs.length; j++) {
-			if (selected[j]) {
-				xList.add(x[j]);
-			}
-		}
-
-		double[][] xNew = new double[xList.size()][];
-		for (int i = 0; i < xNew.length; i++) {
-			xNew[i] = xList.get(i);
-		}
-		int[] attrsNew = new int[xNew.length];
-		for (int i = 0; i < attrsNew.length; i++) {
-			attrsNew[i] = i;
-		}
-
-		RidgeLearner glmLearner = new RidgeLearner();
-		glmLearner.setVerbose(verbose);
-		glmLearner.setEpsilon(epsilon);
-		glmLearner.fitIntercept(fitIntercept);
-		// A ridge regression with very small regularization parameter
-		// This often improves stability a lot
-		GLM glm = glmLearner.buildBinaryClassifier(attrsNew, xNew, y, maxNumIters, 1e-8);
-		double[] w = new double[attrs.length];
-		double[] coef = glm.coefficients(0);
-		int k = 0;
-		for (int j = 0; j < w.length; j++) {
-			if (selected[j]) {
-				w[j] = coef[k++];
-			}
-		}
-
-		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0));
-	}
-
-	protected GLM refit(int[] attrs, boolean[] selected, int[][] indices, double[][] values, double[] y, int maxNumIters) {
+	protected GLM refitRegressor(int[] attrs, boolean[] selected, int[][] indices, double[][] values, double[] y, int maxNumIters) {
 		List<int[]> indicesList = new ArrayList<>();
 		List<double[]> valuesList = new ArrayList<>();
 		for (int j = 0; j < attrs.length; j++) {
@@ -1526,13 +1523,13 @@ public class LassoLearner extends Learner {
 			attrsNew[i] = i;
 		}
 
-		RidgeLearner glmLearner = new RidgeLearner();
-		glmLearner.setVerbose(verbose);
-		glmLearner.setEpsilon(epsilon);
-		glmLearner.fitIntercept(fitIntercept);
+		RidgeLearner learner = new RidgeLearner();
+		learner.setVerbose(verbose);
+		learner.setEpsilon(epsilon);
+		learner.fitIntercept(fitIntercept);
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
-		GLM glm = glmLearner.buildRegressor(attrsNew, indicesNew, valuesNew, y, maxNumIters, 1e-8);
+		GLM glm = learner.buildRegressor(attrsNew, indicesNew, valuesNew, y, maxNumIters, 1e-8);
 		double[] w = new double[attrs.length];
 		double[] coef = glm.coefficients(0);
 		int k = 0;
@@ -1545,7 +1542,43 @@ public class LassoLearner extends Learner {
 		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0));
 	}
 
-	protected GLM refit(int[] attrs, boolean[] selected, int[][] indices, double[][] values, int[] y, int maxNumIters) {
+	protected GLM refitClassifier(int[] attrs, boolean[] selected, double[][] x, double[] y, int maxNumIters) {
+		List<double[]> xList = new ArrayList<>();
+		for (int j = 0; j < attrs.length; j++) {
+			if (selected[j]) {
+				xList.add(x[j]);
+			}
+		}
+
+		double[][] xNew = new double[xList.size()][];
+		for (int i = 0; i < xNew.length; i++) {
+			xNew[i] = xList.get(i);
+		}
+		int[] attrsNew = new int[xNew.length];
+		for (int i = 0; i < attrsNew.length; i++) {
+			attrsNew[i] = i;
+		}
+
+		RidgeLearner learner = new RidgeLearner();
+		learner.setVerbose(verbose);
+		learner.setEpsilon(epsilon);
+		learner.fitIntercept(fitIntercept);
+		// A ridge regression with very small regularization parameter
+		// This often improves stability a lot
+		GLM glm = learner.buildBinaryClassifier(attrsNew, xNew, y, maxNumIters, 1e-8);
+		double[] w = new double[attrs.length];
+		double[] coef = glm.coefficients(0);
+		int k = 0;
+		for (int j = 0; j < w.length; j++) {
+			if (selected[j]) {
+				w[j] = coef[k++];
+			}
+		}
+
+		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0));
+	}
+
+	protected GLM refitClassifier(int[] attrs, boolean[] selected, int[][] indices, double[][] values, double[] y, int maxNumIters) {
 		List<int[]> indicesList = new ArrayList<>();
 		List<double[]> valuesList = new ArrayList<>();
 		for (int j = 0; j < attrs.length; j++) {
@@ -1568,13 +1601,13 @@ public class LassoLearner extends Learner {
 			attrsNew[i] = i;
 		}
 
-		RidgeLearner glmLearner = new RidgeLearner();
-		glmLearner.setVerbose(verbose);
-		glmLearner.setEpsilon(epsilon);
-		glmLearner.fitIntercept(fitIntercept);
+		RidgeLearner learner = new RidgeLearner();
+		learner.setVerbose(verbose);
+		learner.setEpsilon(epsilon);
+		learner.fitIntercept(fitIntercept);
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
-		GLM glm = glmLearner.buildBinaryClassifier(attrsNew, indicesNew, valuesNew, y, maxNumIters, 1e-8);
+		GLM glm = learner.buildBinaryClassifier(attrsNew, indicesNew, valuesNew, y, maxNumIters, 1e-8);
 		double[] w = new double[attrs.length];
 		double[] coef = glm.coefficients(0);
 		int k = 0;

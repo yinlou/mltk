@@ -18,8 +18,10 @@ import mltk.predictor.BaggedEnsemble;
 import mltk.predictor.BaggedEnsembleLearner;
 import mltk.predictor.Bagging;
 import mltk.predictor.BoostedEnsemble;
-import mltk.predictor.Learner;
+import mltk.predictor.HoldoutValidatedLearner;
 import mltk.predictor.Regressor;
+import mltk.predictor.evaluation.Metric;
+import mltk.predictor.evaluation.MetricFactory;
 import mltk.predictor.function.Array2D;
 import mltk.predictor.function.CompressionUtils;
 import mltk.predictor.function.Function2D;
@@ -28,7 +30,6 @@ import mltk.predictor.io.PredictorReader;
 import mltk.predictor.io.PredictorWriter;
 import mltk.util.OptimUtils;
 import mltk.util.Random;
-import mltk.util.StatUtils;
 import mltk.util.tuple.IntPair;
 
 /**
@@ -44,7 +45,7 @@ import mltk.util.tuple.IntPair;
  * @author Yin Lou
  * 
  */
-public class GA2MLearner extends Learner {
+public class GA2MLearner extends HoldoutValidatedLearner {
 
 	private boolean verbose;
 	private int baggingIters;
@@ -53,7 +54,6 @@ public class GA2MLearner extends Learner {
 	private double learningRate;
 	private GAM gam;
 	private List<IntPair> pairs;
-	private Instances validSet;
 
 	/**
 	 * Constructor.
@@ -64,6 +64,7 @@ public class GA2MLearner extends Learner {
 		maxNumIters = -1;
 		learningRate = 0.01;
 		task = Task.REGRESSION;
+		metric = task.getDefaultMetric();
 	}
 
 	/**
@@ -193,24 +194,6 @@ public class GA2MLearner extends Learner {
 	}
 
 	/**
-	 * Returns the validation set.
-	 * 
-	 * @return the validation set.
-	 */
-	public Instances getValidSet() {
-		return validSet;
-	}
-
-	/**
-	 * Sets the validation set.
-	 * 
-	 * @param validSet the validation set.
-	 */
-	public void setValidSet(Instances validSet) {
-		this.validSet = validSet;
-	}
-
-	/**
 	 * Builds a classifier.
 	 * 
 	 * @param gam the GAM.
@@ -228,9 +211,9 @@ public class GA2MLearner extends Learner {
 		}
 
 		// Backup targets
-		int[] target = new int[trainSet.size()];
+		double[] target = new double[trainSet.size()];
 		for (int i = 0; i < target.length; i++) {
-			target[i] = (int) trainSet.get(i).getTarget();
+			target[i] = trainSet.get(i).getTarget();
 		}
 
 		// Create bags
@@ -238,20 +221,22 @@ public class GA2MLearner extends Learner {
 		SquareCutter cutter = new SquareCutter(true);
 		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(bags.length, cutter);
 
-		// Initialize predictions
-		double[] predictionTrain = new double[trainSet.size()];
-		double[] predictionValid = new double[validSet.size()];
+		// Initialize predictions and residuals
+		double[] pTrain = new double[trainSet.size()];
+		double[] rTrain = new double[trainSet.size()];
+		OptimUtils.computePseudoResidual(pTrain, target, rTrain);
+		double[] pValid = new double[validSet.size()];
 
-		for (int i = 0; i < predictionTrain.length; i++) {
+		for (int i = 0; i < pTrain.length; i++) {
 			Instance instance = trainSet.get(i);
-			predictionTrain[i] = gam.regress(instance);
+			pTrain[i] = gam.regress(instance);
 		}
-		for (int i = 0; i < predictionValid.length; i++) {
+		for (int i = 0; i < pValid.length; i++) {
 			Instance instance = validSet.get(i);
-			predictionValid[i] = gam.regress(instance);
+			pValid[i] = gam.regress(instance);
 		}
 
-		List<Double> errorList = new ArrayList<>(maxNumIters);
+		List<Double> measureList = new ArrayList<>(maxNumIters);
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
@@ -259,8 +244,7 @@ public class GA2MLearner extends Learner {
 			// Derivitive to attribute k
 			// Minimizes the loss function: log(1 + exp(-yF))
 			for (int i = 0; i < trainSet.size(); i++) {
-				double r = OptimUtils.getPseudoResidual(predictionTrain[i], target[i]);
-				trainSet.get(i).setTarget(r);
+				trainSet.get(i).setTarget(rTrain[i]);
 			}
 
 			BoostedEnsemble boostedEnsemble = regressors.get(k);
@@ -281,35 +265,28 @@ public class GA2MLearner extends Learner {
 			for (int i = 0; i < trainSet.size(); i++) {
 				Instance instance = trainSet.get(i);
 				double pred = baggedEnsemble.regress(instance);
-				predictionTrain[i] += pred;
+				pTrain[i] += pred;
+				rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], target[i]);
 			}
 			for (int i = 0; i < validSet.size(); i++) {
 				Instance instance = validSet.get(i);
 				double pred = baggedEnsemble.regress(instance);
-				predictionValid[i] += pred;
+				pValid[i] += pred;
 			}
 
-			double error = 0.0;
-			for (int i = 0; i < validSet.size(); i++) {
-				int cls = (int) validSet.get(i).getTarget();
-				int pred = predictionValid[i] >= 0 ? 1 : 0;
-				if (pred != cls) {
-					error++;
-				}
-			}
-			error /= validSet.size();
-			errorList.add(error);
+			double measure = metric.eval(pValid, validSet);
+			measureList.add(measure);
 			if (verbose) {
-				System.out.println("Iteration " + iter + " term " + k + ": " + error);
+				System.out.println("Iteration " + iter + " term " + k + ": " + measure);
 			}
 		}
 
 		// Search the best model on validation set
-		double min = Double.POSITIVE_INFINITY;
+		double bestSoFar = metric.worstValue();
 		int idx = -1;
-		for (int i = 0; i < errorList.size(); i++) {
-			if (errorList.get(i) < min) {
-				min = errorList.get(i);
+		for (int i = 0; i < measureList.size(); i++) {
+			if (metric.isFirstBetter(measureList.get(i), bestSoFar)) {
+				bestSoFar = measureList.get(i);
 				idx = i;
 			}
 		}
@@ -390,9 +367,9 @@ public class GA2MLearner extends Learner {
 		}
 
 		// Backup targets
-		int[] target = new int[trainSet.size()];
+		double[] target = new double[trainSet.size()];
 		for (int i = 0; i < target.length; i++) {
-			target[i] = (int) trainSet.get(i).getTarget();
+			target[i] = trainSet.get(i).getTarget();
 		}
 
 		// Create bags
@@ -400,15 +377,15 @@ public class GA2MLearner extends Learner {
 		SquareCutter cutter = new SquareCutter(true);
 		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(bags.length, cutter);
 
-		// Initialize predictions
-		double[] predictionTrain = new double[trainSet.size()];
+		// Initialize predictions and residuals
+		double[] pTrain = new double[trainSet.size()];
+		double[] rTrain = new double[trainSet.size()];
+		OptimUtils.computePseudoResidual(pTrain, target, rTrain);
 
-		for (int i = 0; i < predictionTrain.length; i++) {
+		for (int i = 0; i < pTrain.length; i++) {
 			Instance instance = trainSet.get(i);
-			predictionTrain[i] = gam.regress(instance);
+			pTrain[i] = gam.regress(instance);
 		}
-
-		List<Double> errorList = new ArrayList<>(maxNumIters);
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
@@ -416,8 +393,7 @@ public class GA2MLearner extends Learner {
 			// Derivitive to attribute k
 			// Minimizes the loss function: log(1 + exp(-2yF))
 			for (int i = 0; i < trainSet.size(); i++) {
-				double r = OptimUtils.getPseudoResidual(predictionTrain[i], target[i]);
-				trainSet.get(i).setTarget(r);
+				trainSet.get(i).setTarget(rTrain[i]);
 			}
 
 			BoostedEnsemble boostedEnsemble = regressors.get(k);
@@ -438,21 +414,13 @@ public class GA2MLearner extends Learner {
 			for (int i = 0; i < trainSet.size(); i++) {
 				Instance instance = trainSet.get(i);
 				double pred = baggedEnsemble.regress(instance);
-				predictionTrain[i] += pred;
+				pTrain[i] += pred;
+				rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], target[i]);
 			}
 
-			double error = 0.0;
-			for (int i = 0; i < target.length; i++) {
-				int cls = (int) target[i];
-				int pred = predictionTrain[i] >= 0 ? 1 : 0;
-				if (pred != cls) {
-					error++;
-				}
-			}
-			error /= trainSet.size();
-			errorList.add(error);
+			double measure = metric.eval(pTrain, target);
 			if (verbose) {
-				System.out.println("Iteration " + iter + " term " + k + ": " + error);
+				System.out.println("Iteration " + iter + " term " + k + ": " + measure);
 			}
 		}
 
@@ -531,19 +499,21 @@ public class GA2MLearner extends Learner {
 		SquareCutter cutter = new SquareCutter();
 		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(baggingIters, cutter);
 
-		// Initialize residuals
-		double[] residualTrain = new double[trainSet.size()];
-		double[] residualValid = new double[validSet.size()];
+		// Initialize predictions and residuals
+		double[] rTrain = new double[trainSet.size()];
+		double[] pValid = new double[validSet.size()];
+		double[] rValid = new double[validSet.size()];
 		for (int i = 0; i < trainSet.size(); i++) {
 			Instance instance = trainSet.get(i);
-			residualTrain[i] = instance.getTarget() - gam.regress(instance);
+			rTrain[i] = instance.getTarget() - gam.regress(instance);
 		}
 		for (int i = 0; i < validSet.size(); i++) {
 			Instance instance = validSet.get(i);
-			residualValid[i] = instance.getTarget() - gam.regress(instance);
+			pValid[i] = gam.regress(instance);
+			rValid[i] = instance.getTarget() - pValid[i];
 		}
 
-		List<Double> rmseList = new ArrayList<>(maxNumIters);
+		List<Double> measureList = new ArrayList<>(maxNumIters);
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
@@ -552,8 +522,8 @@ public class GA2MLearner extends Learner {
 			// Equivalent to residual
 			BoostedEnsemble boostedEnsemble = regressors.get(k);
 			// Prepare training set
-			for (int i = 0; i < residualTrain.length; i++) {
-				trainSet.get(i).setTarget(residualTrain[i]);
+			for (int i = 0; i < rTrain.length; i++) {
+				trainSet.get(i).setTarget(rTrain[i]);
 			}
 			// Train model
 			IntPair term = terms.get(k);
@@ -568,31 +538,32 @@ public class GA2MLearner extends Learner {
 			boostedEnsemble.add(baggedEnsemble);
 
 			// Update residuals
-			for (int j = 0; j < residualTrain.length; j++) {
-				Instance instance = trainSet.get(j);
+			for (int i = 0; i < rTrain.length; i++) {
+				Instance instance = trainSet.get(i);
 				double pred = baggedEnsemble.regress(instance);
-				residualTrain[j] -= pred;
+				rTrain[i] -= pred;
 			}
-			for (int j = 0; j < residualValid.length; j++) {
-				Instance instance = validSet.get(j);
+			for (int i = 0; i < rValid.length; i++) {
+				Instance instance = validSet.get(i);
 				double pred = baggedEnsemble.regress(instance);
-				residualValid[j] -= pred;
+				pValid[i] += pred;
+				rValid[i] -= pred;
 			}
 
-			double rmse = StatUtils.rms(residualValid);
-			rmseList.add(rmse);
+			double measure = metric.eval(pValid, validSet);
+			measureList.add(measure);
 			if (verbose) {
 				System.out
-						.println("Iteration " + iter + " term " + k + ":" + StatUtils.rms(residualTrain) + " " + rmse);
+						.println("Iteration " + iter + " term " + k + ":" + measure);
 			}
 		}
 
 		// Search the best model on validation set
-		double min = Double.POSITIVE_INFINITY;
+		double bestSoFar = metric.worstValue();
 		int idx = -1;
-		for (int i = 0; i < rmseList.size(); i++) {
-			if (rmseList.get(i) < min) {
-				min = rmseList.get(i);
+		for (int i = 0; i < measureList.size(); i++) {
+			if (metric.isFirstBetter(measureList.get(i), bestSoFar)) {
+				bestSoFar = measureList.get(i);
 				idx = i;
 			}
 		}
@@ -684,14 +655,14 @@ public class GA2MLearner extends Learner {
 		SquareCutter cutter = new SquareCutter();
 		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(baggingIters, cutter);
 
-		// Initialize residuals
-		double[] residualTrain = new double[trainSet.size()];
+		// Initialize predictions and residuals
+		double[] pTrain = new double[trainSet.size()];
+		double[] rTrain = new double[trainSet.size()];
 		for (int i = 0; i < trainSet.size(); i++) {
 			Instance instance = trainSet.get(i);
-			residualTrain[i] = instance.getTarget() - gam.regress(instance);
+			pTrain[i] = gam.regress(instance);
+			rTrain[i] = instance.getTarget() - pTrain[i];
 		}
-
-		List<Double> rmseList = new ArrayList<>(maxNumIters);
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
@@ -700,8 +671,8 @@ public class GA2MLearner extends Learner {
 			// Equivalent to residual
 			BoostedEnsemble boostedEnsemble = regressors.get(k);
 			// Prepare training set
-			for (int i = 0; i < residualTrain.length; i++) {
-				trainSet.get(i).setTarget(residualTrain[i]);
+			for (int i = 0; i < rTrain.length; i++) {
+				trainSet.get(i).setTarget(rTrain[i]);
 			}
 			// Train model
 			IntPair term = terms.get(k);
@@ -716,17 +687,15 @@ public class GA2MLearner extends Learner {
 			boostedEnsemble.add(baggedEnsemble);
 
 			// Update residuals
-			for (int j = 0; j < residualTrain.length; j++) {
+			for (int j = 0; j < rTrain.length; j++) {
 				Instance instance = trainSet.get(j);
 				double pred = baggedEnsemble.regress(instance);
-				residualTrain[j] -= pred;
+				rTrain[j] -= pred;
 			}
 
-			double rmse = StatUtils.rms(residualTrain);
-			rmseList.add(rmse);
+			double measure = metric.eval(pTrain, target);
 			if (verbose) {
-				System.out
-						.println("Iteration " + iter + " term " + k + ":" + StatUtils.rms(residualTrain) + " " + rmse);
+				System.out.println("Iteration " + iter + " term " + k + ":" + measure);
 			}
 		}
 
@@ -830,6 +799,9 @@ public class GA2MLearner extends Learner {
 
 		@Argument(name = "-g", description = "task between classification (c) and regression (r) (default: r)")
 		String task = "r";
+		
+		@Argument(name = "-e", description = "evaluation metric (default: default metric of task)")
+		String metric = null;
 
 		@Argument(name = "-I", description = "list of pairwise interactions path", required = true)
 		String interactionsPath = null;
@@ -861,6 +833,7 @@ public class GA2MLearner extends Learner {
 	 * [-v]	valid set path
 	 * [-o]	output model path
 	 * [-g]	task between classification (c) and regression (r) (default: r)
+	 * [-e]	evaluation metric (default: default metric of task)
 	 * [-b]	bagging iterations (default: 100)
 	 * [-s]	seed of the random number generator (default: 0)
 	 * [-l]	learning rate (default: 0.01)
@@ -875,9 +848,15 @@ public class GA2MLearner extends Learner {
 		Options opts = new Options();
 		CmdLineParser parser = new CmdLineParser(GA2MLearner.class, opts);
 		Task task = null;
+		Metric metric = null;
 		try {
 			parser.parse(args);
 			task = Task.getEnum(opts.task);
+			if (opts.metric == null) {
+				metric = task.getDefaultMetric();
+			} else {
+				metric = MetricFactory.getMetric(opts.metric);
+			}
 		} catch (IllegalArgumentException e) {
 			parser.printUsage();
 			System.exit(1);
@@ -902,22 +881,22 @@ public class GA2MLearner extends Learner {
 
 		GAM gam = PredictorReader.read(opts.inputModelPath, GAM.class);
 
-		GA2MLearner ga2mLearner = new GA2MLearner();
-		ga2mLearner.setBaggingIters(opts.baggingIters);
-		ga2mLearner.setGAM(gam);
-		ga2mLearner.setMaxNumIters(opts.maxNumIters);
-		ga2mLearner.setTask(task);
-		ga2mLearner.setLearningRate(opts.learningRate);
-		ga2mLearner.setPairs(terms);
-		ga2mLearner.setVerbose(true);
+		GA2MLearner learner = new GA2MLearner();
+		learner.setBaggingIters(opts.baggingIters);
+		learner.setGAM(gam);
+		learner.setMaxNumIters(opts.maxNumIters);
+		learner.setTask(task);
+		learner.setMetric(metric);
+		learner.setLearningRate(opts.learningRate);
+		learner.setVerbose(true);
 
 		if (opts.validPath != null) {
 			Instances validSet = InstancesReader.read(opts.attPath, opts.validPath);
-			ga2mLearner.setValidSet(validSet);
+			learner.setValidSet(validSet);
 		}
 
 		long start = System.currentTimeMillis();
-		ga2mLearner.build(trainSet);
+		learner.build(trainSet);
 		long end = System.currentTimeMillis();
 		System.out.println("Time: " + (end - start) / 1000.0);
 

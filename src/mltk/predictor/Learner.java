@@ -9,6 +9,9 @@ import mltk.core.Attribute;
 import mltk.core.Instance;
 import mltk.core.Instances;
 import mltk.core.SparseVector;
+import mltk.predictor.evaluation.Error;
+import mltk.predictor.evaluation.Metric;
+import mltk.predictor.evaluation.RMSE;
 import mltk.util.MathUtils;
 import mltk.util.StatUtils;
 import mltk.util.VectorUtils;
@@ -65,6 +68,21 @@ public abstract class Learner {
 				}
 			}
 			throw new IllegalArgumentException("Invalid Task value: " + task);
+		}
+		
+		public Metric getDefaultMetric() {
+			Metric metric = null;
+			switch (this) {
+				case CLASSIFICATION:
+					metric = new Error();
+					break;
+				case REGRESSION:
+					metric = new RMSE();
+					break;
+				default:
+					break;
+			}
+			return metric;
 		}
 
 	}
