@@ -9,6 +9,7 @@ Currently MLTK supports:
   * Ridge
   * Lasso
   * Elastic Net
+  * Group Lasso
 * Generalized Additive Models
 * Regression Trees
 * Tree Ensembles

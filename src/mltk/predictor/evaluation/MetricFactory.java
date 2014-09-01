@@ -11,7 +11,7 @@ public class MetricFactory {
 	/**
 	 * Returns the metric.
 	 * 
-	 * @param metric the metric name.
+	 * @param name the metric name.
 	 * @return the metric.
 	 */
 	public static Metric getMetric(String name) {
