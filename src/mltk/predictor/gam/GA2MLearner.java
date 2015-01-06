@@ -224,13 +224,14 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		// Initialize predictions and residuals
 		double[] pTrain = new double[trainSet.size()];
 		double[] rTrain = new double[trainSet.size()];
-		OptimUtils.computePseudoResidual(pTrain, target, rTrain);
 		double[] pValid = new double[validSet.size()];
 
 		for (int i = 0; i < pTrain.length; i++) {
 			Instance instance = trainSet.get(i);
 			pTrain[i] = gam.regress(instance);
 		}
+		OptimUtils.computePseudoResidual(pTrain, target, rTrain);
+		
 		for (int i = 0; i < pValid.length; i++) {
 			Instance instance = validSet.get(i);
 			pValid[i] = gam.regress(instance);
@@ -380,12 +381,12 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		// Initialize predictions and residuals
 		double[] pTrain = new double[trainSet.size()];
 		double[] rTrain = new double[trainSet.size()];
-		OptimUtils.computePseudoResidual(pTrain, target, rTrain);
 
 		for (int i = 0; i < pTrain.length; i++) {
 			Instance instance = trainSet.get(i);
 			pTrain[i] = gam.regress(instance);
 		}
+		OptimUtils.computePseudoResidual(pTrain, target, rTrain);
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
