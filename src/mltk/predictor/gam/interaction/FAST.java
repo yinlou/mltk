@@ -82,8 +82,8 @@ public class FAST {
 		@Argument(name = "-o", description = "output path", required = true)
 		String outputPath = null;
 
-		@Argument(name = "-b", description = "number of bins (default: 8)")
-		int maxNumBins = 8;
+		@Argument(name = "-b", description = "number of bins (default: 256)")
+		int maxNumBins = 256;
 
 		@Argument(name = "-p", description = "number of threads (default: 1)")
 		int numThreads = 1;
@@ -99,7 +99,7 @@ public class FAST {
 	 * -R	residual path
 	 * -o	output path
 	 * [-r]	attribute file path
-	 * [-b]	number of bins (default: 8)
+	 * [-b]	number of bins (default: 256)
 	 * [-p]	number of threads (default: 1)
 	 * </pre>
 	 * 
