@@ -74,9 +74,9 @@ public class SquareCutter extends Learner {
 		}
 		int size2 = 0;
 		Attribute f2 = attributes.get(attIndex2);
-		if (f1.getType() == Attribute.Type.BINNED) {
+		if (f2.getType() == Attribute.Type.BINNED) {
 			size2 = ((BinnedAttribute) f2).getNumBins();
-		} else if (f1.getType() == Attribute.Type.NOMINAL) {
+		} else if (f2.getType() == Attribute.Type.NOMINAL) {
 			size2 = ((NominalAttribute) f2).getCardinality();
 		}
 		if (size1 == 1 || size2 == 1) {
