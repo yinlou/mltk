@@ -249,18 +249,20 @@ public class GAMLearner extends HoldoutValidatedLearner {
 					func.multiply(learningRate);
 				}
 			}
-			boostedEnsemble.add(baggedEnsemble);
+			Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
+			boostedEnsemble.add(func);
+			baggedEnsemble = null;
 
 			// Update predictions
 			for (int i = 0; i < trainSet.size(); i++) {
 				Instance instance = trainSet.get(i);
-				double pred = baggedEnsemble.regress(instance);
+				double pred = func.regress(instance);
 				pTrain[i] += pred;
 				rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], target[i]);
 			}
 			for (int i = 0; i < validSet.size(); i++) {
 				Instance instance = validSet.get(i);
-				double pred = baggedEnsemble.regress(instance);
+				double pred = func.regress(instance);
 				pValid[i] += pred;
 			}
 
@@ -374,12 +376,14 @@ public class GAMLearner extends HoldoutValidatedLearner {
 					func.multiply(learningRate);
 				}
 			}
-			boostedEnsemble.add(baggedEnsemble);
+			Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
+			boostedEnsemble.add(func);
+			baggedEnsemble = null;
 
 			// Update predictions
 			for (int i = 0; i < trainSet.size(); i++) {
 				Instance instance = trainSet.get(i);
-				double pred = baggedEnsemble.regress(instance);
+				double pred = func.regress(instance);
 				pTrain[i] += pred;
 				rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], target[i]);
 			}
@@ -480,17 +484,19 @@ public class GAMLearner extends HoldoutValidatedLearner {
 					func.multiply(learningRate);
 				}
 			}
-			boostedEnsemble.add(baggedEnsemble);
+			Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
+			boostedEnsemble.add(func);
+			baggedEnsemble = null;
 
 			// Update residuals
 			for (int i = 0; i < rTrain.length; i++) {
 				Instance instance = trainSet.get(i);
-				double pred = baggedEnsemble.regress(instance);
+				double pred = func.regress(instance);
 				rTrain[i] -= pred;
 			}
 			for (int i = 0; i < rValid.length; i++) {
 				Instance instance = validSet.get(i);
-				double pred = baggedEnsemble.regress(instance);
+				double pred = func.regress(instance);
 				pValid[i] += pred;
 				rValid[i] -= pred;
 			}
@@ -607,12 +613,14 @@ public class GAMLearner extends HoldoutValidatedLearner {
 					func.multiply(learningRate);
 				}
 			}
-			boostedEnsemble.add(baggedEnsemble);
+			Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
+			boostedEnsemble.add(func);
+			baggedEnsemble = null;
 
 			// Update residuals
 			for (int i = 0; i < rTrain.length; i++) {
 				Instance instance = trainSet.get(i);
-				double pred = baggedEnsemble.regress(instance);
+				double pred = func.regress(instance);
 				pTrain[i] += pred;
 				rTrain[i] -= pred;
 			}
