@@ -13,6 +13,7 @@ import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
 import mltk.core.Attribute;
 import mltk.core.BinnedAttribute;
+import mltk.core.Bins;
 import mltk.core.Instance;
 import mltk.core.Instances;
 import mltk.core.NominalAttribute;
@@ -123,14 +124,31 @@ public class Visualizer {
 				out.printf("set term %s\n", terminal);
 				out.printf("set output \"%s.%s\"\n", f.getName(), terminal);
 				out.println("set datafile separator \"\t\"");
+				out.println("set grid");
 				switch (f.getType()) {
 					case BINNED:
 						int numBins = ((BinnedAttribute) f).getNumBins();
-						out.printf("set xrange[0:%d]\n", numBins - 1);
-						out.println("plot \"-\" u 1:2 w lp t \"\"");
+						Bins bins = ((BinnedAttribute) f).getBins();
+						double[] boundaries = bins.getBoundaries();
+						double start = boundaries[0] - 1;
+						if (boundaries.length >= 2) {
+							start = boundaries[0] - (boundaries[1] - boundaries[0]);
+						}
+						out.printf("set xrange[%f:%f]\n", start, boundaries[boundaries.length - 1]);
+						out.println("plot \"-\" u 1:2 w l t \"\"");
+						List<Double> predList = new ArrayList<>();
 						for (int j = 0; j < numBins; j++) {
 							point.setValue(term[0], j);
-							out.printf("%d\t%f\n", j, regressor.regress(point));
+							predList.add(regressor.regress(point));
+						}
+						point.setValue(term[0], 0);
+						out.printf("%f\t%f\n", start, predList.get(0));
+						for (int j = 0; j < numBins; j++) {
+							point.setValue(term[0], j);
+							out.printf("%f\t%f\n", boundaries[j], predList.get(j));
+							if (j < numBins - 1) {
+								out.printf("%f\t%f\n", boundaries[j], predList.get(j + 1));
+							}
 						}
 						out.println("e");
 						break;
@@ -187,10 +205,12 @@ public class Visualizer {
 			} else if (term.length == 2) {
 				Attribute f1 = attributes.get(term[0]);
 				Attribute f2 = attributes.get(term[1]);
-				PrintWriter out = new PrintWriter(dir.getAbsolutePath() + File.separator + f1.getName() + "_"
-						+ f2.getName() + ".plt");
+				PrintWriter out = new PrintWriter(dir.getAbsolutePath() 
+						+ File.separator + f1.getName() + "_" + f2.getName() 
+						+ ".plt");
 				out.printf("set term %s\n", terminal);
-				out.printf("set output \"%s_%s.%s\"\n", f1.getName(), f2.getName(), terminal);
+				out.printf("set output \"%s_%s.%s\"\n", f1.getName(), 
+						f2.getName(), terminal);
 				out.println("set datafile separator \"\t\"");
 				int size1 = 0;
 				if (f1.getType() == Attribute.Type.BINNED) {
@@ -199,13 +219,11 @@ public class Visualizer {
 					size1 = ((NominalAttribute) f1).getCardinality();
 				}
 				int size2 = 0;
-				if (f1.getType() == Attribute.Type.BINNED) {
+				if (f2.getType() == Attribute.Type.BINNED) {
 					size2 = ((BinnedAttribute) f2).getNumBins();
-				} else if (f1.getType() == Attribute.Type.NOMINAL) {
+				} else if (f2.getType() == Attribute.Type.NOMINAL) {
 					size2 = ((NominalAttribute) f2).getCardinality();
 				}
-				out.printf("set xrange[0:%d]\n", size2 - 1);
-				out.printf("set yrange[0:%d]\n", size1 - 1);
 				if (f1.getType() == Attribute.Type.NOMINAL) {
 					out.print("set ytics(");
 					String[] states = ((NominalAttribute) f1).getStates();
@@ -222,12 +240,48 @@ public class Visualizer {
 					}
 					out.println(")");
 				}
-				out.println("plot \"-\" matrix with image t \"\"");
-				for (int r = 0; r < size1; r++) {
-					point.setValue(term[0], r);
-					for (int c = 0; c < size2; c++) {
-						point.setValue(term[1], c);
-						out.print(regressor.regress(point) + "\t");
+				out.println("set view map");
+				out.println("set style data pm3d");
+				out.println("set style function pm3d");
+				out.println("set pm3d corners2color c4");
+				Bins bins1 = ((BinnedAttribute) f1).getBins();
+				double[] boundaries1 = bins1.getBoundaries();
+				double start1 = boundaries1[0] - 1;
+				if (boundaries1.length >= 2) {
+					start1 = boundaries1[0] - (boundaries1[1] - boundaries1[0]);
+				}
+				Bins bins2 = ((BinnedAttribute) f2).getBins();
+				double[] boundaries2 = bins2.getBoundaries();
+				double start2 = boundaries2[0] - 1;
+				if (boundaries2.length >= 2) {
+					start2 = boundaries2[0] - (boundaries2[1] - boundaries2[0]);
+				}
+				out.printf("set yrange[%f:%f]\n", start1, boundaries1[boundaries1.length - 1]);
+				out.printf("set xrange[%f:%f]\n", start2, boundaries2[boundaries2.length - 1]);
+				out.println("splot \"-\"");
+				for (int r = -1; r < size1; r++) {
+					if (r == -1) {
+						point.setValue(term[0], 0);
+					} else {
+						point.setValue(term[0], r);
+					}
+					for (int c = -1; c < size2; c++) {
+						if (c == -1) {
+							point.setValue(term[1], 0);
+						} else {
+							point.setValue(term[1], c);
+						}
+						if (c == -1) {
+							out.print(start2 + "\t");
+						} else {
+							out.print(boundaries2[c] + "\t");
+						}
+						if (r == -1) {
+							out.print(start1 + "\t");
+						} else {
+							out.print(boundaries1[r] + "\t");
+						}
+						out.println(gam.regress(point));
 					}
 					out.println();
 				}
