@@ -657,7 +657,7 @@ public class GroupLassoLearner extends Learner {
 			throw new IllegalArgumentException("Class attribute must be nominal.");
 		}
 		NominalAttribute clazz = (NominalAttribute) classAttribute;
-		int numClasses = clazz.getStates().length;
+		int numClasses = clazz.getCardinality();
 		
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
@@ -788,7 +788,7 @@ public class GroupLassoLearner extends Learner {
 			throw new IllegalArgumentException("Class attribute must be nominal.");
 		}
 		NominalAttribute clazz = (NominalAttribute) classAttribute;
-		int numClasses = clazz.getStates().length;
+		int numClasses = clazz.getCardinality();
 		
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);

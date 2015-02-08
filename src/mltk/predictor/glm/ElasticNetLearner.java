@@ -62,6 +62,9 @@ public class ElasticNetLearner extends Learner {
 	 * [-m]	maximum num of iterations (default: 0)
 	 * [-l]	lambda (default: 0)
 	 * [-a]	L1 ratio (default: 0)
+	 * </pre>
+	 * 
+	 * </p>
 	 * @param args
 	 * @throws Exception
 	 */
@@ -408,7 +411,7 @@ public class ElasticNetLearner extends Learner {
 			throw new IllegalArgumentException("Class attribute must be nominal.");
 		}
 		NominalAttribute clazz = (NominalAttribute) classAttribute;
-		int numClasses = clazz.getStates().length;
+		int numClasses = clazz.getCardinality();
 
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
@@ -536,7 +539,7 @@ public class ElasticNetLearner extends Learner {
 			throw new IllegalArgumentException("Class attribute must be nominal.");
 		}
 		NominalAttribute clazz = (NominalAttribute) classAttribute;
-		int numClasses = clazz.getStates().length;
+		int numClasses = clazz.getCardinality();
 
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);

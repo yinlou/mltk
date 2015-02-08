@@ -1,9 +1,11 @@
-package mltk.core;
+package mltk.core.processor;
 
 import java.io.File;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
+import mltk.core.Instance;
+import mltk.core.Instances;
 import mltk.core.io.InstancesReader;
 import mltk.core.io.InstancesWriter;
 import mltk.util.Random;
@@ -28,8 +30,8 @@ public class InstancesSplitter {
 	public static Instances[] split(Instances instances, double ratio) {
 		Instances dataset = new Instances(instances);
 		dataset.shuffle();
-		Instances train = new Instances(dataset.attributes, dataset.targetAtt);
-		Instances test = new Instances(dataset.attributes, dataset.targetAtt);
+		Instances train = new Instances(dataset.getAttributes(), dataset.getTargetAttribute());
+		Instances test = new Instances(dataset.getAttributes(), dataset.getTargetAttribute());
 		int nTrain = (int) (dataset.size() * ratio);
 		for (int i = 0; i < nTrain; i++) {
 			train.add(dataset.get(i));
@@ -52,7 +54,7 @@ public class InstancesSplitter {
 		dataset.shuffle();
 		Instances[] datasets = new Instances[k];
 		for (int i = 0; i < datasets.length; i++) {
-			datasets[i] = new Instances(dataset.attributes, dataset.targetAtt);
+			datasets[i] = new Instances(dataset.getAttributes(), dataset.getTargetAttribute());
 		}
 		for (int i = 0; i < dataset.size(); i++) {
 			datasets[i % datasets.length].add(dataset.get(i));
@@ -73,12 +75,14 @@ public class InstancesSplitter {
 		Instances[][] folds = new Instances[k][2];
 		for (int i = 0; i < k; i++) {
 			folds[i][1] = datasets[i];
-			folds[i][0] = new Instances(instances.attributes, instances.targetAtt);
+			folds[i][0] = new Instances(instances.getAttributes(), instances.getTargetAttribute());
 			for (int j = 0; j < k; j++) {
 				if (i == j) {
 					continue;
 				}
-				folds[i][0].instances.addAll(datasets[j].instances);
+				for (Instance instance : datasets[j]) {
+					folds[i][0].add(instance);
+				}
 			}
 		}
 		return folds;
@@ -98,12 +102,14 @@ public class InstancesSplitter {
 		Instances[][] folds = new Instances[k][3];
 		for (int i = 0; i < k; i++) {
 			folds[i][2] = datasets[i];
-			Instances trainSet = new Instances(instances.attributes, instances.targetAtt);
+			Instances trainSet = new Instances(instances.getAttributes(), instances.getTargetAttribute());
 			for (int j = 0; j < k; j++) {
 				if (i == j) {
 					continue;
 				}
-				trainSet.instances.addAll(datasets[j].instances);
+				for (Instance instance : datasets[j]) {
+					trainSet.add(instance);
+				}
 			}
 			Instances[] tmp = split(trainSet, ratio);
 			folds[i][0] = tmp[0];

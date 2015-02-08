@@ -1,4 +1,4 @@
-package mltk.core;
+package mltk.core.processor;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,6 +6,11 @@ import java.util.List;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
+import mltk.core.Attribute;
+import mltk.core.BinnedAttribute;
+import mltk.core.Bins;
+import mltk.core.Instance;
+import mltk.core.Instances;
 import mltk.core.Attribute.Type;
 import mltk.core.io.AttributesReader;
 import mltk.core.io.InstancesReader;
@@ -74,13 +79,12 @@ public class Discretizer {
 		Collections.sort(list);
 		List<DoublePair> stats = new ArrayList<>();
 		getStats(list, stats);
-		Bins bins = new Bins();
 		if (stats.size() <= maxNumBins) {
 			double[] a = new double[stats.size()];
 			for (int i = 0; i < a.length; i++) {
 				a[i] = stats.get(i).v1;
 			}
-			bins.boundaries = bins.medians = a;
+			return new Bins(a, a);
 		} else {
 			double totalWeight = 0;
 			for (DoublePair stat : stats) {
@@ -122,15 +126,14 @@ public class Discretizer {
 					medianList.add(getMedian(stats, start, weight / 2));
 				}
 			}
-			bins.boundaries = new double[boundaryList.size()];
-			bins.medians = new double[medianList.size()];
-			for (int i = 0; i < bins.boundaries.length; i++) {
-				bins.boundaries[i] = boundaryList.get(i);
-				bins.medians[i] = medianList.get(i);
+			double[] boundaries = new double[boundaryList.size()];
+			double[] medians = new double[medianList.size()];
+			for (int i = 0; i < boundaries.length; i++) {
+				boundaries[i] = boundaryList.get(i);
+				medians[i] = medianList.get(i);
 			}
+			return new Bins(boundaries, medians);
 		}
-
-		return bins;
 	}
 
 	/**
@@ -147,13 +150,12 @@ public class Discretizer {
 		Collections.sort(list);
 		List<DoublePair> stats = new ArrayList<>();
 		getStats(list, stats);
-		Bins bins = new Bins();
 		if (stats.size() <= maxNumBins) {
 			double[] a = new double[stats.size()];
 			for (int i = 0; i < a.length; i++) {
 				a[i] = stats.get(i).v1;
 			}
-			bins.boundaries = bins.medians = a;
+			return new Bins(a, a);
 		} else {
 			double totalWeight = 0;
 			for (DoublePair stat : stats) {
@@ -195,15 +197,14 @@ public class Discretizer {
 					medianList.add(getMedian(stats, start, weight / 2));
 				}
 			}
-			bins.boundaries = new double[boundaryList.size()];
-			bins.medians = new double[medianList.size()];
-			for (int i = 0; i < bins.boundaries.length; i++) {
-				bins.boundaries[i] = boundaryList.get(i);
-				bins.medians[i] = medianList.get(i);
+			double[] boundaries = new double[boundaryList.size()];
+			double[] medians = new double[medianList.size()];
+			for (int i = 0; i < boundaries.length; i++) {
+				boundaries[i] = boundaryList.get(i);
+				medians[i] = medianList.get(i);
 			}
+			return new Bins(boundaries, medians);
 		}
-
-		return bins;
 	}
 
 	/**
@@ -216,13 +217,12 @@ public class Discretizer {
 		Collections.sort(list);
 		List<DoublePair> stats = new ArrayList<>();
 		getStats(list, stats);
-		Bins bins = new Bins();
 		if (stats.size() <= maxNumBins) {
 			double[] a = new double[stats.size()];
 			for (int i = 0; i < a.length; i++) {
 				a[i] = stats.get(i).v1;
 			}
-			bins.boundaries = bins.medians = a;
+			return new Bins(a, a);
 		} else {
 			double totalWeight = 0;
 			for (DoublePair stat : stats) {
@@ -264,15 +264,14 @@ public class Discretizer {
 					medianList.add(getMedian(stats, start, weight / 2));
 				}
 			}
-			bins.boundaries = new double[boundaryList.size()];
-			bins.medians = new double[medianList.size()];
-			for (int i = 0; i < bins.boundaries.length; i++) {
-				bins.boundaries[i] = boundaryList.get(i);
-				bins.medians[i] = medianList.get(i);
+			double[] boundaries = new double[boundaryList.size()];
+			double[] medians = new double[medianList.size()];
+			for (int i = 0; i < boundaries.length; i++) {
+				boundaries[i] = boundaryList.get(i);
+				medians[i] = medianList.get(i);
 			}
+			return new Bins(boundaries, medians);
 		}
-
-		return bins;
 	}
 
 	static double getMedian(List<DoublePair> stats, int start, double midPoint) {

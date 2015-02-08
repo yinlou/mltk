@@ -56,6 +56,9 @@ public class RidgeLearner extends Learner {
 	 * [-g]	task between classification (c) and regression (r) (default: r)
 	 * [-m]	maximum num of iterations (default: 0)
 	 * [-l]	lambda (default: 0)
+	 * </pre>
+	 * </p>
+	 * 
 	 * @param args
 	 * @throws Exception
 	 */
