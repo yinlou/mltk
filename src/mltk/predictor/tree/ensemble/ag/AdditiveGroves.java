@@ -33,7 +33,8 @@ public class AdditiveGroves implements Regressor {
 		for (int i = 0; i < bn; i++) {
 			int tn = Integer.parseInt(in.readLine().split(": ")[1]);
 			RegressionTree[] grove = new RegressionTree[tn];
-			for (int j = 0; j < tn; i++) {
+			for (int j = 0; j < tn; j++) {
+				in.readLine();
 				RegressionTree rt = new RegressionTree();
 				rt.read(in);
 				grove[i] = rt;
@@ -41,6 +42,7 @@ public class AdditiveGroves implements Regressor {
 				in.readLine();
 			}
 			groves.add(grove);
+			in.readLine();
 		}
 	}
 
@@ -52,6 +54,7 @@ public class AdditiveGroves implements Regressor {
 			out.println("Size: " + grove.length);
 			for (RegressionTree rt : grove) {
 				rt.write(out);
+				out.println();
 			}
 			out.println();
 		}
