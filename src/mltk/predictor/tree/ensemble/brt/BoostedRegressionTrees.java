@@ -15,8 +15,6 @@ import mltk.predictor.tree.RegressionTreeList;
  */
 public class BoostedRegressionTrees extends RegressionTreeList {
 
-	protected List<RegressionTree> trees;
-
 	/**
 	 * Constructor.
 	 */
