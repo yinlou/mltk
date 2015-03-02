@@ -2,7 +2,7 @@
 
 ## Overview
 
-MLTK is a collection of various supervised machine learning algorithms, which is designed for directly training models and further development. For questions or suggestions with the code, please email <a href="mailto:yinlou@cs.cornell.edu">Yin Lou</a>.
+MLTK is a collection of various supervised machine learning algorithms, which is designed for directly training models and further development. For questions or suggestions with the code, please email <a href="mailto:machinelearningtoolkit@gmail.com">machinelearningtoolkit@gmail.com</a>.
 
 Currently MLTK supports:
 * Generalized Linear Models

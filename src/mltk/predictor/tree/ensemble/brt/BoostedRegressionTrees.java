@@ -1,7 +1,6 @@
 package mltk.predictor.tree.ensemble.brt;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import mltk.core.Instance;
 import mltk.predictor.tree.RegressionTree;
