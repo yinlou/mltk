@@ -231,45 +231,46 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
-			int k = iter % attributes.size();
-			// Derivitive to attribute k
-			// Minimizes the loss function: log(1 + exp(-yF))
-			for (int i = 0; i < trainSet.size(); i++) {
-				trainSet.get(i).setTarget(rTrain[i]);
-			}
-
-			BoostedEnsemble boostedEnsemble = regressors.get(k);
-
-			// Train model
-			lineCutter.setAttributeIndex(k);
-			BaggedEnsemble baggedEnsemble = learner.build(bags);
-			if (learningRate != 1) {
-				for (int i = 0; i < baggedEnsemble.size(); i++) {
-					Function1D func = (Function1D) baggedEnsemble.get(i);
-					func.multiply(learningRate);
+			for (int k = 0; k < attributes.size(); k++) {
+				// Derivitive to attribute k
+				// Minimizes the loss function: log(1 + exp(-yF))
+				for (int i = 0; i < trainSet.size(); i++) {
+					trainSet.get(i).setTarget(rTrain[i]);
 				}
-			}
-			Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
-			boostedEnsemble.add(func);
-			baggedEnsemble = null;
 
-			// Update predictions
-			for (int i = 0; i < trainSet.size(); i++) {
-				Instance instance = trainSet.get(i);
-				double pred = func.regress(instance);
-				pTrain[i] += pred;
-				rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], target[i]);
-			}
-			for (int i = 0; i < validSet.size(); i++) {
-				Instance instance = validSet.get(i);
-				double pred = func.regress(instance);
-				pValid[i] += pred;
-			}
+				BoostedEnsemble boostedEnsemble = regressors.get(k);
 
-			double measure = metric.eval(pValid, validSet);
-			measureList.add(measure);
-			if (verbose) {
-				System.out.println("Iteration " + iter + " Feature " + k + ": " + measure);
+				// Train model
+				lineCutter.setAttributeIndex(k);
+				BaggedEnsemble baggedEnsemble = learner.build(bags);
+				if (learningRate != 1) {
+					for (int i = 0; i < baggedEnsemble.size(); i++) {
+						Function1D func = (Function1D) baggedEnsemble.get(i);
+						func.multiply(learningRate);
+					}
+				}
+				Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
+				boostedEnsemble.add(func);
+				baggedEnsemble = null;
+
+				// Update predictions
+				for (int i = 0; i < trainSet.size(); i++) {
+					Instance instance = trainSet.get(i);
+					double pred = func.regress(instance);
+					pTrain[i] += pred;
+					rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], target[i]);
+				}
+				for (int i = 0; i < validSet.size(); i++) {
+					Instance instance = validSet.get(i);
+					double pred = func.regress(instance);
+					pValid[i] += pred;
+				}
+
+				double measure = metric.eval(pValid, validSet);
+				measureList.add(measure);
+				if (verbose) {
+					System.out.println("Iteration " + iter + " Feature " + k + ": " + measure);
+				}
 			}
 		}
 
@@ -358,39 +359,40 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
-			int k = iter % attributes.size();
-			// Derivitive to attribute k
-			// Minimizes the loss function: log(1 + exp(-2yF))
-			for (int i = 0; i < trainSet.size(); i++) {
-				trainSet.get(i).setTarget(rTrain[i]);
-			}
-
-			BoostedEnsemble boostedEnsemble = regressors.get(k);
-
-			// Train model
-			lineCutter.setAttributeIndex(k);
-			BaggedEnsemble baggedEnsemble = learner.build(bags);
-			if (learningRate != 1) {
-				for (int i = 0; i < baggedEnsemble.size(); i++) {
-					Function1D func = (Function1D) baggedEnsemble.get(i);
-					func.multiply(learningRate);
+			for (int k = 0; k < attributes.size(); k++) {
+				// Derivitive to attribute k
+				// Minimizes the loss function: log(1 + exp(-yF))
+				for (int i = 0; i < trainSet.size(); i++) {
+					trainSet.get(i).setTarget(rTrain[i]);
 				}
-			}
-			Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
-			boostedEnsemble.add(func);
-			baggedEnsemble = null;
 
-			// Update predictions
-			for (int i = 0; i < trainSet.size(); i++) {
-				Instance instance = trainSet.get(i);
-				double pred = func.regress(instance);
-				pTrain[i] += pred;
-				rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], target[i]);
-			}
+				BoostedEnsemble boostedEnsemble = regressors.get(k);
 
-			double measure = metric.eval(pTrain, target);
-			if (verbose) {
-				System.out.println("Iteration " + iter + " Feature " + k + ": " + measure);
+				// Train model
+				lineCutter.setAttributeIndex(k);
+				BaggedEnsemble baggedEnsemble = learner.build(bags);
+				if (learningRate != 1) {
+					for (int i = 0; i < baggedEnsemble.size(); i++) {
+						Function1D func = (Function1D) baggedEnsemble.get(i);
+						func.multiply(learningRate);
+					}
+				}
+				Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
+				boostedEnsemble.add(func);
+				baggedEnsemble = null;
+
+				// Update predictions
+				for (int i = 0; i < trainSet.size(); i++) {
+					Instance instance = trainSet.get(i);
+					double pred = func.regress(instance);
+					pTrain[i] += pred;
+					rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], target[i]);
+				}
+
+				double measure = metric.eval(pTrain, target);
+				if (verbose) {
+					System.out.println("Iteration " + iter + " Feature " + k + ": " + measure);
+				}
 			}
 		}
 
@@ -467,44 +469,45 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
-			int k = iter % attributes.size();
-			// Derivative to attribute k
-			// Equivalent to residual
-			BoostedEnsemble boostedEnsemble = regressors.get(k);
-			// Prepare training set
-			for (int i = 0; i < rTrain.length; i++) {
-				trainSet.get(i).setTarget(rTrain[i]);
-			}
-			// Train model
-			lineCutter.setAttributeIndex(k);
-			BaggedEnsemble baggedEnsemble = learner.build(bags);
-			if (learningRate != 1) {
-				for (int i = 0; i < baggedEnsemble.size(); i++) {
-					Function1D func = (Function1D) baggedEnsemble.get(i);
-					func.multiply(learningRate);
+			for (int k = 0; k < attributes.size(); k++) {
+				// Derivative to attribute k
+				// Equivalent to residual
+				BoostedEnsemble boostedEnsemble = regressors.get(k);
+				// Prepare training set
+				for (int i = 0; i < rTrain.length; i++) {
+					trainSet.get(i).setTarget(rTrain[i]);
 				}
-			}
-			Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
-			boostedEnsemble.add(func);
-			baggedEnsemble = null;
+				// Train model
+				lineCutter.setAttributeIndex(k);
+				BaggedEnsemble baggedEnsemble = learner.build(bags);
+				if (learningRate != 1) {
+					for (int i = 0; i < baggedEnsemble.size(); i++) {
+						Function1D func = (Function1D) baggedEnsemble.get(i);
+						func.multiply(learningRate);
+					}
+				}
+				Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
+				boostedEnsemble.add(func);
+				baggedEnsemble = null;
 
-			// Update residuals
-			for (int i = 0; i < rTrain.length; i++) {
-				Instance instance = trainSet.get(i);
-				double pred = func.regress(instance);
-				rTrain[i] -= pred;
-			}
-			for (int i = 0; i < rValid.length; i++) {
-				Instance instance = validSet.get(i);
-				double pred = func.regress(instance);
-				pValid[i] += pred;
-				rValid[i] -= pred;
-			}
+				// Update residuals
+				for (int i = 0; i < rTrain.length; i++) {
+					Instance instance = trainSet.get(i);
+					double pred = func.regress(instance);
+					rTrain[i] -= pred;
+				}
+				for (int i = 0; i < rValid.length; i++) {
+					Instance instance = validSet.get(i);
+					double pred = func.regress(instance);
+					pValid[i] += pred;
+					rValid[i] -= pred;
+				}
 
-			double measure = metric.eval(pValid, validSet);
-			measureList.add(measure);
-			if (verbose) {
-				System.out.println("Iteration " + iter + " Feature " + k + ": " + measure);
+				double measure = metric.eval(pValid, validSet);
+				measureList.add(measure);
+				if (verbose) {
+					System.out.println("Iteration " + iter + " Feature " + k + ": " + measure);
+				}
 			}
 		}
 
@@ -596,38 +599,39 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
-			int k = iter % attributes.size();
-			// Derivative to attribute k
-			// Equivalent to residual
-			BoostedEnsemble boostedEnsemble = regressors.get(k);
-			// Prepare training set
-			for (int i = 0; i < rTrain.length; i++) {
-				trainSet.get(i).setTarget(rTrain[i]);
-			}
-			// Train model
-			lineCutter.setAttributeIndex(k);
-			BaggedEnsemble baggedEnsemble = learner.build(bags);
-			if (learningRate != 1) {
-				for (int i = 0; i < baggedEnsemble.size(); i++) {
-					Function1D func = (Function1D) baggedEnsemble.get(i);
-					func.multiply(learningRate);
+			for (int k = 0; k < attributes.size(); k++) {
+				// Derivative to attribute k
+				// Equivalent to residual
+				BoostedEnsemble boostedEnsemble = regressors.get(k);
+				// Prepare training set
+				for (int i = 0; i < rTrain.length; i++) {
+					trainSet.get(i).setTarget(rTrain[i]);
 				}
-			}
-			Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
-			boostedEnsemble.add(func);
-			baggedEnsemble = null;
+				// Train model
+				lineCutter.setAttributeIndex(k);
+				BaggedEnsemble baggedEnsemble = learner.build(bags);
+				if (learningRate != 1) {
+					for (int i = 0; i < baggedEnsemble.size(); i++) {
+						Function1D func = (Function1D) baggedEnsemble.get(i);
+						func.multiply(learningRate);
+					}
+				}
+				Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
+				boostedEnsemble.add(func);
+				baggedEnsemble = null;
 
-			// Update residuals
-			for (int i = 0; i < rTrain.length; i++) {
-				Instance instance = trainSet.get(i);
-				double pred = func.regress(instance);
-				pTrain[i] += pred;
-				rTrain[i] -= pred;
-			}
+				// Update residuals
+				for (int i = 0; i < rTrain.length; i++) {
+					Instance instance = trainSet.get(i);
+					double pred = func.regress(instance);
+					pTrain[i] += pred;
+					rTrain[i] -= pred;
+				}
 
-			double measure = metric.eval(pTrain, target);
-			if (verbose) {
-				System.out.println("Iteration " + iter + " Feature " + k + ": " + measure);
+				double measure = metric.eval(pTrain, target);
+				if (verbose) {
+					System.out.println("Iteration " + iter + " Feature " + k + ": " + measure);
+				}
 			}
 		}
 
