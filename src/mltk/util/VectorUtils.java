@@ -185,5 +185,28 @@ public class VectorUtils {
 		}
 		return s;
 	}
+	
+	/**
+	 * Returns the Pearson correlation coefficient between two vectors.
+	 * 
+	 * @param a the 1st vector.
+	 * @param b the 2nd vector.
+	 * @return the Pearson correlation coefficient between two vectors.
+	 */
+	public static double correlation(double[] a, double[] b) {
+		double mean1 = StatUtils.mean(a);
+		double mean2 = StatUtils.mean(b);
+		double x = 0;
+		double s1 = 0;
+		double s2 = 0;
+		for (int i = 0; i < a.length; i++) {
+			double d1 = (a[i] - mean1);
+			double d2 = (b[i] - mean2);
+			x += d1 * d2;
+			s1 += d1 * d1;
+			s2 += d2 * d2;
+		}
+		return x / Math.sqrt(s1 * s2);
+	}
 
 }

@@ -393,7 +393,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			for (int k = 0; k < terms.size(); k++) {
 				// Derivitive to attribute k
-				// Minimizes the loss function: log(1 + exp(-2yF))
+				// Minimizes the loss function: log(1 + exp(-yF))
 				for (int i = 0; i < trainSet.size(); i++) {
 					trainSet.get(i).setTarget(rTrain[i]);
 				}
