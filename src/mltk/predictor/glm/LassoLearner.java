@@ -158,7 +158,7 @@ public class LassoLearner extends Learner {
 	public GLM build(Instances instances) {
 		GLM glm = null;
 		if (maxNumIters < 0) {
-			maxNumIters = instances.dimension() * 20;
+			maxNumIters = 20;
 		}
 		switch (task) {
 			case REGRESSION:

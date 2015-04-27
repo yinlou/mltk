@@ -761,7 +761,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 			}
 		}
 		if (maxNumIters < 0) {
-			maxNumIters = pairs.size() * 20;
+			maxNumIters = 20;
 		}
 		switch (task) {
 			case REGRESSION:

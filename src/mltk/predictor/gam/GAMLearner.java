@@ -664,7 +664,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	public GAM build(Instances instances) {
 		GAM gam = null;
 		if (maxNumIters < 0) {
-			maxNumIters = instances.dimension() * 20;
+			maxNumIters = 20;
 		}
 		if (metric == null) {
 			metric = task.getDefaultMetric();

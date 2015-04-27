@@ -122,7 +122,7 @@ public class GroupLassoLearner extends Learner {
 		}
 		GLM glm = null;
 		if (maxNumIters < 0) {
-			maxNumIters = instances.dimension() * 20;
+			maxNumIters = 20;
 		}
 		switch (task) {
 			case REGRESSION:
