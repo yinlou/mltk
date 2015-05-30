@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import mltk.core.io.AttrInfo;
 import mltk.util.Random;
 
 /**
@@ -48,6 +49,15 @@ public class Instances implements Iterable<Instance>, Copyable<Instances> {
 		this(attributes, targetAtt, 1000);
 	}
 
+	/**
+	 * Constructs a dataset from attributes and target attribute.
+	 * 
+	 * @param ainfo container for attributes and target attribute.
+	 */	
+	public Instances(AttrInfo ainfo) {
+		this(ainfo.attributes, ainfo.clsAttr);
+	}
+	
 	/**
 	 * Constructs a dataset from attributes and target attribute, with specified capacity.
 	 * 

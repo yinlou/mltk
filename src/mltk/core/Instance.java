@@ -288,9 +288,15 @@ public class Instance implements Copyable<Instance> {
 			}
 		} else {
 			double[] values = getValues();
-			sb.append(values[0]);
+			if (Double.isNaN(values[0])) 
+				sb.append("?");
+			else	
+				sb.append(values[0]);
 			for (int i = 1; i < values.length; i++) {
-				sb.append("\t").append(values[i]);
+				if (Double.isNaN(values[i])) 
+					sb.append("\t?");
+				else	
+					sb.append("\t").append(values[i]);
 			}
 			if (!Double.isNaN(getTarget())) {
 				sb.append("\t").append(getTarget());

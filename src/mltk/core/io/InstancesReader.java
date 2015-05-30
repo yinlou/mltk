@@ -13,7 +13,7 @@ import mltk.core.Instances;
 import mltk.core.NominalAttribute;
 import mltk.core.NumericalAttribute;
 import mltk.util.MathUtils;
-import mltk.util.tuple.Pair;
+
 
 /**
  * Class for reading instances.
@@ -29,13 +29,27 @@ public class InstancesReader {
 	 * 
 	 * @param attFile the attribute file.
 	 * @param dataFile the data file.
+	 * @param allowMV flag set when missing values are allowed
+	 * @return a set of instances.
+	 * @throws IOException
+	 */
+	public static Instances read(String attFile, String dataFile, boolean allowMV) throws IOException {
+		return read(attFile, dataFile, "\\s+", allowMV);
+	}
+
+	/**
+	 * Reads a set of instances from attribute file and data file. Attribute file can be null. Default delimiter is
+	 * whitespace.
+	 * 
+	 * @param attFile the attribute file.
+	 * @param dataFile the data file.
 	 * @return a set of instances.
 	 * @throws IOException
 	 */
 	public static Instances read(String attFile, String dataFile) throws IOException {
-		return read(attFile, dataFile, "\\s+");
+		return read(attFile, dataFile, "\\s+", false);
 	}
-
+	
 	/**
 	 * Reads a set of instances from attribute file and data file. Attribute file can be null.
 	 * 
@@ -45,40 +59,10 @@ public class InstancesReader {
 	 * @return a set of instances.
 	 * @throws IOException
 	 */
-	public static Instances read(String attFile, String dataFile, String delimiter) throws IOException {
+	public static Instances read(String attFile, String dataFile, String delimiter, boolean allowMV) throws IOException {
 		if (attFile != null) {
-			Pair<List<Attribute>, Attribute> pair = AttributesReader.read(attFile);
-			int classIndex = -1;
-			if (pair.v2 != null) {
-				classIndex = pair.v2.getIndex();
-			}
-			pair.v2.setIndex(-1);
-			Instances instances = new Instances(pair.v1, pair.v2);
-			int totalLength = instances.dimension();
-			if (classIndex != -1) {
-				totalLength++;
-			}
-			BufferedReader br = new BufferedReader(new FileReader(dataFile), 65535);
-			for (;;) {
-				String line = br.readLine();
-				if (line == null) {
-					break;
-				}
-				String[] data = line.split(delimiter);
-				Instance instance = null;
-				if (data.length >= 2 && data[1].indexOf(':') >= 0) {
-					// Sparse instance
-					instance = parseSparseInstance(data);
-				} else if (data.length == totalLength) {
-					// Dense instance
-					instance = parseDenseInstance(data, classIndex);
-				}
-				if (instance != null) {
-					instances.add(instance);
-				}
-			}
-			br.close();
-			return instances;
+			AttrInfo ainfo = AttributesReader.read(attFile);
+			return read(ainfo, dataFile, delimiter, allowMV);
 		} else {
 			List<Attribute> attributes = new ArrayList<>();
 			Instances instances = new Instances(attributes);
@@ -101,7 +85,7 @@ public class InstancesReader {
 					if (totalLength == -1) {
 						totalLength = data.length;
 					} else if (data.length == totalLength) {
-						instance = parseDenseInstance(data, -1);
+						instance = parseDenseInstance(data);
 					}
 
 				}
@@ -129,88 +113,77 @@ public class InstancesReader {
 			return instances;
 		}
 	}
-
+	
 	/**
-	 * Reads a set of dense instances from data file. Default delimiter is whitespace.
+	 * Reads a set of instances from attribute information and data file.
 	 * 
-	 * @param file the data file.
-	 * @param classIndex the index of the class attribute, -1 if no class attribute.
-	 * @return a set of dense instances.
-	 * @throws IOException
-	 */
-	public static Instances read(String file, int classIndex) throws IOException {
-		return read(file, classIndex, "\\s+");
-	}
-
-	/**
-	 * Reads a set of dense instances from data file.
-	 * 
-	 * @param file the data file.
-	 * @param classIndex the index of the class attribute, -1 if no class attribute.
+	 * @param ainfo attribute information
+	 * @param dataFile the data file.
 	 * @param delimiter the delimiter.
-	 * @return a set of dense instances.
+	 * @return a set of instances.
 	 * @throws IOException
 	 */
-	public static Instances read(String file, int classIndex, String delimiter) throws IOException {
-		BufferedReader br = new BufferedReader(new FileReader(file), 65535);
-		List<Attribute> attributes = new ArrayList<>();
-		Instances instances = new Instances(attributes);
+	public static Instances read(AttrInfo ainfo, String dataFile, String delimiter, boolean allowMV) throws IOException {
+		Instances instances = new Instances(ainfo.attributes, ainfo.clsAttr);
+
+		BufferedReader br = new BufferedReader(new FileReader(dataFile), 65535);
 		for (;;) {
 			String line = br.readLine();
 			if (line == null) {
 				break;
 			}
 			String[] data = line.split(delimiter);
-			Instance instance = parseDenseInstance(data, classIndex);
-			instances.add(instance);
+			Instance instance = parseDenseInstance(data, ainfo, allowMV);
+			if (instance != null) {
+				instances.add(instance);
+			}
 		}
 		br.close();
-
-		int numAttributes = instances.get(0).getValues().length;
-		for (int i = 0; i < numAttributes; i++) {
-			Attribute att = new NumericalAttribute("f" + i);
-			att.setIndex(i);
-			attributes.add(att);
-		}
-
-		if (classIndex >= 0) {
-			assignTargetAttribute(instances);
-		}
-
 		return instances;
 	}
+
+
 
 	/**
 	 * Parses a dense instance from strings.
 	 * 
 	 * @param data the string array.
-	 * @param classIndex the class index.
+	 * @param ainfo attribute information containing the class index.
 	 * @return a dense instance from strings.
 	 */
-	private static Instance parseDenseInstance(String[] data, int classIndex) {
-		if (classIndex < 0) {
-			double[] vector = new double[data.length];
-			double classValue = Double.NaN;
-			for (int i = 0; i < data.length; i++) {
-				vector[i] = Double.parseDouble(data[i]);
+	private static Instance parseDenseInstance(String[] data, AttrInfo ainfo, boolean allowMV) {
+		double[] vector = new double[ainfo.columns.size()];
+		for (int i = 0; i < vector.length; i++) {
+			int col = ainfo.columns.get(i);
+			if(allowMV) {
+				vector[i] = data[col].equals("?") ?
+							Double.NaN :
+							Double.parseDouble(data[col]);
+			} else {
+				if(data[col].equals("?"))
+					System.out.println("Missing values are not allowed.\n");
+				vector[i] = Double.parseDouble(data[col]); //crashes on "?"
 			}
-			return new Instance(vector, classValue);
-		} else {
-			double[] vector = new double[data.length - 1];
-			double classValue = Double.NaN;
-			for (int i = 0; i < data.length; i++) {
-				double value = Double.parseDouble(data[i]);
-				if (i < classIndex) {
-					vector[i] = value;
-				} else if (i > classIndex) {
-					vector[i - 1] = value;
-				} else {
-					classValue = value;
-				}
-			}
-			return new Instance(vector, classValue);
 		}
+		double classValue = (ainfo.clsAttr.getIndex() < 0) ? 
+							Double.NaN : 
+							Double.parseDouble(data[ainfo.clsAttr.getIndex()]);
+		return new Instance(vector, classValue);
 	}
+	
+	/**
+	 * Parses a dense instance from strings.
+	 * 
+	 * @param data the string array.
+	 * @return a dense instance from strings.
+	 */	
+	private static Instance parseDenseInstance(String[] data) {
+		double[] vector = new double[data.length];
+		for (int i = 0; i < vector.length; i++) {
+			vector[i] = Double.parseDouble(data[i]);
+		}		
+		return new Instance(vector, Double.NaN);
+	}	
 
 	/**
 	 * Parses a sparse instance from strings.
@@ -232,23 +205,6 @@ public class InstancesReader {
 		return new Instance(indices, values, classValue);
 	}
 
-	/**
-	 * Parses a sparse instance from strings.
-	 * 
-	 * @param data the string array.
-	 * @return a sparse instance from strings.
-	 */
-	private static Instance parseSparseInstance(String[] data) {
-		double classValue = Double.parseDouble(data[0]);
-		int[] indices = new int[data.length - 1];
-		double[] values = new double[data.length - 1];
-		for (int i = 0; i < indices.length; i++) {
-			String[] pair = data[i + 1].split(":");
-			indices[i] = Integer.parseInt(pair[0]);
-			values[i] = Double.parseDouble(pair[1]);
-		}
-		return new Instance(indices, values, classValue);
-	}
 
 	/**
 	 * Assigns target attribute for a dataset.

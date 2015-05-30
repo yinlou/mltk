@@ -374,7 +374,7 @@ public class Discretizer {
 				}
 			}
 		} else if (app.disAttPath != null) {
-			attributes = AttributesReader.read(app.disAttPath).v1;
+			attributes = AttributesReader.read(app.disAttPath).attributes;
 		} else {
 			parser.printUsage();
 			System.exit(1);
