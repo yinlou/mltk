@@ -237,7 +237,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 			pValid[i] = gam.regress(instance);
 		}
 
-		List<Double> measureList = new ArrayList<>(maxNumIters);
+		List<Double> measureList = new ArrayList<>(maxNumIters * terms.size());
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
@@ -516,7 +516,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 			rValid[i] = instance.getTarget() - pValid[i];
 		}
 
-		List<Double> measureList = new ArrayList<>(maxNumIters);
+		List<Double> measureList = new ArrayList<>(maxNumIters * terms.size());
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {

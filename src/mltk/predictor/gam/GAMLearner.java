@@ -227,7 +227,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		OptimUtils.computePseudoResidual(pTrain, target, rTrain);
 		double[] pValid = new double[validSet.size()];
 
-		List<Double> measureList = new ArrayList<>(maxNumIters);
+		List<Double> measureList = new ArrayList<>(maxNumIters * attributes.size());
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
@@ -465,7 +465,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 			rValid[i] = instance.getTarget();
 		}
 
-		List<Double> measureList = new ArrayList<>(maxNumIters);
+		List<Double> measureList = new ArrayList<>(maxNumIters * attributes.size());
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
