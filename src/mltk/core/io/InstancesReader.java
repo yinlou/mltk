@@ -51,8 +51,8 @@ public class InstancesReader {
 			int classIndex = -1;
 			if (pair.v2 != null) {
 				classIndex = pair.v2.getIndex();
+				pair.v2.setIndex(-1);
 			}
-			pair.v2.setIndex(-1);
 			Instances instances = new Instances(pair.v1, pair.v2);
 			int totalLength = instances.dimension();
 			if (classIndex != -1) {
