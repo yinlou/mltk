@@ -89,8 +89,8 @@ public class SPLAMLearner extends Learner {
 		@Argument(name = "-l", description = "lambda (default: 0)")
 		double lambda = 0;
 		
-		@Argument(name = "-a", description = "alpha (default: 0, i.e., SPAM model)")
-		double alpha = 0;
+		@Argument(name = "-a", description = "alpha (default: 1, i.e., SPAM model)")
+		double alpha = 1;
 
 	}
 	/**
@@ -105,7 +105,7 @@ public class SPLAMLearner extends Learner {
 	 * [-d]	number of knots (default: 10)
 	 * [-m]	maximum number of iterations (default: 0)
 	 * [-l]	lambda (default: 0)
-	 * [-a]	alpha (default: 0, i.e., SPAM model)
+	 * [-a]	alpha (default: 1, i.e., SPAM model)
 	 * </pre>
 	 * 
 	 * </p>
@@ -170,7 +170,7 @@ public class SPLAMLearner extends Learner {
 		numKnots = 10;
 		maxNumIters = -1;
 		lambda = 0.0;
-		alpha = 0.5;
+		alpha = 1;
 		epsilon = MathUtils.EPSILON;
 		task = Task.REGRESSION;
 	}
