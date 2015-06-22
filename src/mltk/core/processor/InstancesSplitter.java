@@ -160,7 +160,7 @@ public class InstancesSplitter {
 		try {
 			parser.parse(args);
 			data = opts.crossValidationMode.split(":");
-			if (data.length != 2) {
+			if (data.length < 2) {
 				throw new IllegalArgumentException();
 			}
 		} catch (IllegalArgumentException e) {
@@ -205,8 +205,9 @@ public class InstancesSplitter {
 							directory.mkdir();
 						}
 						InstancesWriter.write(folds[i][0], path + File.separator + prefix + ".attr", path
-								+ File.separator + prefix + ".train.all");
-						InstancesWriter.write(folds[i][1], path + File.separator + prefix + ".test");
+								+ File.separator + prefix + ".train");
+						InstancesWriter.write(folds[i][1], path + File.separator + prefix + ".valid");
+						InstancesWriter.write(folds[i][2], path + File.separator + prefix + ".test");
 					}
 				}
 				break;

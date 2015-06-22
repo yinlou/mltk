@@ -27,7 +27,7 @@ class GAMUtils {
 				BinnedAttribute binnedAttribute = (BinnedAttribute) attribute;
 				int size = binnedAttribute.getNumBins();
 				double[] predictions = new double[size];
-				for (int j = 0; j < predictions.length; j++) {
+				for (int j = 0; j < predictions.length && k < w.length; j++) {
 					predictions[j] = -w[k++];
 				}
 				Array1D ary = new Array1D(attIndex, predictions);
@@ -36,7 +36,7 @@ class GAMUtils {
 				NominalAttribute nominalAttribute = (NominalAttribute) attribute;
 				int size = nominalAttribute.getCardinality();
 				double[] predictions = new double[size];
-				for (int j = 0; j < predictions.length; j++) {
+				for (int j = 0; j < predictions.length && k < w.length; j++) {
 					predictions[j] = -w[k++];
 				}
 				Array1D ary = new Array1D(attIndex, predictions);
