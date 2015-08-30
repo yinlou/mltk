@@ -36,6 +36,92 @@ import mltk.util.tuple.IntPair;
  *
  */
 public class AdditiveGrovesLearner extends Learner {
+	
+	static class Options extends LearnerOptions {
+
+		@Argument(name = "-v", description = "valid set path", required = true)
+		String validPath = null;
+
+		@Argument(name = "-o", description = "output model path")
+		String outputModelPath = null;
+
+		@Argument(name = "-e", description = "AUC (a), RMSE (r) (default: r)")
+		String metric = null;
+
+		@Argument(name = "-b", description = "bagging iterations (default: 60)")
+		int baggingIters = 60;
+
+		@Argument(name = "-n", description = "number of trees in a grove (default: 6)")
+		int n = 6;
+
+		@Argument(name = "-a", description = "minimum alpha (default: 0.01)")
+		double a = 0.01;
+
+		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
+		long seed = 0L;
+
+	}
+
+	/**
+	 * <p>
+	 * 
+	 * <pre>
+	 * Usage: mltk.predictor.tree.ensemble.ag.AdditiveGrovesLearner
+	 * -t	train set path
+	 * -v	valid set path
+	 * [-r]	attribute file path
+	 * [-o]	output model path
+	 * [-V]	verbose (default: true)
+	 * [-o]	output model path
+	 * [-e]	AUC (a), RMSE (r) (default: r)
+	 * [-b]	bagging iterations (default: 60)
+	 * [-n]	number of trees in a grove (default: 6)
+	 * [-a]	minimum alpha (default: 0.01)
+	 * [-s]	seed of the random number generator (default: 0)
+	 * </pre>
+	 * 
+	 * </p>
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
+		Options opts = new Options();
+		CmdLineParser parser = new CmdLineParser(AdditiveGrovesLearner.class, opts);
+		Metric metric = null;
+		try {
+			parser.parse(args);
+			if ("rmse".startsWith(opts.metric)) {
+				metric = new RMSE();
+			} else if ("auc".startsWith(opts.metric)) {
+				metric = new AUC();
+			}
+		} catch (IllegalArgumentException e) {
+			parser.printUsage();
+			System.exit(1);
+		}
+
+		Random.getInstance().setSeed(opts.seed);
+
+		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
+		Instances validSet = InstancesReader.read(opts.attPath, opts.validPath);
+
+		AdditiveGrovesLearner learner = new AdditiveGrovesLearner();
+		learner.setBaggingIters(opts.baggingIters);
+		learner.setNumTrees(opts.n);
+		learner.setMinAlpha(opts.a);
+		learner.setMetric(metric);
+		learner.setVerbose(opts.verbose);
+
+		long start = System.currentTimeMillis();
+		AdditiveGroves ag = learner.buildRegressor(trainSet, validSet);
+		long end = System.currentTimeMillis();
+		System.out.println("Time: " + (end - start) / 1000.0);
+
+		if (opts.outputModelPath != null) {
+			PredictorWriter.write(ag, opts.outputModelPath);
+		}
+	}
 
 	class PerformanceMatrix {
 
@@ -611,92 +697,6 @@ public class AdditiveGrovesLearner extends Learner {
 				rtPreds[maxTN][t][i] = pred;
 				residualTrain[maxTN][i] -= pred;
 			}
-		}
-	}
-
-	static class Options extends LearnerOptions {
-
-		@Argument(name = "-v", description = "valid set path", required = true)
-		String validPath = null;
-
-		@Argument(name = "-o", description = "output model path")
-		String outputModelPath = null;
-
-		@Argument(name = "-e", description = "AUC (a), RMSE (r) (default: r)")
-		String metric = null;
-
-		@Argument(name = "-b", description = "bagging iterations (default: 60)")
-		int baggingIters = 60;
-
-		@Argument(name = "-n", description = "number of trees in a grove (default: 6)")
-		int n = 6;
-
-		@Argument(name = "-a", description = "minimum alpha (default: 0.01)")
-		double a = 0.01;
-
-		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
-		long seed = 0L;
-
-	}
-
-	/**
-	 * <p>
-	 * 
-	 * <pre>
-	 * Usage: mltk.predictor.tree.ensemble.ag.AdditiveGrovesLearner
-	 * -t	train set path
-	 * -v	valid set path
-	 * [-r]	attribute file path
-	 * [-o]	output model path
-	 * [-V]	verbose (default: true)
-	 * [-o]	output model path
-	 * [-e]	AUC (a), RMSE (r) (default: r)
-	 * [-b]	bagging iterations (default: 60)
-	 * [-n]	number of trees in a grove (default: 6)
-	 * [-a]	minimum alpha (default: 0.01)
-	 * [-s]	seed of the random number generator (default: 0)
-	 * </pre>
-	 * 
-	 * </p>
-	 * 
-	 * @param args
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		Options opts = new Options();
-		CmdLineParser parser = new CmdLineParser(AdditiveGrovesLearner.class, opts);
-		Metric metric = null;
-		try {
-			parser.parse(args);
-			if ("rmse".startsWith(opts.metric)) {
-				metric = new RMSE();
-			} else if ("auc".startsWith(opts.metric)) {
-				metric = new AUC();
-			}
-		} catch (IllegalArgumentException e) {
-			parser.printUsage();
-			System.exit(1);
-		}
-
-		Random.getInstance().setSeed(opts.seed);
-
-		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-		Instances validSet = InstancesReader.read(opts.attPath, opts.validPath);
-
-		AdditiveGrovesLearner learner = new AdditiveGrovesLearner();
-		learner.setBaggingIters(opts.baggingIters);
-		learner.setNumTrees(opts.n);
-		learner.setMinAlpha(opts.a);
-		learner.setMetric(metric);
-		learner.setVerbose(opts.verbose);
-
-		long start = System.currentTimeMillis();
-		AdditiveGroves ag = learner.buildRegressor(trainSet, validSet);
-		long end = System.currentTimeMillis();
-		System.out.println("Time: " + (end - start) / 1000.0);
-
-		if (opts.outputModelPath != null) {
-			PredictorWriter.write(ag, opts.outputModelPath);
 		}
 	}
 

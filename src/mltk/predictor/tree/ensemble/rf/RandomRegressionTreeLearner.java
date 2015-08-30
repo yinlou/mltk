@@ -5,14 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import mltk.cmdline.Argument;
-import mltk.cmdline.CmdLineParser;
 import mltk.core.Attribute;
 import mltk.core.Instances;
-import mltk.core.io.InstancesReader;
-import mltk.predictor.BaggedEnsemble;
-import mltk.predictor.BaggedEnsembleLearner;
-import mltk.predictor.io.PredictorWriter;
 import mltk.predictor.tree.RegressionTree;
 import mltk.predictor.tree.RegressionTreeInteriorNode;
 import mltk.predictor.tree.RegressionTreeLeaf;
@@ -24,8 +18,7 @@ import mltk.util.tuple.DoublePair;
 import mltk.util.tuple.IntDoublePair;
 
 /**
- * Class for learning random regression trees. With {@link mltk.predictor.BaggedEnsembleLearner BaggedEnsembleLearner},
- * random forests of regression trees can be built.
+ * Class for learning random regression trees.
  *
  * @author Yin Lou
  *
@@ -64,7 +57,7 @@ public class RandomRegressionTreeLearner extends RegressionTreeLearner {
 
 	@Override
 	public RegressionTree build(Instances instances) {
-		if (numFeatures <= 0) {
+		if (numFeatures < 0) {
 			numFeatures = instances.getAttributes().size() / 3;
 		}
 		if (perm == null || perm.size() != instances.getAttributes().size()) {
@@ -145,99 +138,6 @@ public class RandomRegressionTreeLearner extends RegressionTreeLearner {
 		} else {
 			RegressionTreeNode node = new RegressionTreeLeaf(weightedMean);
 			return node;
-		}
-	}
-
-	static class Options {
-
-		@Argument(name = "-r", description = "attribute file path", required = true)
-		String attPath = null;
-
-		@Argument(name = "-t", description = "train set path", required = true)
-		String trainPath = null;
-
-		@Argument(name = "-o", description = "output model path")
-		String outputModelPath = null;
-
-		@Argument(name = "-m", description = "construction mode:parameter. Construction mode can be alpha limited (a), depth limited (d), number of leaves limited (l) and minimum leaf size limited (s) (default: a:0.001)")
-		String mode = "a:0.001";
-
-		@Argument(name = "-f", description = "number of features to consider")
-		int numFeatures = -1;
-
-		@Argument(name = "-b", description = "bagging iterations (default: 100)")
-		int baggingIters = 100;
-
-	}
-
-	/**
-	 * Trains a random forest of regression trees.
-	 *
-	 * When bagging is turned off (b = 0), this procedure generates a single random regression tree. When the number of
-	 * features to consider is the number of total features, this procedure builds bagged tree.
-	 *
-	 * <p>
-	 *
-	 * <pre>
-	 * Usage: RandomRegressionTreeLearner
-	 * -r	attribute file path
-	 * -t	train set path
-	 * [-o]	output model path
-	 * [-m]	construction mode:parameter. Construction mode can be alpha limited (a), depth limited (d), number of leaves limited (l) and minimum leaf size limited (s) (default: a:0.001)
-	 * [-f]	number of features to consider
-	 * [-b]	bagging iterations (default: 100)
-	 * </pre>
-	 *
-	 * </p>
-	 *
-	 * @param args
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		Options opts = new Options();
-		CmdLineParser parser = new CmdLineParser(RandomRegressionTreeLearner.class, opts);
-		RandomRegressionTreeLearner rtLearner = new RandomRegressionTreeLearner();
-		try {
-			parser.parse(args);
-			String[] data = opts.mode.split(":");
-			if (data.length != 2) {
-				throw new IllegalArgumentException();
-			}
-			switch (data[0]) {
-				case "a":
-					rtLearner.setConstructionMode(Mode.ALPHA_LIMITED);
-					rtLearner.setAlpha(Double.parseDouble(data[1]));
-					break;
-				case "d":
-					rtLearner.setConstructionMode(Mode.DEPTH_LIMITED);
-					rtLearner.setMaxDepth(Integer.parseInt(data[1]));
-					break;
-				case "l":
-					rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
-					rtLearner.setMaxNumLeaves(Integer.parseInt(data[1]));
-					break;
-				case "s":
-					rtLearner.setConstructionMode(Mode.MIN_LEAF_SIZE_LIMITED);
-					rtLearner.setMinLeafSize(Integer.parseInt(data[1]));
-				default:
-					throw new IllegalArgumentException();
-			}
-		} catch (IllegalArgumentException e) {
-			parser.printUsage();
-			System.exit(1);
-		}
-
-		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-
-		rtLearner.setNumFeatures(opts.numFeatures);
-		BaggedEnsembleLearner rfLearner = new BaggedEnsembleLearner(opts.baggingIters, rtLearner);
-		long start = System.currentTimeMillis();
-		BaggedEnsemble rf = rfLearner.build(trainSet);
-		long end = System.currentTimeMillis();
-		System.out.println("Time: " + (end - start) / 1000.0 + " (s).");
-
-		if (opts.outputModelPath != null) {
-			PredictorWriter.write(rf, opts.outputModelPath);
 		}
 	}
 

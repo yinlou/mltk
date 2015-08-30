@@ -22,6 +22,15 @@ public class RegressionTreeList implements Iterable<RegressionTree>, Copyable<Re
 	public RegressionTreeList() {
 		trees = new ArrayList<>();
 	}
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param capacity the capacity of this tree list.
+	 */
+	public RegressionTreeList(int capacity) {
+		trees = new ArrayList<>(capacity);
+	}
 
 	/**
 	 * Adds a regression tree to the list.
