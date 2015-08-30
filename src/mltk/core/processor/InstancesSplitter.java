@@ -140,7 +140,7 @@ public class InstancesSplitter {
 	 * <p>
 	 * 
 	 * <pre>
-	 * Usage: InstancesSplitter
+	 * Usage: mltk.core.processor.InstancesSplitter
 	 * -r	attribute file path
 	 * -i	input dataset path
 	 * -o	output directory path

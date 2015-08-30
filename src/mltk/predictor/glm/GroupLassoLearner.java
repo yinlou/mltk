@@ -90,8 +90,6 @@ public class GroupLassoLearner extends Learner {
 		}
 	}
 
-	private boolean verbose;
-
 	private boolean fitIntercept;
 	private boolean refit;
 	private int maxNumIters;
@@ -1609,15 +1607,6 @@ public class GroupLassoLearner extends Learner {
 	}
 
 	/**
-	 * Returns <code>true</code> if we output something during the training.
-	 * 
-	 * @return <code>true</code> if we output something during the training.
-	 */
-	public boolean isVerbose() {
-		return verbose;
-	}
-
-	/**
 	 * Returns <code>true</code> if we refit the model.
 	 * 
 	 * @return <code>true</code> if we refit the model.
@@ -1679,78 +1668,6 @@ public class GroupLassoLearner extends Learner {
 	public void setTask(Task task) {
 		this.task = task;
 	}
-
-	/**
-	 * Sets whether we output something during the training.
-	 * 
-	 * @param verbose the switch if we output things during training.
-	 */
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
-	}
-
-	/*
-	protected boolean backtrackingLineSearch(double[][] block, double[] y, double[] pTrain, double[] beta, 
-			double[] stepSize, int k, double[] g, double[] gradient, double lambda, double lossOld) {
-		double lossNew = 0;
-		for (int i = 0; i < pTrain.length; i++) {
-			double pred = pTrain[i];
-			for (int j = 0; j < beta.length; j++) {
-				pred += (g[j] - beta[j]) * block[j][i];
-			}
-			lossNew += OptimUtils.computeLogisticLoss(pred, y[i]);
-		}
-		lossNew /= y.length;
-		
-		double dotProduct = 0;
-		double squaredDist = 0;
-		for (int j = 0; j < beta.length; j++) {
-			double d = beta[j] - g[j];
-			dotProduct += d * gradient[j];
-			squaredDist += d * d;
-		}
-		squaredDist /= (2 * stepSize[k]);
-
-		if (lossNew <= lossOld + dotProduct + squaredDist) {
-			return true;
-		} else {
-			stepSize[k] /= 2;
-			return false;
-		}
-	}
-
-	protected boolean backtrackingLineSearch(double[][] block, double[] rTrain, double[] beta, double[] stepSize, int k, 
-			double[] g, double[] gradient, double lambda, double lossOld) {
-		double squaredLossNew = 0;
-		for (int i = 0; i < rTrain.length; i++) {
-			double r = rTrain[i];
-			for (int j = 0; j < beta.length; j++) {
-				r += (beta[j] - g[j]) * block[j][i];
-			}
-			squaredLossNew += r * r;
-		}
-		squaredLossNew /= (2 * rTrain.length);
-
-		double penaltyNew = computePenalty(g, lambda);
-		double lossNew = squaredLossNew + penaltyNew;
-		
-		double dotProduct = 0;
-		double squaredDist = 0;
-		for (int j = 0; j < beta.length; j++) {
-			double d = (beta[j] - g[j]);
-			dotProduct += d * gradient[j];
-			squaredDist += d * d;
-		}
-		squaredDist /= 2;
-		
-		if (lossNew <= lossOld + dotProduct + squaredDist) {
-			return true;
-		} else {
-			stepSize[k] /= 2;
-			return false;
-		}
-	}
-	*/
 	
 	protected void computeGradient(double[][] block, double[] rTrain, double[] gradient) {
 		for (int i = 0; i < block.length; i++) {

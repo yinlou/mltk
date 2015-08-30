@@ -31,7 +31,6 @@ import mltk.util.VectorUtils;
  */
 public class LADBoostLearner extends Learner {
 
-	private boolean verbose;
 	private int maxNumIters;
 	private int maxNumLeaves;
 	private double alpha;
@@ -46,24 +45,6 @@ public class LADBoostLearner extends Learner {
 		maxNumLeaves = 100;
 		alpha = 1;
 		learningRate = 1;
-	}
-
-	/**
-	 * Returns <code>true</code> if we output something during the training.
-	 * 
-	 * @return <code>true</code> if we output something during the training.
-	 */
-	public boolean isVerbose() {
-		return verbose;
-	}
-
-	/**
-	 * Sets whether we output something during the training.
-	 * 
-	 * @param verbose the switch if we output things during training.
-	 */
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
 	}
 
 	/**

@@ -26,20 +26,14 @@ public class CmdLineParser {
 	 * @param obj the object.
 	 */
 	public CmdLineParser(Class<?> clazz, Object obj) {
-		this.name = clazz.getSimpleName();
+		this.name = clazz.getCanonicalName();
 		this.obj = obj;
 
 		argList = new ArrayList<>();
 		fieldList = new ArrayList<>();
-
-		Field[] fields = obj.getClass().getDeclaredFields();
-		for (Field field : fields) {
-			Argument argument = field.getAnnotation(Argument.class);
-			if (argument != null) {
-				fieldList.add(field);
-				argList.add(argument);
-			}
-		}
+		
+		processFields(obj.getClass().getFields());
+		processFields(obj.getClass().getDeclaredFields());
 	}
 
 	/**
@@ -105,6 +99,16 @@ public class CmdLineParser {
 
 		sb.append(required).append(optional);
 		System.err.println(sb.toString());
+	}
+	
+	private void processFields(Field[] fields) {
+		for (Field field : fields) {
+			Argument argument = field.getAnnotation(Argument.class);
+			if (argument != null) {
+				fieldList.add(field);
+				argList.add(argument);
+			}
+		}
 	}
 
 }

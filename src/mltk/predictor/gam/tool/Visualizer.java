@@ -315,7 +315,7 @@ public class Visualizer {
 	 * <p>
 	 * 
 	 * <pre>
-	 * Usage: Visualizer
+	 * Usage: mltk.predictor.gam.tool.Visualizer
 	 * -r	attribute file path
 	 * -d	dataset path
 	 * -i	input model path

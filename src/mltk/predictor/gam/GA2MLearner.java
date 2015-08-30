@@ -7,6 +7,7 @@ import java.util.List;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
+import mltk.cmdline.options.HoldoutValidatedLearnerWithTaskOptions;
 import mltk.core.Attribute;
 import mltk.core.BinnedAttribute;
 import mltk.core.Instance;
@@ -46,8 +47,115 @@ import mltk.util.tuple.IntPair;
  * 
  */
 public class GA2MLearner extends HoldoutValidatedLearner {
+	
+	static class Options extends HoldoutValidatedLearnerWithTaskOptions {
 
-	private boolean verbose;
+		@Argument(name = "-i", description = "input model path", required = true)
+		String inputModelPath = null;
+
+		@Argument(name = "-I", description = "list of pairwise interactions path", required = true)
+		String interactionsPath = null;
+
+		@Argument(name = "-m", description = "maximum number of iterations", required = true)
+		int maxNumIters = -1;
+
+		@Argument(name = "-b", description = "bagging iterations (default: 100)")
+		int baggingIters = 100;
+
+		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
+		long seed = 0L;
+
+		@Argument(name = "-l", description = "learning rate (default: 0.01)")
+		double learningRate = 0.01;
+
+	}
+
+	/**
+	 * <p>
+	 * 
+	 * <pre>
+	 * Usage: mltk.predictor.gam.GA2MLearner
+	 * -t	train set path
+	 * -i	input model path
+	 * -I	list of pairwise interactions path
+	 * -m	maximum number of iterations
+	 * [-g]	task between classification (c) and regression (r) (default: r)
+	 * [-v]	valid set path
+	 * [-e]	evaluation metric (default: default metric of task)
+	 * [-r]	attribute file path
+	 * [-o]	output model path
+	 * [-V]	verbose (default: true)
+	 * [-b]	bagging iterations (default: 100)
+	 * [-s]	seed of the random number generator (default: 0)
+	 * [-l]	learning rate (default: 0.01)
+	 * </pre>
+	 * 
+	 * </p>
+	 * 
+	 * @param args the command line arguments.
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
+		Options opts = new Options();
+		CmdLineParser parser = new CmdLineParser(GA2MLearner.class, opts);
+		Task task = null;
+		Metric metric = null;
+		try {
+			parser.parse(args);
+			task = Task.getEnum(opts.task);
+			if (opts.metric == null) {
+				metric = task.getDefaultMetric();
+			} else {
+				metric = MetricFactory.getMetric(opts.metric);
+			}
+		} catch (IllegalArgumentException e) {
+			parser.printUsage();
+			System.exit(1);
+		}
+
+		Random.getInstance().setSeed(opts.seed);
+
+		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
+
+		List<IntPair> terms = new ArrayList<>();
+		BufferedReader br = new BufferedReader(new FileReader(opts.interactionsPath));
+		for (;;) {
+			String line = br.readLine();
+			if (line == null) {
+				break;
+			}
+			String[] data = line.split("\\s+");
+			IntPair term = new IntPair(Integer.parseInt(data[0]), Integer.parseInt(data[1]));
+			terms.add(term);
+		}
+		br.close();
+
+		GAM gam = PredictorReader.read(opts.inputModelPath, GAM.class);
+
+		GA2MLearner learner = new GA2MLearner();
+		learner.setBaggingIters(opts.baggingIters);
+		learner.setGAM(gam);
+		learner.setMaxNumIters(opts.maxNumIters);
+		learner.setTask(task);
+		learner.setMetric(metric);
+		learner.setLearningRate(opts.learningRate);
+		learner.setVerbose(opts.verbose);
+
+		if (opts.validPath != null) {
+			Instances validSet = InstancesReader.read(opts.attPath, opts.validPath);
+			learner.setValidSet(validSet);
+		}
+
+		long start = System.currentTimeMillis();
+		learner.build(trainSet);
+		long end = System.currentTimeMillis();
+		System.out.println("Time: " + (end - start) / 1000.0);
+
+		if (opts.outputModelPath != null) {
+			PredictorWriter.write(gam, opts.outputModelPath);
+		}
+	}
+
 	private int baggingIters;
 	private int maxNumIters;
 	private Task task;
@@ -65,24 +173,6 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		learningRate = 0.01;
 		task = Task.REGRESSION;
 		metric = task.getDefaultMetric();
-	}
-
-	/**
-	 * Returns <code>true</code> if we output something during the training.
-	 * 
-	 * @return <code>true</code> if we output something during the training.
-	 */
-	public boolean isVerbose() {
-		return verbose;
-	}
-
-	/**
-	 * Sets whether we output something during the training.
-	 * 
-	 * @param verbose the switch if we output things during training.
-	 */
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
 	}
 
 	/**
@@ -782,131 +872,6 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 				break;
 		}
 		return gam;
-	}
-
-	static class Options {
-
-		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
-
-		@Argument(name = "-t", description = "train set path", required = true)
-		String trainPath = null;
-
-		@Argument(name = "-v", description = "valid set path")
-		String validPath = null;
-
-		@Argument(name = "-i", description = "input model path", required = true)
-		String inputModelPath = null;
-
-		@Argument(name = "-o", description = "output model path")
-		String outputModelPath = null;
-
-		@Argument(name = "-g", description = "task between classification (c) and regression (r) (default: r)")
-		String task = "r";
-		
-		@Argument(name = "-e", description = "evaluation metric (default: default metric of task)")
-		String metric = null;
-
-		@Argument(name = "-I", description = "list of pairwise interactions path", required = true)
-		String interactionsPath = null;
-
-		@Argument(name = "-m", description = "maximum number of iterations", required = true)
-		int maxNumIters = -1;
-
-		@Argument(name = "-b", description = "bagging iterations (default: 100)")
-		int baggingIters = 100;
-
-		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
-		long seed = 0L;
-
-		@Argument(name = "-l", description = "learning rate (default: 0.01)")
-		double learningRate = 0.01;
-
-	}
-
-	/**
-	 * <p>
-	 * 
-	 * <pre>
-	 * Usage: GA2MLearner
-	 * -t	train set path
-	 * -i	input model path
-	 * -I	list of pairwise interactions path
-	 * -m	maximum number of iterations
-	 * [-r]	attribute file path
-	 * [-v]	valid set path
-	 * [-o]	output model path
-	 * [-g]	task between classification (c) and regression (r) (default: r)
-	 * [-e]	evaluation metric (default: default metric of task)
-	 * [-b]	bagging iterations (default: 100)
-	 * [-s]	seed of the random number generator (default: 0)
-	 * [-l]	learning rate (default: 0.01)
-	 * </pre>
-	 * 
-	 * </p>
-	 * 
-	 * @param args the command line arguments.
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		Options opts = new Options();
-		CmdLineParser parser = new CmdLineParser(GA2MLearner.class, opts);
-		Task task = null;
-		Metric metric = null;
-		try {
-			parser.parse(args);
-			task = Task.getEnum(opts.task);
-			if (opts.metric == null) {
-				metric = task.getDefaultMetric();
-			} else {
-				metric = MetricFactory.getMetric(opts.metric);
-			}
-		} catch (IllegalArgumentException e) {
-			parser.printUsage();
-			System.exit(1);
-		}
-
-		Random.getInstance().setSeed(opts.seed);
-
-		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-
-		List<IntPair> terms = new ArrayList<>();
-		BufferedReader br = new BufferedReader(new FileReader(opts.interactionsPath));
-		for (;;) {
-			String line = br.readLine();
-			if (line == null) {
-				break;
-			}
-			String[] data = line.split("\\s+");
-			IntPair term = new IntPair(Integer.parseInt(data[0]), Integer.parseInt(data[1]));
-			terms.add(term);
-		}
-		br.close();
-
-		GAM gam = PredictorReader.read(opts.inputModelPath, GAM.class);
-
-		GA2MLearner learner = new GA2MLearner();
-		learner.setBaggingIters(opts.baggingIters);
-		learner.setGAM(gam);
-		learner.setMaxNumIters(opts.maxNumIters);
-		learner.setTask(task);
-		learner.setMetric(metric);
-		learner.setLearningRate(opts.learningRate);
-		learner.setVerbose(true);
-
-		if (opts.validPath != null) {
-			Instances validSet = InstancesReader.read(opts.attPath, opts.validPath);
-			learner.setValidSet(validSet);
-		}
-
-		long start = System.currentTimeMillis();
-		learner.build(trainSet);
-		long end = System.currentTimeMillis();
-		System.out.println("Time: " + (end - start) / 1000.0);
-
-		if (opts.outputModelPath != null) {
-			PredictorWriter.write(gam, opts.outputModelPath);
-		}
 	}
 
 }

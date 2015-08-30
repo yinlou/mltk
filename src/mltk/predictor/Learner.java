@@ -24,11 +24,29 @@ import mltk.util.tuple.IntDoublePair;
  * 
  */
 public abstract class Learner {
+	
+	protected boolean verbose;
 
 	/**
-	 * Enumeration of learning tasks.
+	 * Returns <code>true</code> if we output something during the training.
 	 * 
-	 * @author Yin Lou
+	 * @return <code>true</code> if we output something during the training.
+	 */
+	public boolean isVerbose() {
+		return verbose;
+	}
+
+	/**
+	 * Sets whether we output something during the training.
+	 * 
+	 * @param verbose the switch if we output things during training.
+	 */
+	public void setVerbose(boolean verbose) {
+		this.verbose = verbose;
+	}
+	
+	/**
+	 * Enumeration of learning tasks.
 	 * 
 	 */
 	public enum Task {
@@ -276,6 +294,10 @@ public abstract class Learner {
 		return new DenseDataset(attrs, x, y, std, c);
 	}
 
+	/**
+	 * Class for sparse dataset.
+	 *
+	 */
 	protected class SparseDataset {
 
 		public int[] attrs;
@@ -297,6 +319,10 @@ public abstract class Learner {
 
 	}
 
+	/**
+	 * Class for dense dataset.
+	 *
+	 */
 	protected class DenseDataset {
 
 		public int[] attrs;

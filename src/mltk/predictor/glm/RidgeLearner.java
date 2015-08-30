@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
+import mltk.cmdline.options.LearnerWithTaskOptions;
 import mltk.core.Attribute;
 import mltk.core.Instances;
 import mltk.core.NominalAttribute;
@@ -23,19 +24,7 @@ import mltk.util.VectorUtils;
  */
 public class RidgeLearner extends Learner {
 
-	static class Options {
-
-		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
-
-		@Argument(name = "-t", description = "train set path", required = true)
-		String trainPath = null;
-
-		@Argument(name = "-o", description = "output model path")
-		String outputModelPath = null;
-
-		@Argument(name = "-g", description = "task between classification (c) and regression (r) (default: r)")
-		String task = "r";
+	static class Options extends LearnerWithTaskOptions {
 
 		@Argument(name = "-m", description = "maximum num of iterations (default: 0)")
 		int maxIter = 0;
@@ -49,11 +38,12 @@ public class RidgeLearner extends Learner {
 	 * <p>
 	 * 
 	 * <pre>
-	 * Usage: RidgeLearner
+	 * Usage: mltk.predictor.glm.RidgeLearner
 	 * -t	train set path
+	 * [-g]	task between classification (c) and regression (r) (default: r)
 	 * [-r]	attribute file path
 	 * [-o]	output model path
-	 * [-g]	task between classification (c) and regression (r) (default: r)
+	 * [-V]	verbose (default: true)
 	 * [-m]	maximum num of iterations (default: 0)
 	 * [-l]	lambda (default: 0)
 	 * </pre>
@@ -76,7 +66,7 @@ public class RidgeLearner extends Learner {
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
 
 		RidgeLearner learner = new RidgeLearner();
-		learner.setVerbose(true);
+		learner.setVerbose(opts.verbose);
 		learner.setTask(task);
 		learner.setLambda(opts.lambda);
 		learner.setMaxNumIters(opts.maxIter);
@@ -91,13 +81,10 @@ public class RidgeLearner extends Learner {
 		}
 	}
 
-	private boolean verbose;
 	private boolean fitIntercept;
 	private int maxNumIters;
 	private double epsilon;
-
 	private double lambda;
-
 	private Task task;
 
 	/**

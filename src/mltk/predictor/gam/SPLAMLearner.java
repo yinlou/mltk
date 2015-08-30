@@ -8,6 +8,7 @@ import java.util.Map;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
+import mltk.cmdline.options.LearnerWithTaskOptions;
 import mltk.core.Instances;
 import mltk.core.io.InstancesReader;
 import mltk.predictor.Learner;
@@ -30,6 +31,78 @@ import mltk.util.VectorUtils;
  * 
  */
 public class SPLAMLearner extends Learner {
+	
+	static class Options extends LearnerWithTaskOptions {
+
+		@Argument(name = "-d", description = "number of knots (default: 10)")
+		int numKnots = 10;
+
+		@Argument(name = "-m", description = "maximum number of iterations (default: 0)")
+		int maxNumIters = 0;
+		
+		@Argument(name = "-l", description = "lambda (default: 0)")
+		double lambda = 0;
+		
+		@Argument(name = "-a", description = "alpha (default: 1, i.e., SPAM model)")
+		double alpha = 1;
+
+	}
+	
+	/**
+	 * <p>
+	 * 
+	 * <pre>
+	 * Usage: mltk.predictor.gam.SPLAMLearner
+	 * -t	train set path
+	 * [-g]	task between classification (c) and regression (r) (default: r)
+	 * [-r]	attribute file path
+	 * [-o]	output model path
+	 * [-V]	verbose (default: true)
+	 * [-d]	number of knots (default: 10)
+	 * [-m]	maximum number of iterations (default: 0)
+	 * [-l]	lambda (default: 0)
+	 * [-a]	alpha (default: 1, i.e., SPAM model)
+	 * </pre>
+	 * 
+	 * </p>
+	 * 
+	 * @param args the command line arguments.
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
+		Options opts = new Options();
+		CmdLineParser parser = new CmdLineParser(SPLAMLearner.class, opts);
+		Task task = null;
+		try {
+			parser.parse(args);
+			task = Task.getEnum(opts.task);
+			if (opts.numKnots < 0) {
+				throw new IllegalArgumentException("Number of knots must be positive.");
+			}
+		} catch (IllegalArgumentException e) {
+			parser.printUsage();
+			System.exit(1);
+		}
+
+		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
+
+		SPLAMLearner learner = new SPLAMLearner();
+		learner.setNumKnots(opts.numKnots);
+		learner.setMaxNumIters(opts.maxNumIters);
+		learner.setLambda(opts.lambda);
+		learner.setAlpha(opts.alpha);
+		learner.setTask(task);
+		learner.setVerbose(opts.verbose);
+
+		long start = System.currentTimeMillis();
+		GAM gam = learner.build(trainSet);
+		long end = System.currentTimeMillis();
+		System.out.println("Time: " + (end - start) / 1000.0);
+		
+		if (opts.outputModelPath != null) {
+			PredictorWriter.write(gam, opts.outputModelPath);
+		}
+	}
 
 	static class ModelStructure {
 
@@ -66,88 +139,7 @@ public class SPLAMLearner extends Learner {
 		}
 
 	}
-	static class Options {
-
-		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
-
-		@Argument(name = "-t", description = "train set path", required = true)
-		String trainPath = null;
-
-		@Argument(name = "-o", description = "output model path")
-		String outputModelPath = null;
-
-		@Argument(name = "-g", description = "task between classification (c) and regression (r) (default: r)")
-		String task = "r";
-
-		@Argument(name = "-d", description = "number of knots (default: 10)")
-		int numKnots = 10;
-
-		@Argument(name = "-m", description = "maximum number of iterations (default: 0)")
-		int maxNumIters = 0;
-		
-		@Argument(name = "-l", description = "lambda (default: 0)")
-		double lambda = 0;
-		
-		@Argument(name = "-a", description = "alpha (default: 1, i.e., SPAM model)")
-		double alpha = 1;
-
-	}
-	/**
-	 * <p>
-	 * 
-	 * <pre>
-	 * Usage: SPLAMLearner
-	 * -t	train set path
-	 * [-r]	attribute file path
-	 * [-o]	output model path
-	 * [-g]	task between classification (c) and regression (r) (default: r)
-	 * [-d]	number of knots (default: 10)
-	 * [-m]	maximum number of iterations (default: 0)
-	 * [-l]	lambda (default: 0)
-	 * [-a]	alpha (default: 1, i.e., SPAM model)
-	 * </pre>
-	 * 
-	 * </p>
-	 * 
-	 * @param args the command line arguments.
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		Options opts = new Options();
-		CmdLineParser parser = new CmdLineParser(SPLAMLearner.class, opts);
-		Task task = null;
-		try {
-			parser.parse(args);
-			task = Task.getEnum(opts.task);
-			if (opts.numKnots < 0) {
-				throw new IllegalArgumentException("Number of knots must be positive.");
-			}
-		} catch (IllegalArgumentException e) {
-			parser.printUsage();
-			System.exit(1);
-		}
-
-		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-
-		SPLAMLearner splamLearner = new SPLAMLearner();
-		splamLearner.setNumKnots(opts.numKnots);
-		splamLearner.setMaxNumIters(opts.maxNumIters);
-		splamLearner.setLambda(opts.lambda);
-		splamLearner.setAlpha(opts.alpha);
-		splamLearner.setTask(task);
-		splamLearner.setVerbose(true);
-
-		long start = System.currentTimeMillis();
-		GAM gam = splamLearner.build(trainSet);
-		long end = System.currentTimeMillis();
-		System.out.println("Time: " + (end - start) / 1000.0);
-		
-		if (opts.outputModelPath != null) {
-			PredictorWriter.write(gam, opts.outputModelPath);
-		}
-	}
-	private boolean verbose;
+	
 	private boolean fitIntercept;
 	private boolean refit;
 	private int numKnots;

@@ -8,6 +8,7 @@ import java.util.Set;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
+import mltk.cmdline.options.LearnerWithTaskOptions;
 import mltk.core.Attribute;
 import mltk.core.DenseVector;
 import mltk.core.Instances;
@@ -28,6 +29,63 @@ import mltk.util.VectorUtils;
  * 
  */
 public class LassoLearner extends Learner {
+	
+	static class Options extends LearnerWithTaskOptions {
+
+		@Argument(name = "-m", description = "maximum num of iterations (default: 0)")
+		int maxIter = 0;
+
+		@Argument(name = "-l", description = "lambda (default: 0)")
+		double lambda = 0;
+
+	}
+
+	/**
+	 * <p>
+	 * 
+	 * <pre>
+	 * Usage: mltk.predictor.glm.LassoLearner
+	 * -t	train set path
+	 * [-g]	task between classification (c) and regression (r) (default: r)
+	 * [-r]	attribute file path
+	 * [-o]	output model path
+	 * [-V]	verbose (default: true)
+	 * [-m]	maximum num of iterations (default: 0)
+	 * [-l]	lambda (default: 0)
+	 * </pre>
+	 * 
+	 * </p>
+	 * @param args
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
+		Options opts = new Options();
+		CmdLineParser parser = new CmdLineParser(LassoLearner.class, opts);
+		Task task = null;
+		try {
+			parser.parse(args);
+			task = Task.getEnum(opts.task);
+		} catch (IllegalArgumentException e) {
+			parser.printUsage();
+			System.exit(1);
+		}
+		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
+
+		LassoLearner learner = new LassoLearner();
+		learner.setVerbose(opts.verbose);
+		learner.setTask(task);
+		learner.setLambda(opts.lambda);
+		learner.setMaxNumIters(opts.maxIter);
+
+		long start = System.currentTimeMillis();
+		GLM glm = learner.build(trainSet);
+		long end = System.currentTimeMillis();
+		System.out.println("Time: " + (end - start) / 1000.0);
+
+		if (opts.outputModelPath != null) {
+			PredictorWriter.write(glm, opts.outputModelPath);
+		}
+	}
 
 	static class ModelStructure {
 
@@ -61,83 +119,12 @@ public class LassoLearner extends Learner {
 
 	}
 
-	static class Options {
-
-		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
-
-		@Argument(name = "-t", description = "train set path", required = true)
-		String trainPath = null;
-
-		@Argument(name = "-o", description = "output model path")
-		String outputModelPath = null;
-
-		@Argument(name = "-g", description = "task between classification (c) and regression (r) (default: r)")
-		String task = "r";
-
-		@Argument(name = "-m", description = "maximum num of iterations (default: 0)")
-		int maxIter = 0;
-
-		@Argument(name = "-l", description = "lambda (default: 0)")
-		double lambda = 0;
-
-	}
-
-	/**
-	 * <p>
-	 * 
-	 * <pre>
-	 * Usage: LassoLearner
-	 * -t	train set path
-	 * [-r]	attribute file path
-	 * [-o]	output model path
-	 * [-g]	task between classification (c) and regression (r) (default: r)
-	 * [-m]	maximum num of iterations (default: 0)
-	 * [-l]	lambda (default: 0)
-	 * </pre>
-	 * 
-	 * </p>
-	 * @param args
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		Options opts = new Options();
-		CmdLineParser parser = new CmdLineParser(LassoLearner.class, opts);
-		Task task = null;
-		try {
-			parser.parse(args);
-			task = Task.getEnum(opts.task);
-		} catch (IllegalArgumentException e) {
-			parser.printUsage();
-			System.exit(1);
-		}
-		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-
-		LassoLearner learner = new LassoLearner();
-		learner.setVerbose(true);
-		learner.setTask(task);
-		learner.setLambda(opts.lambda);
-		learner.setMaxNumIters(opts.maxIter);
-
-		long start = System.currentTimeMillis();
-		GLM glm = learner.build(trainSet);
-		long end = System.currentTimeMillis();
-		System.out.println("Time: " + (end - start) / 1000.0);
-
-		if (opts.outputModelPath != null) {
-			PredictorWriter.write(glm, opts.outputModelPath);
-		}
-	}
-
-	private boolean verbose;
 	private boolean fitIntercept;
 	private boolean refit;
 	private int maxNumIters;
 	private int numLambdas;
 	private double epsilon;
-
 	private double lambda;
-
 	private Task task;
 
 	/**
@@ -1428,15 +1415,6 @@ public class LassoLearner extends Learner {
 	}
 
 	/**
-	 * Returns <code>true</code> if we output something during the training.
-	 * 
-	 * @return <code>true</code> if we output something during the training.
-	 */
-	public boolean isVerbose() {
-		return verbose;
-	}
-
-	/**
 	 * Returns <code>true</code> if we refit the model.
 	 * 
 	 * @return <code>true</code> if we refit the model.
@@ -1666,15 +1644,6 @@ public class LassoLearner extends Learner {
 	 */
 	public void setTask(Task task) {
 		this.task = task;
-	}
-
-	/**
-	 * Sets whether we output something during the training.
-	 * 
-	 * @param verbose the switch if we output things during training.
-	 */
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
 	}
 
 }

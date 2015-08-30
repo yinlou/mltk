@@ -5,6 +5,7 @@ import java.util.List;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
+import mltk.cmdline.options.HoldoutValidatedLearnerOptions;
 import mltk.core.Attribute;
 import mltk.core.Instances;
 import mltk.core.io.InstancesReader;
@@ -12,7 +13,7 @@ import mltk.predictor.BaggedEnsemble;
 import mltk.predictor.BaggedEnsembleLearner;
 import mltk.predictor.Bagging;
 import mltk.predictor.BoostedEnsemble;
-import mltk.predictor.Learner;
+import mltk.predictor.HoldoutValidatedLearner;
 import mltk.predictor.Predictor;
 import mltk.predictor.io.PredictorWriter;
 import mltk.predictor.tree.RegressionTree;
@@ -28,9 +29,8 @@ import mltk.util.StatUtils;
  * @author Yin Lou
  *
  */
-public class LSBoostLearner extends Learner {
+public class LSBoostLearner extends HoldoutValidatedLearner {
 
-	private boolean verbose;
 	private int maxNumIters;
 	private int maxNumLeaves;
 	private double learningRate;
@@ -45,24 +45,6 @@ public class LSBoostLearner extends Learner {
 		maxNumLeaves = 100;
 		learningRate = 1;
 		alpha = 1;
-	}
-
-	/**
-	 * Returns <code>true</code> if we output something during the training.
-	 *
-	 * @return <code>true</code> if we output something during the training.
-	 */
-	public boolean isVerbose() {
-		return verbose;
-	}
-
-	/**
-	 * Sets whether we output something during the training.
-	 *
-	 * @param verbose the switch if we output things during training.
-	 */
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
 	}
 
 	/**
@@ -146,23 +128,25 @@ public class LSBoostLearner extends Learner {
 		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
 		rtLearner.setMaxNumLeaves(maxNumLeaves);
 
-		double[] residualTrain = new double[trainSet.size()];
-		for (int i = 0; i < residualTrain.length; i++) {
-			residualTrain[i] = target[i];
+		double[] rTrain = new double[trainSet.size()];
+		for (int i = 0; i < rTrain.length; i++) {
+			rTrain[i] = target[i];
 		}
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			// Prepare training set
-			int[] a = perm.getPermutation();
-			for (int i = 0; i < indices.length; i++) {
-				indices[i] = a[i];
+			if (alpha < 1) {
+				int[] a = perm.getPermutation();
+				for (int i = 0; i < indices.length; i++) {
+					indices[i] = a[i];
+				}
+				Arrays.sort(indices);
+				List<Attribute> attList = trainSet.getAttributes(indices);
+				trainSet.setAttributes(attList);
 			}
-			Arrays.sort(indices);
-			List<Attribute> attList = trainSet.getAttributes(indices);
-			trainSet.setAttributes(attList);
-			for (int i = 0; i < residualTrain.length; i++) {
-				trainSet.get(i).setTarget(residualTrain[i]);
+			for (int i = 0; i < rTrain.length; i++) {
+				trainSet.get(i).setTarget(rTrain[i]);
 			}
 
 			RegressionTree rt = rtLearner.build(trainSet);
@@ -171,17 +155,19 @@ public class LSBoostLearner extends Learner {
 			}
 			brt.trees[0].add(rt);
 
-			// Restore attributes
-			trainSet.setAttributes(attributes);
+			if (alpha < 1) {
+				// Restore attributes
+				trainSet.setAttributes(attributes);
+			}
 
 			// Update residuals
-			for (int i = 0; i < residualTrain.length; i++) {
+			for (int i = 0; i < rTrain.length; i++) {
 				double pred = rt.regress(trainSet.get(i));
-				residualTrain[i] -= pred;
+				rTrain[i] -= pred;
 			}
 
 			if (verbose) {
-				double rmse = StatUtils.rms(residualTrain);
+				double rmse = StatUtils.rms(rTrain);
 				System.out.println("Iteration " + iter + ": " + rmse);
 			}
 		}
@@ -282,16 +268,7 @@ public class LSBoostLearner extends Learner {
 		return buildRegressor(instances, maxNumIters, maxNumLeaves);
 	}
 
-	static class Options {
-
-		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
-
-		@Argument(name = "-t", description = "train set path", required = true)
-		String trainPath = null;
-
-		@Argument(name = "-o", description = "output model path")
-		String outputModelPath = null;
+	class Options extends HoldoutValidatedLearnerOptions {
 
 		@Argument(name = "-c", description = "max number of leaves (default: 100)")
 		int maxNumLeaves = 100;
@@ -311,9 +288,11 @@ public class LSBoostLearner extends Learner {
 	 * <p>
 	 *
 	 * <pre>
-	 * Usage: LSBoostLearner
+	 * Usage: mltk.predictor.tree.ensemble.brt.LSBoostLearner
 	 * -t	train set path
 	 * -m	maximum number of iterations
+	 * [-v]	valid set path
+	 * [-e]	evaluation metric (default: default metric of task)
 	 * [-r]	attribute file path
 	 * [-o]	output model path
 	 * [-c]	max number of leaves (default: 100)
@@ -327,7 +306,8 @@ public class LSBoostLearner extends Learner {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		Options opts = new Options();
+		LSBoostLearner learner = new LSBoostLearner();
+		Options opts = learner.new Options();
 		CmdLineParser parser = new CmdLineParser(LSBoostLearner.class, opts);
 		try {
 			parser.parse(args);
@@ -340,14 +320,13 @@ public class LSBoostLearner extends Learner {
 
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
 
-		LSBoostLearner lsBoostLearner = new LSBoostLearner();
-		lsBoostLearner.setLearningRate(opts.learningRate);
-		lsBoostLearner.setMaxNumIters(opts.maxNumIters);
-		lsBoostLearner.setMaxNumLeaves(opts.maxNumLeaves);
-		lsBoostLearner.setVerbose(true);
+		learner.setLearningRate(opts.learningRate);
+		learner.setMaxNumIters(opts.maxNumIters);
+		learner.setMaxNumLeaves(opts.maxNumLeaves);
+		learner.setVerbose(true);
 
 		long start = System.currentTimeMillis();
-		BRT brt = lsBoostLearner.build(trainSet);
+		BRT brt = learner.build(trainSet);
 		long end = System.currentTimeMillis();
 		System.out.println("Time: " + (end - start) / 1000.0);
 

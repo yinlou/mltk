@@ -5,6 +5,7 @@ import java.util.List;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
+import mltk.cmdline.options.HoldoutValidatedLearnerWithTaskOptions;
 import mltk.core.Attribute;
 import mltk.core.BinnedAttribute;
 import mltk.core.Instance;
@@ -40,8 +41,91 @@ import mltk.util.Random;
  * 
  */
 public class GAMLearner extends HoldoutValidatedLearner {
+	
+	static class Options extends HoldoutValidatedLearnerWithTaskOptions {
 
-	private boolean verbose;
+		@Argument(name = "-b", description = "base learner (default: tr:3:100)")
+		String baseLearner = "tr:3:100";
+
+		@Argument(name = "-m", description = "maximum number of iterations", required = true)
+		int maxNumIters = -1;
+
+		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
+		long seed = 0L;
+
+		@Argument(name = "-l", description = "learning rate (default: 0.01)")
+		double learningRate = 0.01;
+
+	}
+
+	/**
+	 * <p>
+	 * 
+	 * <pre>
+	 * Usage: mltk.predictor.gam.GAMLearner
+	 * -t	train set path
+	 * -m	maximum number of iterations
+	 * [-g]	task between classification (c) and regression (r) (default: r)
+	 * [-v]	valid set path
+	 * [-e]	evaluation metric (default: default metric of task)
+	 * [-r]	attribute file path
+	 * [-o]	output model path
+	 * [-V]	verbose (default: true)
+	 * [-b]	base learner (default: tr:3:100)
+	 * [-s]	seed of the random number generator (default: 0)
+	 * [-l]	learning rate (default: 0.01)
+	 * </pre>
+	 * 
+	 * </p>
+	 * 
+	 * @param args the command line arguments.
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
+		Options opts = new Options();
+		CmdLineParser parser = new CmdLineParser(GAMLearner.class, opts);
+		Task task = null;
+		Metric metric = null;
+		try {
+			parser.parse(args);
+			task = Task.getEnum(opts.task);
+			if (opts.metric == null) {
+				metric = task.getDefaultMetric();
+			} else {
+				metric = MetricFactory.getMetric(opts.metric);
+			}
+		} catch (IllegalArgumentException e) {
+			parser.printUsage();
+			System.exit(1);
+		}
+
+		Random.getInstance().setSeed(opts.seed);
+
+		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
+
+		GAMLearner learner = new GAMLearner();
+		learner.setBaseLearner(opts.baseLearner);
+		learner.setMaxNumIters(opts.maxNumIters);
+		learner.setLearningRate(opts.learningRate);
+		learner.setTask(task);
+		learner.setMetric(metric);
+		learner.setVerbose(opts.verbose);
+
+		if (opts.validPath != null) {
+			Instances validSet = InstancesReader.read(opts.attPath, opts.validPath);
+			learner.setValidSet(validSet);
+		}
+
+		long start = System.currentTimeMillis();
+		GAM gam = learner.build(trainSet);
+		long end = System.currentTimeMillis();
+		System.out.println("Time: " + (end - start) / 1000.0);
+
+		if (opts.outputModelPath != null) {
+			PredictorWriter.write(gam, opts.outputModelPath);
+		}
+	}
+
 	private int baggingIters;
 	private int maxNumIters;
 	private int maxNumLeaves;
@@ -59,24 +143,6 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		learningRate = 1;
 		task = Task.REGRESSION;
 		metric = task.getDefaultMetric();
-	}
-
-	/**
-	 * Returns <code>true</code> if we output something during the training.
-	 * 
-	 * @return <code>true</code> if we output something during the training.
-	 */
-	public boolean isVerbose() {
-		return verbose;
-	}
-
-	/**
-	 * Sets whether we output something during the training.
-	 * 
-	 * @param verbose the switch if we output things during training.
-	 */
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
 	}
 
 	/**
@@ -688,107 +754,6 @@ public class GAMLearner extends HoldoutValidatedLearner {
 				break;
 		}
 		return gam;
-	}
-
-	static class Options {
-
-		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
-
-		@Argument(name = "-t", description = "train set path", required = true)
-		String trainPath = null;
-
-		@Argument(name = "-v", description = "valid set path")
-		String validPath = null;
-
-		@Argument(name = "-o", description = "output model path")
-		String outputModelPath = null;
-
-		@Argument(name = "-g", description = "task between classification (c) and regression (r) (default: r)")
-		String task = "r";
-		
-		@Argument(name = "-e", description = "evaluation metric (default: default metric of task)")
-		String metric = null;
-
-		@Argument(name = "-b", description = "base learner (default: tr:3:100)")
-		String baseLearner = "tr:3:100";
-
-		@Argument(name = "-m", description = "maximum number of iterations", required = true)
-		int maxNumIters = -1;
-
-		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
-		long seed = 0L;
-
-		@Argument(name = "-l", description = "learning rate (default: 0.01)")
-		double learningRate = 0.01;
-
-	}
-
-	/**
-	 * <p>
-	 * 
-	 * <pre>
-	 * Usage: GAMLearner
-	 * -t	train set path
-	 * -m	maximum number of iterations
-	 * [-r]	attribute file path
-	 * [-v]	valid set path
-	 * [-o]	output model path
-	 * [-g]	task between classification (c) and regression (r) (default: r)
-	 * [-e]	evaluation metric (default: default metric of task)
-	 * [-b]	base learner (default: tr:3:100)
-	 * [-s]	seed of the random number generator (default: 0)
-	 * [-l]	learning rate (default: 0.01)
-	 * </pre>
-	 * 
-	 * </p>
-	 * 
-	 * @param args the command line arguments.
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		Options opts = new Options();
-		CmdLineParser parser = new CmdLineParser(GAMLearner.class, opts);
-		Task task = null;
-		Metric metric = null;
-		try {
-			parser.parse(args);
-			task = Task.getEnum(opts.task);
-			if (opts.metric == null) {
-				metric = task.getDefaultMetric();
-			} else {
-				metric = MetricFactory.getMetric(opts.metric);
-			}
-		} catch (IllegalArgumentException e) {
-			parser.printUsage();
-			System.exit(1);
-		}
-
-		Random.getInstance().setSeed(opts.seed);
-
-		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-
-		GAMLearner learner = new GAMLearner();
-		learner.setBaseLearner(opts.baseLearner);
-		learner.setMaxNumIters(opts.maxNumIters);
-		learner.setLearningRate(opts.learningRate);
-		learner.setTask(task);
-		learner.setMetric(metric);
-		learner.setVerbose(true);
-
-		if (opts.validPath != null) {
-			Instances validSet = InstancesReader.read(opts.attPath, opts.validPath);
-			learner.setValidSet(validSet);
-		}
-
-		long start = System.currentTimeMillis();
-		GAM gam = learner.build(trainSet);
-		long end = System.currentTimeMillis();
-		System.out.println("Time: " + (end - start) / 1000.0);
-
-		if (opts.outputModelPath != null) {
-			PredictorWriter.write(gam, opts.outputModelPath);
-		}
 	}
 
 }

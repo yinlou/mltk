@@ -10,6 +10,7 @@ import java.util.PriorityQueue;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
+import mltk.cmdline.options.LearnerOptions;
 import mltk.core.Attribute;
 import mltk.core.Instance;
 import mltk.core.Instances;
@@ -33,6 +34,85 @@ import mltk.util.tuple.IntDoublePairComparator;
  *
  */
 public class RegressionTreeLearner extends Learner {
+	
+	static class Options extends LearnerOptions {
+
+		@Argument(name = "-m", description = "construction mode:parameter. Construction mode can be alpha limited (a), depth limited (d), number of leaves limited (l) and minimum leaf size limited (s) (default: a:0.001)")
+		String mode = "a:0.001";
+
+		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
+		long seed = 0L;
+
+	}
+	
+	/**
+	 * Trains a regression tree.
+	 *
+	 * <p>
+	 *
+	 * <pre>
+	 * Usage: mltk.predictor.tree.RegressionTreeLearner
+	 * -t	train set path
+	 * [-r]	attribute file path
+	 * [-o]	output model path
+	 * [-V]	verbose (default: true)
+	 * [-m]	construction mode:parameter. Construction mode can be alpha limited (a), depth limited (d), number of leaves limited (l) and minimum leaf size limited (s) (default: a:0.001)
+	 * [-s]	seed of the random number generator (default: 0)
+	 * </pre>
+	 *
+	 * </p>
+	 *
+	 * @param args
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
+		Options opts = new Options();
+		CmdLineParser parser = new CmdLineParser(RegressionTreeLearner.class, opts);
+		RegressionTreeLearner learner = new RegressionTreeLearner();
+		try {
+			parser.parse(args);
+			String[] data = opts.mode.split(":");
+			if (data.length != 2) {
+				throw new IllegalArgumentException();
+			}
+			switch (data[0]) {
+				case "a":
+					learner.setConstructionMode(Mode.ALPHA_LIMITED);
+					learner.setAlpha(Double.parseDouble(data[1]));
+					break;
+				case "d":
+					learner.setConstructionMode(Mode.DEPTH_LIMITED);
+					learner.setMaxDepth(Integer.parseInt(data[1]));
+					break;
+				case "l":
+					learner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
+					learner.setMaxNumLeaves(Integer.parseInt(data[1]));
+					break;
+				case "s":
+					learner.setConstructionMode(Mode.MIN_LEAF_SIZE_LIMITED);
+					learner.setMinLeafSize(Integer.parseInt(data[1]));
+				default:
+					throw new IllegalArgumentException();
+			}
+		} catch (IllegalArgumentException e) {
+			parser.printUsage();
+			System.exit(1);
+		}
+
+		Random.getInstance().setSeed(opts.seed);
+
+		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
+		Instances bag = Bagging.createBootstrapSample(trainSet);
+		long start = System.currentTimeMillis();
+		RegressionTree rt = learner.build(bag);
+		long end = System.currentTimeMillis();
+		System.out.println("Time: " + (end - start) / 1000.0 + " (s).");
+		System.out.println(Evaluator.evalRMSE(rt, trainSet));
+
+		if (opts.outputModelPath != null) {
+			PredictorWriter.write(rt, opts.outputModelPath);
+		}
+	}
 
 	/**
 	 * Enumeration of construction mode.
@@ -131,92 +211,6 @@ public class RegressionTreeLearner extends Learner {
 			}
 		}
 
-	}
-	
-	static class Options {
-
-		@Argument(name = "-r", description = "attribute file path", required = true)
-		String attPath = null;
-
-		@Argument(name = "-t", description = "train set path", required = true)
-		String trainPath = null;
-
-		@Argument(name = "-o", description = "output model path")
-		String outputModelPath = null;
-
-		@Argument(name = "-m", description = "construction mode:parameter. Construction mode can be alpha limited (a), depth limited (d), number of leaves limited (l) and minimum leaf size limited (s) (default: a:0.001)")
-		String mode = "a:0.001";
-
-		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
-		long seed = 0L;
-
-	}
-	
-	/**
-	 * Trains a regression tree.
-	 *
-	 * <p>
-	 *
-	 * <pre>
-	 * Usage: RegressionTreeLearner
-	 * -r	attribute file path
-	 * -t	train set path
-	 * [-o]	output model path
-	 * [-m]	construction mode:parameter. Construction mode can be alpha limited (a), depth limited (d), number of leaves limited (l) and minimum leaf size limited (s) (default: a:0.001)
-	 * </pre>
-	 *
-	 * </p>
-	 *
-	 * @param args
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		Options opts = new Options();
-		CmdLineParser parser = new CmdLineParser(RegressionTreeLearner.class, opts);
-		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
-		try {
-			parser.parse(args);
-			String[] data = opts.mode.split(":");
-			if (data.length != 2) {
-				throw new IllegalArgumentException();
-			}
-			switch (data[0]) {
-				case "a":
-					rtLearner.setConstructionMode(Mode.ALPHA_LIMITED);
-					rtLearner.setAlpha(Double.parseDouble(data[1]));
-					break;
-				case "d":
-					rtLearner.setConstructionMode(Mode.DEPTH_LIMITED);
-					rtLearner.setMaxDepth(Integer.parseInt(data[1]));
-					break;
-				case "l":
-					rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
-					rtLearner.setMaxNumLeaves(Integer.parseInt(data[1]));
-					break;
-				case "s":
-					rtLearner.setConstructionMode(Mode.MIN_LEAF_SIZE_LIMITED);
-					rtLearner.setMinLeafSize(Integer.parseInt(data[1]));
-				default:
-					throw new IllegalArgumentException();
-			}
-		} catch (IllegalArgumentException e) {
-			parser.printUsage();
-			System.exit(1);
-		}
-
-		Random.getInstance().setSeed(opts.seed);
-
-		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-		Instances bag = Bagging.createBootstrapSample(trainSet);
-		long start = System.currentTimeMillis();
-		RegressionTree rt = rtLearner.build(bag);
-		long end = System.currentTimeMillis();
-		System.out.println("Time: " + (end - start) / 1000.0 + " (s).");
-		System.out.println(Evaluator.evalRMSE(rt, trainSet));
-
-		if (opts.outputModelPath != null) {
-			PredictorWriter.write(rt, opts.outputModelPath);
-		}
 	}
 	
 	protected int maxDepth;

@@ -310,6 +310,9 @@ public class Discretizer {
 
 		@Argument(name = "-r", description = "attribute file path", required = true)
 		String attPath = null;
+		
+		@Argument(name = "-t", description = "training file path")
+		String trainPath = null;
 
 		@Argument(name = "-i", description = "input dataset path", required = true)
 		String inputPath = null;
@@ -325,9 +328,6 @@ public class Discretizer {
 
 		@Argument(name = "-n", description = "maximum num of bins (default: 256)")
 		int maxNumBins = 256;
-
-		@Argument(name = "-t", description = "training file path")
-		String trainPath = null;
 
 	}
 

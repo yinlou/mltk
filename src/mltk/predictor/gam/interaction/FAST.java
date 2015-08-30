@@ -94,7 +94,7 @@ public class FAST {
 	 * <p>
 	 * 
 	 * <pre>
-	 * Usage: FAST
+	 * Usage: mltk.predictor.gam.interaction.FAST
 	 * -d	dataset path
 	 * -R	residual path
 	 * -o	output path

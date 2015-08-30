@@ -7,6 +7,7 @@ import java.util.Map;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
+import mltk.cmdline.options.LearnerOptions;
 import mltk.core.Instance;
 import mltk.core.Instances;
 import mltk.core.io.InstancesReader;
@@ -160,7 +161,6 @@ public class AdditiveGrovesLearner extends Learner {
 	private int bestBaggingIters;
 	private double bestAlpha;
 
-	private boolean verbose;
 	private int numTrees;
 	private int baggingIters;
 	private double minAlpha;
@@ -259,24 +259,6 @@ public class AdditiveGrovesLearner extends Learner {
 	 */
 	public void setMinAlpha(double minAlpha) {
 		this.minAlpha = minAlpha;
-	}
-
-	/**
-	 * Returns <code>true</code> if we output something during the training.
-	 *
-	 * @return <code>true</code> if we output something during the training.
-	 */
-	public boolean isVerbose() {
-		return verbose;
-	}
-
-	/**
-	 * Sets whether we output something during the training.
-	 *
-	 * @param verbose the switch if we output things during training.
-	 */
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
 	}
 
 	/**
@@ -632,13 +614,7 @@ public class AdditiveGrovesLearner extends Learner {
 		}
 	}
 
-	static class Options {
-
-		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
-
-		@Argument(name = "-t", description = "train set path", required = true)
-		String trainPath = null;
+	static class Options extends LearnerOptions {
 
 		@Argument(name = "-v", description = "valid set path", required = true)
 		String validPath = null;
@@ -655,7 +631,7 @@ public class AdditiveGrovesLearner extends Learner {
 		@Argument(name = "-n", description = "number of trees in a grove (default: 6)")
 		int n = 6;
 
-		@Argument(name = "-a", description = "minmum alpha (default: 0.01)")
+		@Argument(name = "-a", description = "minimum alpha (default: 0.01)")
 		double a = 0.01;
 
 		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
@@ -663,6 +639,29 @@ public class AdditiveGrovesLearner extends Learner {
 
 	}
 
+	/**
+	 * <p>
+	 * 
+	 * <pre>
+	 * Usage: mltk.predictor.tree.ensemble.ag.AdditiveGrovesLearner
+	 * -t	train set path
+	 * -v	valid set path
+	 * [-r]	attribute file path
+	 * [-o]	output model path
+	 * [-V]	verbose (default: true)
+	 * [-o]	output model path
+	 * [-e]	AUC (a), RMSE (r) (default: r)
+	 * [-b]	bagging iterations (default: 60)
+	 * [-n]	number of trees in a grove (default: 6)
+	 * [-a]	minimum alpha (default: 0.01)
+	 * [-s]	seed of the random number generator (default: 0)
+	 * </pre>
+	 * 
+	 * </p>
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
 		Options opts = new Options();
 		CmdLineParser parser = new CmdLineParser(AdditiveGrovesLearner.class, opts);
@@ -689,7 +688,7 @@ public class AdditiveGrovesLearner extends Learner {
 		learner.setNumTrees(opts.n);
 		learner.setMinAlpha(opts.a);
 		learner.setMetric(metric);
-		learner.setVerbose(true);
+		learner.setVerbose(opts.verbose);
 
 		long start = System.currentTimeMillis();
 		AdditiveGroves ag = learner.buildRegressor(trainSet, validSet);

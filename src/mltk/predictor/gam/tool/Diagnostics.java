@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.tools.Diagnostic;
-
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
 import mltk.core.Instance;
@@ -69,7 +67,7 @@ public class Diagnostics {
 
 	static class Options {
 
-		@Argument(name = "-r", description = "attribute file path", required = true)
+		@Argument(name = "-r", description = "attribute file path")
 		String attPath = null;
 
 		@Argument(name = "-d", description = "dataset path", required = true)
@@ -87,11 +85,11 @@ public class Diagnostics {
 	 * <p>
 	 * 
 	 * <pre>
-	 * Usage: Diagnostics
-	 * -r	attribute file path
+	 * Usage: mltk.predictor.gam.tool.Diagnostics
 	 * -d	dataset path
 	 * -i	input model path
 	 * -o	output path
+	 * [-r]	attribute file path
 	 * </pre>
 	 * 
 	 * </p>
@@ -101,7 +99,7 @@ public class Diagnostics {
 	 */
 	public static void main(String[] args) throws Exception {
 		Options opts = new Options();
-		CmdLineParser parser = new CmdLineParser(Diagnostic.class, opts);
+		CmdLineParser parser = new CmdLineParser(Diagnostics.class, opts);
 		try {
 			parser.parse(args);
 		} catch (IllegalArgumentException e) {
@@ -109,7 +107,7 @@ public class Diagnostics {
 			System.exit(1);
 		}
 		Instances dataset = InstancesReader.read(opts.attPath, opts.datasetPath);
-		GAM gam = (GAM) PredictorReader.read(opts.inputModelPath);
+		GAM gam = PredictorReader.read(opts.inputModelPath, GAM.class);
 
 		List<Element<int[]>> list = Diagnostics.diagnose(gam, dataset);
 		Collections.sort(list);

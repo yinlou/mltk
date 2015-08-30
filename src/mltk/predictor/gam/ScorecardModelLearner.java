@@ -2,10 +2,11 @@ package mltk.predictor.gam;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
+import mltk.cmdline.options.LearnerWithTaskOptions;
 import mltk.core.Instances;
 import mltk.core.io.InstancesReader;
 import mltk.core.processor.OneHotEncoder;
-import mltk.predictor.HoldoutValidatedLearner;
+import mltk.predictor.Learner;
 import mltk.predictor.glm.GLM;
 import mltk.predictor.glm.RidgeLearner;
 import mltk.predictor.io.PredictorWriter;
@@ -18,9 +19,67 @@ import mltk.predictor.io.PredictorWriter;
  * @author Yin Lou
  *
  */
-public class ScorecardModelLearner extends HoldoutValidatedLearner {
+public class ScorecardModelLearner extends Learner {
 	
-	private boolean verbose;
+	static class Options extends LearnerWithTaskOptions {
+
+		@Argument(name = "-m", description = "maximum number of iterations", required = true)
+		int maxNumIters = -1;
+
+		@Argument(name = "-l", description = "lambda (default: 0)")
+		double lambda = 0;
+
+	}
+
+	/**
+	 * <p>
+	 * 
+	 * <pre>
+	 * Usage: mltk.predictor.gam.ScorecardModelLearner
+	 * -t	train set path
+	 * -m	maximum number of iterations
+	 * [-g]	task between classification (c) and regression (r) (default: r)
+	 * [-r]	attribute file path
+	 * [-o]	output model path
+	 * [-V]	verbose (default: true)
+	 * [-l]	lambda (default: 0)
+	 * </pre>
+	 * 
+	 * </p>
+	 * 
+	 * @param args the command line arguments.
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
+		Options opts = new Options();
+		CmdLineParser parser = new CmdLineParser(ScorecardModelLearner.class, opts);
+		Task task = null;
+		try {
+			parser.parse(args);
+			task = Task.getEnum(opts.task);
+		} catch (IllegalArgumentException e) {
+			parser.printUsage();
+			System.exit(1);
+		}
+
+		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
+
+		ScorecardModelLearner learner = new ScorecardModelLearner();
+		learner.setMaxNumIters(opts.maxNumIters);
+		learner.setLambda(opts.lambda);
+		learner.setTask(task);
+		learner.setVerbose(opts.verbose);
+
+		long start = System.currentTimeMillis();
+		GAM gam = learner.build(trainSet);
+		long end = System.currentTimeMillis();
+		System.out.println("Time: " + (end - start) / 1000.0);
+
+		if (opts.outputModelPath != null) {
+			PredictorWriter.write(gam, opts.outputModelPath);
+		}
+	}
+	
 	private int maxNumIters;
 	private double lambda;
 	private Task task;
@@ -35,25 +94,6 @@ public class ScorecardModelLearner extends HoldoutValidatedLearner {
 		encoder = new OneHotEncoder();
 		lambda = 0;
 		task = Task.REGRESSION;
-		metric = task.getDefaultMetric();
-	}
-	
-	/**
-	 * Returns <code>true</code> if we output something during the training.
-	 * 
-	 * @return <code>true</code> if we output something during the training.
-	 */
-	public boolean isVerbose() {
-		return verbose;
-	}
-
-	/**
-	 * Sets whether we output something during the training.
-	 * 
-	 * @param verbose the switch if we output things during training.
-	 */
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
 	}
 	
 	/**
@@ -160,9 +200,6 @@ public class ScorecardModelLearner extends HoldoutValidatedLearner {
 		if (maxNumIters < 0) {
 			maxNumIters = instances.dimension() * 20;
 		}
-		if (metric == null) {
-			metric = task.getDefaultMetric();
-		}
 		switch (task) {
 			case REGRESSION:
 				gam = buildRegressor(instances, maxNumIters, lambda);
@@ -174,76 +211,6 @@ public class ScorecardModelLearner extends HoldoutValidatedLearner {
 				break;
 		}
 		return gam;
-	}
-	
-	static class Options {
-
-		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
-
-		@Argument(name = "-t", description = "train set path", required = true)
-		String trainPath = null;
-
-		@Argument(name = "-o", description = "output model path")
-		String outputModelPath = null;
-
-		@Argument(name = "-g", description = "task between classification (c) and regression (r) (default: r)")
-		String task = "r";
-
-		@Argument(name = "-m", description = "maximum number of iterations", required = true)
-		int maxNumIters = -1;
-
-		@Argument(name = "-l", description = "lambda (default: 0)")
-		double lambda = 0;
-
-	}
-
-	/**
-	 * <p>
-	 * 
-	 * <pre>
-	 * Usage: ScorecardModelLearner
-	 * -t	train set path
-	 * -m	maximum number of iterations
-	 * [-r]	attribute file path
-	 * [-o]	output model path
-	 * [-g]	task between classification (c) and regression (r) (default: r)
-	 * [-l]	lambda (default: 0)
-	 * </pre>
-	 * 
-	 * </p>
-	 * 
-	 * @param args the command line arguments.
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		Options opts = new Options();
-		CmdLineParser parser = new CmdLineParser(ScorecardModelLearner.class, opts);
-		Task task = null;
-		try {
-			parser.parse(args);
-			task = Task.getEnum(opts.task);
-		} catch (IllegalArgumentException e) {
-			parser.printUsage();
-			System.exit(1);
-		}
-
-		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-
-		ScorecardModelLearner learner = new ScorecardModelLearner();
-		learner.setMaxNumIters(opts.maxNumIters);
-		learner.setLambda(opts.lambda);
-		learner.setTask(task);
-		learner.setVerbose(true);
-
-		long start = System.currentTimeMillis();
-		GAM gam = learner.build(trainSet);
-		long end = System.currentTimeMillis();
-		System.out.println("Time: " + (end - start) / 1000.0);
-
-		if (opts.outputModelPath != null) {
-			PredictorWriter.write(gam, opts.outputModelPath);
-		}
 	}
 
 }
