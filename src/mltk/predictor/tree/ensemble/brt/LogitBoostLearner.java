@@ -5,6 +5,7 @@ import java.util.List;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
+import mltk.cmdline.options.LearnerOptions;
 import mltk.core.Attribute;
 import mltk.core.Instance;
 import mltk.core.Instances;
@@ -31,8 +32,73 @@ import mltk.util.Random;
  * 
  */
 public class LogitBoostLearner extends Learner {
+	
+	static class Options extends LearnerOptions {
 
-	private boolean verbose;
+		@Argument(name = "-c", description = "max number of leaves (default: 100)")
+		int maxNumLeaves = 100;
+
+		@Argument(name = "-m", description = "maximum number of iterations", required = true)
+		int maxNumIters = -1;
+
+		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
+		long seed = 0L;
+
+		@Argument(name = "-l", description = "learning rate (default: 0.01)")
+		double learningRate = 0.01;
+
+	}
+
+	/**
+	 * <p>
+	 * 
+	 * <pre>
+	 * Usage: mltk.predictor.tree.ensemble.brt.LogitBoostLearner
+	 * -t	train set path
+	 * -m	maximum number of iterations
+	 * [-r]	attribute file path
+	 * [-o]	output model path
+	 * [-V]	verbose (default: true)
+	 * [-c]	max number of leaves (default: 100)
+	 * [-s]	seed of the random number generator (default: 0)
+	 * [-l]	learning rate (default: 0.01)
+	 * </pre>
+	 * 
+	 * </p>
+	 * 
+	 * @param args the command line arguments.
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
+		Options opts = new Options();
+		CmdLineParser parser = new CmdLineParser(LogitBoostLearner.class, opts);
+		try {
+			parser.parse(args);
+		} catch (IllegalArgumentException e) {
+			parser.printUsage();
+			System.exit(1);
+		}
+
+		Random.getInstance().setSeed(opts.seed);
+
+		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
+
+		LogitBoostLearner logitBoostLearner = new LogitBoostLearner();
+		logitBoostLearner.setLearningRate(opts.learningRate);
+		logitBoostLearner.setMaxNumIters(opts.maxNumIters);
+		logitBoostLearner.setMaxNumLeaves(opts.maxNumLeaves);
+		logitBoostLearner.setVerbose(true);
+
+		long start = System.currentTimeMillis();
+		BRT brt = logitBoostLearner.build(trainSet);
+		long end = System.currentTimeMillis();
+		System.out.println("Time: " + (end - start) / 1000.0);
+
+		if (opts.outputModelPath != null) {
+			PredictorWriter.write(brt, opts.outputModelPath);
+		}
+	}
+
 	private int maxNumIters;
 	private int maxNumLeaves;
 	private double learningRate;
@@ -47,24 +113,6 @@ public class LogitBoostLearner extends Learner {
 		maxNumLeaves = 100;
 		learningRate = 1;
 		alpha = 1;
-	}
-
-	/**
-	 * Returns <code>true</code> if we output something during the training.
-	 * 
-	 * @return <code>true</code> if we output something during the training.
-	 */
-	public boolean isVerbose() {
-		return verbose;
-	}
-
-	/**
-	 * Sets whether we output something during the training.
-	 * 
-	 * @param verbose the switch if we output things during training.
-	 */
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
 	}
 
 	/**
@@ -411,80 +459,6 @@ public class LogitBoostLearner extends Learner {
 	@Override
 	public BRT build(Instances instances) {
 		return buildClassifier(instances, maxNumIters, maxNumLeaves);
-	}
-
-	static class Options {
-
-		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
-
-		@Argument(name = "-t", description = "train set path", required = true)
-		String trainPath = null;
-
-		@Argument(name = "-o", description = "output model path")
-		String outputModelPath = null;
-
-		@Argument(name = "-c", description = "max number of leaves (default: 100)")
-		int maxNumLeaves = 100;
-
-		@Argument(name = "-m", description = "maximum number of iterations", required = true)
-		int maxNumIters = -1;
-
-		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
-		long seed = 0L;
-
-		@Argument(name = "-l", description = "learning rate (default: 0.01)")
-		double learningRate = 0.01;
-
-	}
-
-	/**
-	 * <p>
-	 * 
-	 * <pre>
-	 * Usage: LogitBoostLearner
-	 * -t	train set path
-	 * -m	maximum number of iterations
-	 * [-r]	attribute file path
-	 * [-o]	output model path
-	 * [-c]	max number of leaves (default: 100)
-	 * [-s]	seed of the random number generator (default: 0)
-	 * [-l]	learning rate (default: 0.01)
-	 * </pre>
-	 * 
-	 * </p>
-	 * 
-	 * @param args the command line arguments.
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		Options opts = new Options();
-		CmdLineParser parser = new CmdLineParser(LogitBoostLearner.class, opts);
-		try {
-			parser.parse(args);
-		} catch (IllegalArgumentException e) {
-			parser.printUsage();
-			System.exit(1);
-		}
-
-		Random.getInstance().setSeed(opts.seed);
-
-		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-
-		LogitBoostLearner logitBoostLearner = new LogitBoostLearner();
-		logitBoostLearner.setLearningRate(opts.learningRate);
-		logitBoostLearner.setMaxNumIters(opts.maxNumIters);
-		logitBoostLearner.setMaxNumLeaves(opts.maxNumLeaves);
-		logitBoostLearner.setVerbose(true);
-
-		long start = System.currentTimeMillis();
-		BRT brt = logitBoostLearner.build(trainSet);
-		long end = System.currentTimeMillis();
-		System.out.println("Time: " + (end - start) / 1000.0);
-
-		if (opts.outputModelPath != null) {
-			PredictorWriter.write(brt, opts.outputModelPath);
-		}
 	}
 
 }

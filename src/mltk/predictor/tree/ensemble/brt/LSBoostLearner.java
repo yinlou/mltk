@@ -5,7 +5,7 @@ import java.util.List;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
-import mltk.cmdline.options.HoldoutValidatedLearnerOptions;
+import mltk.cmdline.options.LearnerOptions;
 import mltk.core.Attribute;
 import mltk.core.Instances;
 import mltk.core.io.InstancesReader;
@@ -13,7 +13,7 @@ import mltk.predictor.BaggedEnsemble;
 import mltk.predictor.BaggedEnsembleLearner;
 import mltk.predictor.Bagging;
 import mltk.predictor.BoostedEnsemble;
-import mltk.predictor.HoldoutValidatedLearner;
+import mltk.predictor.Learner;
 import mltk.predictor.Predictor;
 import mltk.predictor.io.PredictorWriter;
 import mltk.predictor.tree.RegressionTree;
@@ -29,7 +29,74 @@ import mltk.util.StatUtils;
  * @author Yin Lou
  *
  */
-public class LSBoostLearner extends HoldoutValidatedLearner {
+public class LSBoostLearner extends Learner {
+	
+	class Options extends LearnerOptions {
+
+		@Argument(name = "-c", description = "max number of leaves (default: 100)")
+		int maxNumLeaves = 100;
+
+		@Argument(name = "-m", description = "maximum number of iterations", required = true)
+		int maxNumIters = -1;
+
+		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
+		long seed = 0L;
+
+		@Argument(name = "-l", description = "learning rate (default: 0.01)")
+		double learningRate = 0.01;
+
+	}
+
+	/**
+	 * <p>
+	 *
+	 * <pre>
+	 * Usage: mltk.predictor.tree.ensemble.brt.LSBoostLearner
+	 * -t	train set path
+	 * -m	maximum number of iterations
+	 * [-v]	valid set path
+	 * [-e]	evaluation metric (default: default metric of task)
+	 * [-r]	attribute file path
+	 * [-o]	output model path
+	 * [-c]	max number of leaves (default: 100)
+	 * [-s]	seed of the random number generator (default: 0)
+	 * [-l]	learning rate (default: 0.01)
+	 * </pre>
+	 *
+	 * </p>
+	 *
+	 * @param args the command line arguments.
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
+		LSBoostLearner learner = new LSBoostLearner();
+		Options opts = learner.new Options();
+		CmdLineParser parser = new CmdLineParser(LSBoostLearner.class, opts);
+		try {
+			parser.parse(args);
+		} catch (IllegalArgumentException e) {
+			parser.printUsage();
+			System.exit(1);
+		}
+
+		Random.getInstance().setSeed(opts.seed);
+
+		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
+
+		learner.setLearningRate(opts.learningRate);
+		learner.setMaxNumIters(opts.maxNumIters);
+		learner.setMaxNumLeaves(opts.maxNumLeaves);
+		learner.setVerbose(opts.verbose);
+
+		long start = System.currentTimeMillis();
+		BRT brt = learner.build(trainSet);
+		long end = System.currentTimeMillis();
+		System.out.println("Time: " + (end - start) / 1000.0);
+
+		if (opts.outputModelPath != null) {
+			PredictorWriter.write(brt, opts.outputModelPath);
+		}
+	}
 
 	private int maxNumIters;
 	private int maxNumLeaves;
@@ -266,73 +333,6 @@ public class LSBoostLearner extends HoldoutValidatedLearner {
 	@Override
 	public BRT build(Instances instances) {
 		return buildRegressor(instances, maxNumIters, maxNumLeaves);
-	}
-
-	class Options extends HoldoutValidatedLearnerOptions {
-
-		@Argument(name = "-c", description = "max number of leaves (default: 100)")
-		int maxNumLeaves = 100;
-
-		@Argument(name = "-m", description = "maximum number of iterations", required = true)
-		int maxNumIters = -1;
-
-		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
-		long seed = 0L;
-
-		@Argument(name = "-l", description = "learning rate (default: 0.01)")
-		double learningRate = 0.01;
-
-	}
-
-	/**
-	 * <p>
-	 *
-	 * <pre>
-	 * Usage: mltk.predictor.tree.ensemble.brt.LSBoostLearner
-	 * -t	train set path
-	 * -m	maximum number of iterations
-	 * [-v]	valid set path
-	 * [-e]	evaluation metric (default: default metric of task)
-	 * [-r]	attribute file path
-	 * [-o]	output model path
-	 * [-c]	max number of leaves (default: 100)
-	 * [-s]	seed of the random number generator (default: 0)
-	 * [-l]	learning rate (default: 0.01)
-	 * </pre>
-	 *
-	 * </p>
-	 *
-	 * @param args the command line arguments.
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		LSBoostLearner learner = new LSBoostLearner();
-		Options opts = learner.new Options();
-		CmdLineParser parser = new CmdLineParser(LSBoostLearner.class, opts);
-		try {
-			parser.parse(args);
-		} catch (IllegalArgumentException e) {
-			parser.printUsage();
-			System.exit(1);
-		}
-
-		Random.getInstance().setSeed(opts.seed);
-
-		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-
-		learner.setLearningRate(opts.learningRate);
-		learner.setMaxNumIters(opts.maxNumIters);
-		learner.setMaxNumLeaves(opts.maxNumLeaves);
-		learner.setVerbose(true);
-
-		long start = System.currentTimeMillis();
-		BRT brt = learner.build(trainSet);
-		long end = System.currentTimeMillis();
-		System.out.println("Time: " + (end - start) / 1000.0);
-
-		if (opts.outputModelPath != null) {
-			PredictorWriter.write(brt, opts.outputModelPath);
-		}
 	}
 
 }

@@ -30,6 +30,80 @@ import mltk.util.VectorUtils;
  * 
  */
 public class LADBoostLearner extends Learner {
+	
+	static class Options {
+
+		@Argument(name = "-r", description = "attribute file path")
+		String attPath = null;
+
+		@Argument(name = "-t", description = "train set path", required = true)
+		String trainPath = null;
+
+		@Argument(name = "-o", description = "output model path")
+		String outputModelPath = null;
+
+		@Argument(name = "-c", description = "max number of leaves (default: 100)")
+		int maxNumLeaves = 100;
+
+		@Argument(name = "-m", description = "maximum number of iterations", required = true)
+		int maxNumIters = -1;
+
+		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
+		long seed = 0L;
+
+		@Argument(name = "-l", description = "learning rate (default: 0.01)")
+		double learningRate = 0.01;
+
+	}
+
+	/**
+	 * <p>
+	 * 
+	 * <pre>
+	 * Usage: mltk.predictor.tree.ensemble.brt.LADBoostLearner
+	 * -t	train set path
+	 * -m	maximum number of iterations
+	 * [-r]	attribute file path
+	 * [-o]	output model path
+	 * [-c]	max number of leaves (default: 100)
+	 * [-s]	seed of the random number generator (default: 0)
+	 * [-l]	learning rate (default: 0.01)
+	 * </pre>
+	 * 
+	 * </p>
+	 * 
+	 * @param args the command line arguments.
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
+		Options opts = new Options();
+		CmdLineParser parser = new CmdLineParser(LADBoostLearner.class, opts);
+		try {
+			parser.parse(args);
+		} catch (IllegalArgumentException e) {
+			parser.printUsage();
+			System.exit(1);
+		}
+
+		Random.getInstance().setSeed(opts.seed);
+
+		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
+
+		LADBoostLearner ladBoostLearner = new LADBoostLearner();
+		ladBoostLearner.setLearningRate(opts.learningRate);
+		ladBoostLearner.setMaxNumIters(opts.maxNumIters);
+		ladBoostLearner.setMaxNumLeaves(opts.maxNumLeaves);
+		ladBoostLearner.setVerbose(true);
+
+		long start = System.currentTimeMillis();
+		BRT brt = ladBoostLearner.build(trainSet);
+		long end = System.currentTimeMillis();
+		System.out.println("Time: " + (end - start) / 1000.0);
+
+		if (opts.outputModelPath != null) {
+			PredictorWriter.write(brt, opts.outputModelPath);
+		}
+	}
 
 	private int maxNumIters;
 	private int maxNumLeaves;
@@ -199,80 +273,6 @@ public class LADBoostLearner extends Learner {
 	@Override
 	public BRT build(Instances instances) {
 		return build(instances, maxNumIters, maxNumLeaves);
-	}
-
-	static class Options {
-
-		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
-
-		@Argument(name = "-t", description = "train set path", required = true)
-		String trainPath = null;
-
-		@Argument(name = "-o", description = "output model path")
-		String outputModelPath = null;
-
-		@Argument(name = "-c", description = "max number of leaves (default: 100)")
-		int maxNumLeaves = 100;
-
-		@Argument(name = "-m", description = "maximum number of iterations", required = true)
-		int maxNumIters = -1;
-
-		@Argument(name = "-s", description = "seed of the random number generator (default: 0)")
-		long seed = 0L;
-
-		@Argument(name = "-l", description = "learning rate (default: 0.01)")
-		double learningRate = 0.01;
-
-	}
-
-	/**
-	 * <p>
-	 * 
-	 * <pre>
-	 * Usage: LADBoostLearner
-	 * -t	train set path
-	 * -m	maximum number of iterations
-	 * [-r]	attribute file path
-	 * [-o]	output model path
-	 * [-c]	max number of leaves (default: 100)
-	 * [-s]	seed of the random number generator (default: 0)
-	 * [-l]	learning rate (default: 0.01)
-	 * </pre>
-	 * 
-	 * </p>
-	 * 
-	 * @param args the command line arguments.
-	 * @throws Exception
-	 */
-	public static void main(String[] args) throws Exception {
-		Options opts = new Options();
-		CmdLineParser parser = new CmdLineParser(LADBoostLearner.class, opts);
-		try {
-			parser.parse(args);
-		} catch (IllegalArgumentException e) {
-			parser.printUsage();
-			System.exit(1);
-		}
-
-		Random.getInstance().setSeed(opts.seed);
-
-		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-
-		LADBoostLearner ladBoostLearner = new LADBoostLearner();
-		ladBoostLearner.setLearningRate(opts.learningRate);
-		ladBoostLearner.setMaxNumIters(opts.maxNumIters);
-		ladBoostLearner.setMaxNumLeaves(opts.maxNumLeaves);
-		ladBoostLearner.setVerbose(true);
-
-		long start = System.currentTimeMillis();
-		BRT brt = ladBoostLearner.build(trainSet);
-		long end = System.currentTimeMillis();
-		System.out.println("Time: " + (end - start) / 1000.0);
-
-		if (opts.outputModelPath != null) {
-			PredictorWriter.write(brt, opts.outputModelPath);
-		}
 	}
 
 }
