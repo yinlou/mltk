@@ -181,6 +181,8 @@ public class VectorUtils {
 				j++;
 			} else {
 				s += values1[i] * values2[j];
+				i++;
+				j++;
 			}
 		}
 		return s;
