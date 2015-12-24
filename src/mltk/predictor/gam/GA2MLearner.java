@@ -23,6 +23,7 @@ import mltk.predictor.HoldoutValidatedLearner;
 import mltk.predictor.Regressor;
 import mltk.predictor.evaluation.Metric;
 import mltk.predictor.evaluation.MetricFactory;
+import mltk.predictor.evaluation.SimpleMetric;
 import mltk.predictor.function.Array2D;
 import mltk.predictor.function.CompressionUtils;
 import mltk.predictor.function.Function2D;
@@ -331,17 +332,17 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
-			for (int k = 0; k < terms.size(); k++) {
+			for (int j = 0; j < terms.size(); j++) {
 				// Derivitive to attribute k
 				// Minimizes the loss function: log(1 + exp(-yF))
 				for (int i = 0; i < trainSet.size(); i++) {
 					trainSet.get(i).setTarget(rTrain[i]);
 				}
 
-				BoostedEnsemble boostedEnsemble = regressors.get(k);
+				BoostedEnsemble boostedEnsemble = regressors.get(j);
 
 				// Train model
-				IntPair term = terms.get(k);
+				IntPair term = terms.get(j);
 				cutter.setAttIndices(term.v1, term.v2);
 				BaggedEnsemble baggedEnsemble = learner.build(bags);
 				if (learningRate != 1) {
@@ -368,20 +369,13 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 				double measure = metric.eval(pValid, validSet);
 				measureList.add(measure);
 				if (verbose) {
-					System.out.println("Iteration " + iter + " term " + k + ": " + measure);
+					System.out.println("Iteration " + iter + " term " + j + ": " + measure);
 				}
 			}
 		}
 
 		// Search the best model on validation set
-		double bestSoFar = metric.worstValue();
-		int idx = -1;
-		for (int i = 0; i < measureList.size(); i++) {
-			if (metric.isFirstBetter(measureList.get(i), bestSoFar)) {
-				bestSoFar = measureList.get(i);
-				idx = i;
-			}
-		}
+		int idx = metric.searchBestMetricValueIndex(measureList);
 
 		// Remove trees
 		int n = idx / terms.size();
@@ -451,6 +445,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 	 * @param maxNumIters the maximum number of iterations.
 	 */
 	public void buildClassifier(GAM gam, List<IntPair> terms, Instances trainSet, int maxNumIters) {
+		SimpleMetric simpleMetric = (SimpleMetric) metric;
 		List<BoostedEnsemble> regressors = new ArrayList<>();
 		int[] indices = new int[terms.size()];
 		for (int i = 0; i < indices.length; i++) {
@@ -481,17 +476,17 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
-			for (int k = 0; k < terms.size(); k++) {
+			for (int j = 0; j < terms.size(); j++) {
 				// Derivitive to attribute k
 				// Minimizes the loss function: log(1 + exp(-yF))
 				for (int i = 0; i < trainSet.size(); i++) {
 					trainSet.get(i).setTarget(rTrain[i]);
 				}
 
-				BoostedEnsemble boostedEnsemble = regressors.get(k);
+				BoostedEnsemble boostedEnsemble = regressors.get(j);
 
 				// Train model
-				IntPair term = terms.get(k);
+				IntPair term = terms.get(j);
 				cutter.setAttIndices(term.v1, term.v2);
 				BaggedEnsemble baggedEnsemble = learner.build(bags);
 				if (learningRate != 1) {
@@ -510,9 +505,9 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 					rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], target[i]);
 				}
 
-				double measure = metric.eval(pTrain, target);
+				double measure = simpleMetric.eval(pTrain, target);
 				if (verbose) {
-					System.out.println("Iteration " + iter + " term " + k + ": " + measure);
+					System.out.println("Iteration " + iter + " term " + j + ": " + measure);
 				}
 			}
 		}
@@ -610,16 +605,16 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
-			for (int k = 0; k < terms.size(); k++) {
+			for (int j = 0; j < terms.size(); j++) {
 				// Derivative to attribute k
 				// Equivalent to residual
-				BoostedEnsemble boostedEnsemble = regressors.get(k);
+				BoostedEnsemble boostedEnsemble = regressors.get(j);
 				// Prepare training set
 				for (int i = 0; i < rTrain.length; i++) {
 					trainSet.get(i).setTarget(rTrain[i]);
 				}
 				// Train model
-				IntPair term = terms.get(k);
+				IntPair term = terms.get(j);
 				cutter.setAttIndices(term.v1, term.v2);
 				BaggedEnsemble baggedEnsemble = learner.build(bags);
 				if (learningRate != 1) {
@@ -646,20 +641,13 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 				double measure = metric.eval(pValid, validSet);
 				measureList.add(measure);
 				if (verbose) {
-					System.out.println("Iteration " + iter + " term " + k + ":" + measure);
+					System.out.println("Iteration " + iter + " term " + j + ":" + measure);
 				}
 			}
 		}
 
 		// Search the best model on validation set
-		double bestSoFar = metric.worstValue();
-		int idx = -1;
-		for (int i = 0; i < measureList.size(); i++) {
-			if (metric.isFirstBetter(measureList.get(i), bestSoFar)) {
-				bestSoFar = measureList.get(i);
-				idx = i;
-			}
-		}
+		int idx = metric.searchBestMetricValueIndex(measureList);
 
 		// Remove trees
 		int n = idx / terms.size();
@@ -729,6 +717,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 	 * @param maxNumIters the maximum number of iterations.
 	 */
 	public void buildRegressor(GAM gam, List<IntPair> terms, Instances trainSet, int maxNumIters) {
+		SimpleMetric simpleMetric = (SimpleMetric) metric;
 		List<BoostedEnsemble> regressors = new ArrayList<>();
 		int[] indices = new int[terms.size()];
 		for (int i = 0; i < indices.length; i++) {
@@ -759,16 +748,16 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
-			for (int k = 0; k < terms.size(); k++) {
+			for (int j = 0; j < terms.size(); j++) {
 				// Derivative to attribute k
 				// Equivalent to residual
-				BoostedEnsemble boostedEnsemble = regressors.get(k);
+				BoostedEnsemble boostedEnsemble = regressors.get(j);
 				// Prepare training set
 				for (int i = 0; i < rTrain.length; i++) {
 					trainSet.get(i).setTarget(rTrain[i]);
 				}
 				// Train model
-				IntPair term = terms.get(k);
+				IntPair term = terms.get(j);
 				cutter.setAttIndices(term.v1, term.v2);
 				BaggedEnsemble baggedEnsemble = learner.build(bags);
 				if (learningRate != 1) {
@@ -780,15 +769,15 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 				boostedEnsemble.add(baggedEnsemble);
 
 				// Update residuals
-				for (int j = 0; j < rTrain.length; j++) {
-					Instance instance = trainSet.get(j);
+				for (int i = 0; i < rTrain.length; i++) {
+					Instance instance = trainSet.get(i);
 					double pred = baggedEnsemble.regress(instance);
-					rTrain[j] -= pred;
+					rTrain[i] -= pred;
 				}
 
-				double measure = metric.eval(pTrain, target);
+				double measure = simpleMetric.eval(pTrain, target);
 				if (verbose) {
-					System.out.println("Iteration " + iter + " term " + k + ":" + measure);
+					System.out.println("Iteration " + iter + " term " + j + ":" + measure);
 				}
 			}
 		}

@@ -21,6 +21,7 @@ import mltk.predictor.HoldoutValidatedLearner;
 import mltk.predictor.Regressor;
 import mltk.predictor.evaluation.Metric;
 import mltk.predictor.evaluation.MetricFactory;
+import mltk.predictor.evaluation.SimpleMetric;
 import mltk.predictor.function.CompressionUtils;
 import mltk.predictor.function.Function1D;
 import mltk.predictor.function.LineCutter;
@@ -297,25 +298,22 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
-			for (int k = 0; k < attributes.size(); k++) {
+			for (int j = 0; j < attributes.size(); j++) {
 				// Derivitive to attribute k
 				// Minimizes the loss function: log(1 + exp(-yF))
 				for (int i = 0; i < trainSet.size(); i++) {
 					trainSet.get(i).setTarget(rTrain[i]);
 				}
 
-				BoostedEnsemble boostedEnsemble = regressors.get(k);
+				BoostedEnsemble boostedEnsemble = regressors.get(j);
 
 				// Train model
-				lineCutter.setAttributeIndex(k);
+				lineCutter.setAttributeIndex(j);
 				BaggedEnsemble baggedEnsemble = learner.build(bags);
+				Function1D func = CompressionUtils.compress(attributes.get(j).getIndex(), baggedEnsemble);
 				if (learningRate != 1) {
-					for (int i = 0; i < baggedEnsemble.size(); i++) {
-						Function1D func = (Function1D) baggedEnsemble.get(i);
-						func.multiply(learningRate);
-					}
+					func.multiply(learningRate);
 				}
-				Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
 				boostedEnsemble.add(func);
 				baggedEnsemble = null;
 
@@ -335,20 +333,13 @@ public class GAMLearner extends HoldoutValidatedLearner {
 				double measure = metric.eval(pValid, validSet);
 				measureList.add(measure);
 				if (verbose) {
-					System.out.println("Iteration " + iter + " Feature " + k + ": " + measure);
+					System.out.println("Iteration " + iter + " Feature " + j + ": " + measure);
 				}
 			}
 		}
 
 		// Search the best model on validation set
-		double bestSoFar = metric.worstValue();
-		int idx = -1;
-		for (int i = 0; i < measureList.size(); i++) {
-			if (metric.isFirstBetter(measureList.get(i), bestSoFar)) {
-				bestSoFar = measureList.get(i);
-				idx = i;
-			}
-		}
+		int idx = metric.searchBestMetricValueIndex(measureList);
 
 		// Remove trees
 		int n = idx / attributes.size();
@@ -398,6 +389,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	 */
 	public GAM buildClassifier(Instances trainSet, int maxNumIters, int maxNumLeaves) {
 		GAM gam = new GAM();
+		SimpleMetric simpleMetric = (SimpleMetric) metric;
 
 		// Backup targets
 		double[] target = new double[trainSet.size()];
@@ -425,25 +417,22 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
-			for (int k = 0; k < attributes.size(); k++) {
+			for (int j = 0; j < attributes.size(); j++) {
 				// Derivitive to attribute k
 				// Minimizes the loss function: log(1 + exp(-yF))
 				for (int i = 0; i < trainSet.size(); i++) {
 					trainSet.get(i).setTarget(rTrain[i]);
 				}
 
-				BoostedEnsemble boostedEnsemble = regressors.get(k);
+				BoostedEnsemble boostedEnsemble = regressors.get(j);
 
 				// Train model
-				lineCutter.setAttributeIndex(k);
+				lineCutter.setAttributeIndex(j);
 				BaggedEnsemble baggedEnsemble = learner.build(bags);
+				Function1D func = CompressionUtils.compress(attributes.get(j).getIndex(), baggedEnsemble);
 				if (learningRate != 1) {
-					for (int i = 0; i < baggedEnsemble.size(); i++) {
-						Function1D func = (Function1D) baggedEnsemble.get(i);
-						func.multiply(learningRate);
-					}
+					func.multiply(learningRate);
 				}
-				Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
 				boostedEnsemble.add(func);
 				baggedEnsemble = null;
 
@@ -455,9 +444,9 @@ public class GAMLearner extends HoldoutValidatedLearner {
 					rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], target[i]);
 				}
 
-				double measure = metric.eval(pTrain, target);
+				double measure = simpleMetric.eval(pTrain, target);
 				if (verbose) {
-					System.out.println("Iteration " + iter + " Feature " + k + ": " + measure);
+					System.out.println("Iteration " + iter + " Feature " + j + ": " + measure);
 				}
 			}
 		}
@@ -535,24 +524,21 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
-			for (int k = 0; k < attributes.size(); k++) {
+			for (int j = 0; j < attributes.size(); j++) {
 				// Derivative to attribute k
 				// Equivalent to residual
-				BoostedEnsemble boostedEnsemble = regressors.get(k);
+				BoostedEnsemble boostedEnsemble = regressors.get(j);
 				// Prepare training set
 				for (int i = 0; i < rTrain.length; i++) {
 					trainSet.get(i).setTarget(rTrain[i]);
 				}
 				// Train model
-				lineCutter.setAttributeIndex(k);
+				lineCutter.setAttributeIndex(j);
 				BaggedEnsemble baggedEnsemble = learner.build(bags);
+				Function1D func = CompressionUtils.compress(attributes.get(j).getIndex(), baggedEnsemble);
 				if (learningRate != 1) {
-					for (int i = 0; i < baggedEnsemble.size(); i++) {
-						Function1D func = (Function1D) baggedEnsemble.get(i);
-						func.multiply(learningRate);
-					}
+					func.multiply(learningRate);
 				}
-				Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
 				boostedEnsemble.add(func);
 				baggedEnsemble = null;
 
@@ -572,20 +558,13 @@ public class GAMLearner extends HoldoutValidatedLearner {
 				double measure = metric.eval(pValid, validSet);
 				measureList.add(measure);
 				if (verbose) {
-					System.out.println("Iteration " + iter + " Feature " + k + ": " + measure);
+					System.out.println("Iteration " + iter + " Feature " + j + ": " + measure);
 				}
 			}
 		}
 
 		// Search the best model on validation set
-		double bestSoFar = metric.worstValue();
-		int idx = -1;
-		for (int i = 0; i < measureList.size(); i++) {
-			if (metric.isFirstBetter(measureList.get(i), bestSoFar)) {
-				bestSoFar = measureList.get(i);
-				idx = i;
-			}
-		}
+		int idx = metric.searchBestMetricValueIndex(measureList);
 
 		// Prune tree ensembles
 		int n = idx / attributes.size();
@@ -635,6 +614,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	 */
 	public GAM buildRegressor(Instances trainSet, int maxNumIters, int maxNumLeaves) {
 		GAM gam = new GAM();
+		SimpleMetric simpleMetric = (SimpleMetric) metric;
 
 		List<Attribute> attributes = trainSet.getAttributes();
 		List<BoostedEnsemble> regressors = new ArrayList<>(attributes.size());
@@ -665,24 +645,21 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
-			for (int k = 0; k < attributes.size(); k++) {
+			for (int j = 0; j < attributes.size(); j++) {
 				// Derivative to attribute k
 				// Equivalent to residual
-				BoostedEnsemble boostedEnsemble = regressors.get(k);
+				BoostedEnsemble boostedEnsemble = regressors.get(j);
 				// Prepare training set
 				for (int i = 0; i < rTrain.length; i++) {
 					trainSet.get(i).setTarget(rTrain[i]);
 				}
 				// Train model
-				lineCutter.setAttributeIndex(k);
+				lineCutter.setAttributeIndex(j);
 				BaggedEnsemble baggedEnsemble = learner.build(bags);
+				Function1D func = CompressionUtils.compress(attributes.get(j).getIndex(), baggedEnsemble);
 				if (learningRate != 1) {
-					for (int i = 0; i < baggedEnsemble.size(); i++) {
-						Function1D func = (Function1D) baggedEnsemble.get(i);
-						func.multiply(learningRate);
-					}
+					func.multiply(learningRate);
 				}
-				Function1D func = CompressionUtils.compress(attributes.get(k).getIndex(), baggedEnsemble);
 				boostedEnsemble.add(func);
 				baggedEnsemble = null;
 
@@ -694,9 +671,9 @@ public class GAMLearner extends HoldoutValidatedLearner {
 					rTrain[i] -= pred;
 				}
 
-				double measure = metric.eval(pTrain, target);
+				double measure = simpleMetric.eval(pTrain, target);
 				if (verbose) {
-					System.out.println("Iteration " + iter + " Feature " + k + ": " + measure);
+					System.out.println("Iteration " + iter + " Feature " + j + ": " + measure);
 				}
 			}
 		}

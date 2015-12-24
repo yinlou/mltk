@@ -1,6 +1,9 @@
 package mltk.predictor.evaluation;
 
+import java.util.List;
+
 import mltk.core.Instances;
+import mltk.util.MathUtils;
 
 /**
  * Class for evaluation metrics.
@@ -20,6 +23,15 @@ public abstract class Metric {
 	public Metric(boolean isLargerBetter) {
 		this.isLargerBetter = isLargerBetter;
 	}
+	
+	/**
+	 * Returns <code>true</code> if larger value is better for this metric.
+	 * 
+	 * @return <code>true</code> if larger value is better for this metric.
+	 */
+	public boolean isLargerBetter() {
+		return isLargerBetter;
+	}
 
 	/**
 	 * Returns <code>true</code> if the first value is better.
@@ -29,13 +41,14 @@ public abstract class Metric {
 	 * @return <code>true</code> if the first value is better.
 	 */
 	public boolean isFirstBetter(double a, double b) {
-		if (isLargerBetter) {
-			return a > b;
-		} else {
-			return a < b;
-		}
+		return MathUtils.isFirstBetter(a, b, isLargerBetter);
 	}
 	
+	/**
+	 * Returns the worst value of this metric.
+	 * 
+	 * @return the worst value of this metric.
+	 */
 	public double worstValue() {
 		if (isLargerBetter) {
 			return Double.NEGATIVE_INFINITY;
@@ -52,14 +65,23 @@ public abstract class Metric {
 	 * @return the evaluation measure.
 	 */
 	public abstract double eval(double[] preds, Instances instances);
-
+	
 	/**
-	 * Evaluates predictions given targets.
+	 * Returns the index of best metric value in a list.
 	 * 
-	 * @param preds the predictions.
-	 * @param targets the targets.
-	 * @return the evaluation measure.
+	 * @param list the list of metric values.
+	 * @return the index of best metric value in a list.
 	 */
-	public abstract double eval(double[] preds, double[] targets);
+	public int searchBestMetricValueIndex(List<Double> list) {
+		double bestSoFar = worstValue();
+		int idx = -1;
+		for (int i = 0; i < list.size(); i++) {
+			if (isFirstBetter(list.get(i), bestSoFar)) {
+				bestSoFar = list.get(i);
+				idx = i;
+			}
+		}
+		return idx;
+	}
 
 }

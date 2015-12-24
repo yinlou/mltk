@@ -8,7 +8,7 @@ import mltk.core.Instances;
  * @author Yin Lou
  *
  */
-public class Error extends Metric {
+public class Error extends SimpleMetric {
 
 	/**
 	 * Constructor.

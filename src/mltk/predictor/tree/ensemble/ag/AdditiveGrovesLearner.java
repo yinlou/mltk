@@ -14,8 +14,8 @@ import mltk.core.io.InstancesReader;
 import mltk.predictor.Sampling;
 import mltk.predictor.Learner;
 import mltk.predictor.evaluation.AUC;
-import mltk.predictor.evaluation.Metric;
 import mltk.predictor.evaluation.RMSE;
+import mltk.predictor.evaluation.SimpleMetric;
 import mltk.predictor.io.PredictorWriter;
 import mltk.predictor.tree.RegressionTree;
 import mltk.predictor.tree.RegressionTreeLearner;
@@ -88,7 +88,7 @@ public class AdditiveGrovesLearner extends Learner {
 	public static void main(String[] args) throws Exception {
 		Options opts = new Options();
 		CmdLineParser parser = new CmdLineParser(AdditiveGrovesLearner.class, opts);
-		Metric metric = null;
+		SimpleMetric metric = null;
 		try {
 			parser.parse(args);
 			if ("rmse".startsWith(opts.metric)) {
@@ -125,10 +125,10 @@ public class AdditiveGrovesLearner extends Learner {
 
 	class PerformanceMatrix {
 
-		Metric metric;
+		SimpleMetric metric;
 		double[][][] perf;
 
-		PerformanceMatrix(int maxNumTrees, int numAlphas, int baggingIters, Metric metric) {
+		PerformanceMatrix(int maxNumTrees, int numAlphas, int baggingIters, SimpleMetric metric) {
 			perf = new double[maxNumTrees][numAlphas][baggingIters];
 			this.metric = metric;
 		}
@@ -250,7 +250,7 @@ public class AdditiveGrovesLearner extends Learner {
 	private int numTrees;
 	private int baggingIters;
 	private double minAlpha;
-	private Metric metric;
+	private SimpleMetric metric;
 
 	/**
 	 * Constructor.
@@ -268,7 +268,7 @@ public class AdditiveGrovesLearner extends Learner {
 	 * 
 	 * @return the metric.
 	 */
-	public Metric getMetric() {
+	public SimpleMetric getMetric() {
 		return metric;
 	}
 
@@ -278,7 +278,7 @@ public class AdditiveGrovesLearner extends Learner {
 	 * 
 	 * @param metric the metric.
 	 */
-	public void setMetric(Metric metric) {
+	public void setMetric(SimpleMetric metric) {
 		if (metric instanceof RMSE || metric instanceof AUC) {
 			this.metric = metric;
 		}

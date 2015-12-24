@@ -8,7 +8,7 @@ import mltk.core.Instances;
  * @author Yin Lou
  *
  */
-public class RMSE extends Metric {
+public class RMSE extends SimpleMetric {
 
 	/**
 	 * Constructor.

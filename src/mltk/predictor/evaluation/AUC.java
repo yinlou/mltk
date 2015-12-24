@@ -12,7 +12,7 @@ import mltk.util.tuple.DoublePair;
  * @author Yin Lou
  *
  */
-public class AUC extends Metric {
+public class AUC extends SimpleMetric {
 
 	private class DoublePairComparator implements Comparator<DoublePair> {
 
