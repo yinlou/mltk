@@ -15,7 +15,7 @@ import mltk.core.Attribute.Type;
 import mltk.core.io.InstancesReader;
 import mltk.predictor.BaggedEnsemble;
 import mltk.predictor.BaggedEnsembleLearner;
-import mltk.predictor.Bagging;
+import mltk.predictor.Sampling;
 import mltk.predictor.BoostedEnsemble;
 import mltk.predictor.HoldoutValidatedLearner;
 import mltk.predictor.Regressor;
@@ -281,7 +281,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		}
 
 		// Create bags
-		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
+		Instances[] bags = Sampling.createBags(trainSet, baggingIters);
 
 		LineCutter lineCutter = new LineCutter(true);
 		lineCutter.setNumIntervals(maxNumLeaves);
@@ -412,7 +412,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		}
 
 		// Create bags
-		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
+		Instances[] bags = Sampling.createBags(trainSet, baggingIters);
 
 		LineCutter lineCutter = new LineCutter(true);
 		lineCutter.setNumIntervals(maxNumLeaves);
@@ -512,7 +512,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		}
 
 		// Create bags
-		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
+		Instances[] bags = Sampling.createBags(trainSet, baggingIters);
 
 		LineCutter lineCutter = new LineCutter();
 		lineCutter.setNumIntervals(maxNumLeaves);
@@ -649,7 +649,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		}
 
 		// Create bags
-		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
+		Instances[] bags = Sampling.createBags(trainSet, baggingIters);
 
 		LineCutter lineCutter = new LineCutter();
 		lineCutter.setNumIntervals(maxNumLeaves);

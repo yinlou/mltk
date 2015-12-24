@@ -5,7 +5,7 @@ import mltk.cmdline.CmdLineParser;
 import mltk.cmdline.options.LearnerOptions;
 import mltk.core.Instances;
 import mltk.core.io.InstancesReader;
-import mltk.predictor.Bagging;
+import mltk.predictor.Sampling;
 import mltk.predictor.Learner;
 import mltk.predictor.io.PredictorWriter;
 import mltk.predictor.tree.RegressionTreeLearner;
@@ -114,7 +114,7 @@ public class RandomForestLearner extends Learner {
 	@Override
 	public RandomForest build(Instances instances) {
 		// Create bags
-		Instances[] bags = Bagging.createBags(instances, baggingIters);
+		Instances[] bags = Sampling.createBags(instances, baggingIters);
 		
 		RandomForest rf = new RandomForest(baggingIters);
 		for (Instances bag : bags) {

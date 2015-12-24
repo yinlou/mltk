@@ -82,7 +82,7 @@ public class BaggedEnsembleLearner extends Learner {
 	@Override
 	public BaggedEnsemble build(Instances instances) {
 		// Create bags
-		bags = Bagging.createBags(instances, baggingIters);
+		bags = Sampling.createBags(instances, baggingIters);
 
 		BaggedEnsemble baggedEnsemble = new BaggedEnsemble(bags.length);
 		for (Instances bag : bags) {

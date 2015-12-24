@@ -11,7 +11,7 @@ import mltk.core.Instances;
 import mltk.core.io.InstancesReader;
 import mltk.predictor.BaggedEnsemble;
 import mltk.predictor.BaggedEnsembleLearner;
-import mltk.predictor.Bagging;
+import mltk.predictor.Sampling;
 import mltk.predictor.BoostedEnsemble;
 import mltk.predictor.Learner;
 import mltk.predictor.Predictor;
@@ -272,7 +272,7 @@ public class LSBoostLearner extends Learner {
 		}
 
 		// Create bags
-		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
+		Instances[] bags = Sampling.createBags(trainSet, baggingIters);
 
 		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
 		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);

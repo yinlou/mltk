@@ -17,7 +17,7 @@ import mltk.core.Attribute.Type;
 import mltk.core.io.InstancesReader;
 import mltk.predictor.BaggedEnsemble;
 import mltk.predictor.BaggedEnsembleLearner;
-import mltk.predictor.Bagging;
+import mltk.predictor.Sampling;
 import mltk.predictor.BoostedEnsemble;
 import mltk.predictor.HoldoutValidatedLearner;
 import mltk.predictor.Regressor;
@@ -307,7 +307,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		}
 
 		// Create bags
-		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
+		Instances[] bags = Sampling.createBags(trainSet, baggingIters);
 		SquareCutter cutter = new SquareCutter(true);
 		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(bags.length, cutter);
 
@@ -465,7 +465,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		}
 
 		// Create bags
-		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
+		Instances[] bags = Sampling.createBags(trainSet, baggingIters);
 		SquareCutter cutter = new SquareCutter(true);
 		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(bags.length, cutter);
 
@@ -587,7 +587,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		}
 
 		// Create bags
-		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
+		Instances[] bags = Sampling.createBags(trainSet, baggingIters);
 
 		SquareCutter cutter = new SquareCutter();
 		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(baggingIters, cutter);
@@ -743,7 +743,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		}
 
 		// Create bags
-		Instances[] bags = Bagging.createBags(trainSet, baggingIters);
+		Instances[] bags = Sampling.createBags(trainSet, baggingIters);
 
 		SquareCutter cutter = new SquareCutter();
 		BaggedEnsembleLearner learner = new BaggedEnsembleLearner(baggingIters, cutter);

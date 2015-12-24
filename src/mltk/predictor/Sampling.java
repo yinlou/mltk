@@ -10,12 +10,12 @@ import mltk.predictor.evaluation.Metric;
 import mltk.util.Random;
 
 /**
- * Class for creating bootstrap samples.
+ * Class for creating samples.
  * 
  * @author Yin Lou
  * 
  */
-public class Bagging {
+public class Sampling {
 
 	/**
 	 * Returns a bootstrap sample.
@@ -89,7 +89,7 @@ public class Bagging {
 		} else {
 			bags = new Instances[baggingIter];
 			for (int i = 0; i < baggingIter; i++) {
-				bags[i] = Bagging.createBootstrapSample(instances);
+				bags[i] = Sampling.createBootstrapSample(instances);
 			}
 		}
 		return bags;
@@ -121,39 +121,6 @@ public class Bagging {
 		double relImprov;
 		if (metric.isFirstBetter(p[bn - 1], p[bn - 21])) {
 			relImprov = Math.abs(p[bn - 21] - p[bn - 1]) / p[bn - 21];
-		} else {
-			// Overfitting
-			relImprov = Double.NaN;
-		}
-		return relMaxMin < 0.02 && (Double.isNaN(relImprov) || relImprov < 0.005);
-	}
-
-	/**
-	 * Returns <code>true</code> if the bagging converges.
-	 *
-	 * @param p the performance list for each iteration of bagging.
-	 * @return <code>true</code> if the bagging converges.
-	 */
-	public static boolean analyzeBagging(List<Double> p, Metric metric) {
-		if (p.size() <= 20) {
-			return false;
-		}
-
-		final int bn = p.size();
-		double bestPerf = p.get(bn - 1);
-		double worstPerf = p.get(bn - 20);
-		for (int i = bn - 20; i < bn; i++) {
-			if (metric.isFirstBetter(p.get(i), bestPerf)) {
-				bestPerf = p.get(i);
-			}
-			if (!metric.isFirstBetter(p.get(i), worstPerf)) {
-				worstPerf = p.get(i);
-			}
-		}
-		double relMaxMin = Math.abs(worstPerf - bestPerf) / worstPerf;
-		double relImprov;
-		if (metric.isFirstBetter(p.get(bn - 1), p.get(bn - 21))) {
-			relImprov = Math.abs(p.get(bn - 21) - p.get(bn - 1)) / p.get(bn - 21);
 		} else {
 			// Overfitting
 			relImprov = Double.NaN;

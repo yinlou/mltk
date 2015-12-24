@@ -11,7 +11,7 @@ import mltk.cmdline.options.LearnerOptions;
 import mltk.core.Instance;
 import mltk.core.Instances;
 import mltk.core.io.InstancesReader;
-import mltk.predictor.Bagging;
+import mltk.predictor.Sampling;
 import mltk.predictor.Learner;
 import mltk.predictor.evaluation.AUC;
 import mltk.predictor.evaluation.Metric;
@@ -187,7 +187,7 @@ public class AdditiveGrovesLearner extends Learner {
 		 * @return <code>true</code> if the bagging converges.
 		 */
 		boolean analyzeBagging(int t, int a) {
-			return Bagging.analyzeBagging(perf[t][a], metric);
+			return Sampling.analyzeBagging(perf[t][a], metric);
 		}
 
 	}
@@ -569,7 +569,7 @@ public class AdditiveGrovesLearner extends Learner {
 			double[] residualTrain) {
 		Map<Integer, Integer> bagIndices = new HashMap<>();
 		List<Integer> oobIndices = new ArrayList<>();
-		Bagging.createBootstrapSample(trainSet, bagIndices, oobIndices);
+		Sampling.createBootstrapSample(trainSet, bagIndices, oobIndices);
 		Instances bag = new Instances(trainSet.getAttributes(), trainSet.getTargetAttribute(), bagIndices.size());
 		for (Integer idx : bagIndices.keySet()) {
 			int weight = bagIndices.get(idx);
