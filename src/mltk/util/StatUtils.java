@@ -223,14 +223,13 @@ public class StatUtils {
 	 * @return the variance.
 	 */
 	public static double variance(double[] a, int n) {
+		double avg = mean(a, n);
 		double sq = 0.0;
-		double avg = 0.0;
 		for (double v : a) {
-			sq += v * v;
-			avg += v;
+			double d = v - avg;
+			sq += d * d;
 		}
-		avg /= n;
-		return sq / (n - 1.0) - avg * avg * n / (n - 1.0);
+		return sq / (n - 1.0);
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package mltk.predictor;
 
 import mltk.core.Instances;
+import mltk.core.Sampling;
 
 /**
  * Class for learning bagged ensembles.

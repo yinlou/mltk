@@ -1,12 +1,9 @@
-package mltk.predictor;
+package mltk.core;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mltk.core.Instance;
-import mltk.core.Instances;
-import mltk.predictor.evaluation.Metric;
 import mltk.util.Random;
 
 /**
@@ -93,39 +90,6 @@ public class Sampling {
 			}
 		}
 		return bags;
-	}
-	
-	/**
-	 * Returns <code>true</code> if the bagging converges.
-	 *
-	 * @param p the performance vector for each iteration of bagging.
-	 * @return <code>true</code> if the bagging converges.
-	 */
-	public static boolean analyzeBagging(double[] p, Metric metric) {
-		final int bn = p.length;
-		if (p.length <= 20) {
-			return false;
-		}
-
-		double bestPerf = p[bn - 1];
-		double worstPerf = p[bn - 20];
-		for (int i = bn - 20; i < bn; i++) {
-			if (metric.isFirstBetter(p[i], bestPerf)) {
-				bestPerf = p[i];
-			}
-			if (!metric.isFirstBetter(p[i], worstPerf)) {
-				worstPerf = p[i];
-			}
-		}
-		double relMaxMin = Math.abs(worstPerf - bestPerf) / worstPerf;
-		double relImprov;
-		if (metric.isFirstBetter(p[bn - 1], p[bn - 21])) {
-			relImprov = Math.abs(p[bn - 21] - p[bn - 1]) / p[bn - 21];
-		} else {
-			// Overfitting
-			relImprov = Double.NaN;
-		}
-		return relMaxMin < 0.02 && (Double.isNaN(relImprov) || relImprov < 0.005);
 	}
 
 }

@@ -10,8 +10,8 @@ import mltk.cmdline.CmdLineParser;
 import mltk.cmdline.options.LearnerOptions;
 import mltk.core.Instance;
 import mltk.core.Instances;
+import mltk.core.Sampling;
 import mltk.core.io.InstancesReader;
-import mltk.predictor.Sampling;
 import mltk.predictor.Learner;
 import mltk.predictor.evaluation.AUC;
 import mltk.predictor.evaluation.RMSE;
@@ -20,6 +20,7 @@ import mltk.predictor.io.PredictorWriter;
 import mltk.predictor.tree.RegressionTree;
 import mltk.predictor.tree.RegressionTreeLearner;
 import mltk.predictor.tree.RegressionTreeLearner.Mode;
+import mltk.util.OptimUtils;
 import mltk.util.Random;
 import mltk.util.tuple.IntPair;
 
@@ -187,7 +188,7 @@ public class AdditiveGrovesLearner extends Learner {
 		 * @return <code>true</code> if the bagging converges.
 		 */
 		boolean analyzeBagging(int t, int a) {
-			return Sampling.analyzeBagging(perf[t][a], metric);
+			return OptimUtils.isConverged(perf[t][a], metric.isLargerBetter());
 		}
 
 	}

@@ -1,5 +1,7 @@
 package mltk.util;
 
+import java.util.List;
+
 /**
  * Class for utility functions for optimization.
  * 
@@ -154,6 +156,74 @@ public class OptimUtils {
 		} else {
 			return (prevLoss - currLoss) / prevLoss < epsilon;
 		}
+	}
+	
+	/**
+	 * Returns <code>true</code> if the array of metric values is converged.
+	 * 
+	 * @param p an array of metric values.
+	 * @param isLargerBetter <code>true</code> if larger value is better.
+	 * @return <code>true</code> if the list of metric values is converged.
+	 */
+	public static boolean isConverged(double[] p, boolean isLargerBetter) {
+		final int bn = p.length;
+		if (p.length <= 20) {
+			return false;
+		}
+
+		double bestPerf = p[bn - 1];
+		double worstPerf = p[bn - 20];
+		for (int i = bn - 20; i < bn; i++) {
+			if (MathUtils.isFirstBetter(p[i], bestPerf, isLargerBetter)) {
+				bestPerf = p[i];
+			}
+			if (!MathUtils.isFirstBetter(p[i], worstPerf, isLargerBetter)) {
+				worstPerf = p[i];
+			}
+		}
+		double relMaxMin = Math.abs(worstPerf - bestPerf) / worstPerf;
+		double relImprov;
+		if (MathUtils.isFirstBetter(p[bn - 1], p[bn - 21], isLargerBetter)) {
+			relImprov = Math.abs(p[bn - 21] - p[bn - 1]) / p[bn - 21];
+		} else {
+			// Overfitting
+			relImprov = Double.NaN;
+		}
+		return relMaxMin < 0.02 && (Double.isNaN(relImprov) || relImprov < 0.005);
+	}
+	
+	/**
+	 * Returns <code>true</code> if the list of metric values is converged.
+	 * 
+	 * @param list a list of metric values.
+	 * @param isLargerBetter <code>true</code> if larger value is better.
+	 * @return <code>true</code> if the list of metric values is converged.
+	 */
+	public static boolean isConverged(List<Double> list, boolean isLargerBetter) {
+		if (list.size() <= 20) {
+			return false;
+		}
+
+		final int bn = list.size();
+		double bestPerf = list.get(bn - 1);
+		double worstPerf = list.get(bn - 20);
+		for (int i = bn - 20; i < bn; i++) {
+			if (MathUtils.isFirstBetter(list.get(i), bestPerf, isLargerBetter)) {
+				bestPerf = list.get(i);
+			}
+			if (!MathUtils.isFirstBetter(list.get(i), worstPerf, isLargerBetter)) {
+				worstPerf = list.get(i);
+			}
+		}
+		double relMaxMin = Math.abs(worstPerf - bestPerf) / worstPerf;
+		double relImprov;
+		if (MathUtils.isFirstBetter(list.get(bn - 1), list.get(bn - 21), isLargerBetter)) {
+			relImprov = Math.abs(list.get(bn - 21) - list.get(bn - 1)) / list.get(bn - 21);
+		} else {
+			// Overfitting
+			relImprov = Double.NaN;
+		}
+		return relMaxMin < 0.02 && (Double.isNaN(relImprov) || relImprov < 0.005);
 	}
 
 }
