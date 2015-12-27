@@ -8,6 +8,7 @@ import java.util.Map;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
+import mltk.cmdline.options.LearnerOptions;
 import mltk.core.Attribute;
 import mltk.core.Instances;
 import mltk.core.io.InstancesReader;
@@ -31,16 +32,7 @@ import mltk.util.VectorUtils;
  */
 public class LADBoostLearner extends Learner {
 	
-	static class Options {
-
-		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
-
-		@Argument(name = "-t", description = "train set path", required = true)
-		String trainPath = null;
-
-		@Argument(name = "-o", description = "output model path")
-		String outputModelPath = null;
+	static class Options extends LearnerOptions {
 
 		@Argument(name = "-c", description = "max number of leaves (default: 100)")
 		int maxNumLeaves = 100;
@@ -93,7 +85,7 @@ public class LADBoostLearner extends Learner {
 		ladBoostLearner.setLearningRate(opts.learningRate);
 		ladBoostLearner.setMaxNumIters(opts.maxNumIters);
 		ladBoostLearner.setMaxNumLeaves(opts.maxNumLeaves);
-		ladBoostLearner.setVerbose(true);
+		ladBoostLearner.setVerbose(opts.verbose);
 
 		long start = System.currentTimeMillis();
 		BRT brt = ladBoostLearner.build(trainSet);
