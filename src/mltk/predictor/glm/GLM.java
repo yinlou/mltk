@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 import mltk.core.Instance;
 import mltk.core.SparseVector;
+import mltk.predictor.LinkFunction;
 import mltk.predictor.ProbabilisticClassifier;
 import mltk.predictor.Regressor;
 import mltk.util.ArrayUtils;
@@ -28,6 +29,11 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	 * The intercept vector.
 	 */
 	protected double[] intercept;
+	
+	/**
+	 * The link function.
+	 */
+	protected LinkFunction link;
 
 	/**
 	 * Constructor.
@@ -63,11 +69,23 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	 * @param w the coefficient vectors.
 	 */
 	public GLM(double[] intercept, double[][] w) {
+		this(intercept, w, LinkFunction.IDENTITY);
+	}
+	
+	/**
+	 * Constructs a GLM with the intercept vector, the coefficient vectors and its link function.
+	 * 
+	 * @param intercept the intercept vector.
+	 * @param w the coefficient vectors.
+	 * @param link the link function.
+	 */
+	public GLM(double[] intercept, double[][] w, LinkFunction link) {
 		if (intercept.length != w.length) {
 			throw new IllegalArgumentException("Dimensions of intercept and w must match.");
 		}
 		this.intercept = intercept;
 		this.w = w;
+		this.link = link;
 	}
 
 	/**
@@ -111,6 +129,7 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	@Override
 	public void read(BufferedReader in) throws Exception {
 		in.readLine();
+		link = LinkFunction.get(in.readLine().split(": ")[1]);
 		intercept = ArrayUtils.parseDoubleArray(in.readLine());
 		int p = Integer.parseInt(in.readLine().split(": ")[1]);
 		w = new double[intercept.length][p];
@@ -125,6 +144,7 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	@Override
 	public void write(PrintWriter out) throws Exception {
 		out.printf("[Predictor: %s]\n", this.getClass().getCanonicalName());
+		out.printf("Link: " + link);
 		out.println("Intercept: " + intercept.length);
 		out.println(Arrays.toString(intercept));
 		final int p = w[0].length;
@@ -147,6 +167,16 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	public int classify(Instance instance) {
 		double[] prob = predictProbabilities(instance);
 		return StatUtils.indexOfMax(prob);
+	}
+	
+	/**
+	 * Returns the prediction of this GLM on the scale of the response variable.
+	 * 
+	 * @param instance the instance to predict.
+	 * @return the prediction of this GLM on the scale of the response variable.
+	 */
+	public double predict(Instance instance) {
+		return link.applyInverse(regress(instance));
 	}
 
 	@Override
@@ -179,7 +209,7 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 		for (int i = 0; i < copyW.length; i++) {
 			copyW[i] = Arrays.copyOf(w[i], w[i].length);
 		}
-		return new GLM(intercept, copyW);
+		return new GLM(intercept, copyW, link);
 	}
 
 	protected double regress(double intercept, double[] coef, Instance instance) {

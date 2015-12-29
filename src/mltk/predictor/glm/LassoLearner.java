@@ -15,7 +15,8 @@ import mltk.core.Instances;
 import mltk.core.NominalAttribute;
 import mltk.core.SparseVector;
 import mltk.core.io.InstancesReader;
-import mltk.predictor.Learner;
+import mltk.predictor.Family;
+import mltk.predictor.LinkFunction;
 import mltk.predictor.io.PredictorWriter;
 import mltk.util.MathUtils;
 import mltk.util.OptimUtils;
@@ -28,7 +29,7 @@ import mltk.util.VectorUtils;
  * @author Yin Lou
  * 
  */
-public class LassoLearner extends Learner {
+public class LassoLearner extends GLMLearner {
 	
 	static class Options extends LearnerWithTaskOptions {
 
@@ -64,7 +65,7 @@ public class LassoLearner extends Learner {
 		Task task = null;
 		try {
 			parser.parse(args);
-			task = Task.getEnum(opts.task);
+			task = Task.get(opts.task);
 		} catch (IllegalArgumentException e) {
 			parser.printUsage();
 			System.exit(1);
@@ -149,13 +150,29 @@ public class LassoLearner extends Learner {
 		}
 		switch (task) {
 			case REGRESSION:
-				glm = buildRegressor(instances, maxNumIters, lambda);
+				glm = buildGaussianRegressor(instances, maxNumIters, lambda);
 				break;
 			case CLASSIFICATION:
 				glm = buildClassifier(instances, maxNumIters, lambda);
 				break;
 			default:
 				break;
+		}
+		return glm;
+	}
+	
+	@Override
+	public GLM build(Instances trainSet, Family family) {
+		GLM glm = null;
+		switch (family) {
+			case GAUSSIAN:
+				glm = buildGaussianRegressor(trainSet, maxNumIters, lambda);
+				break;
+			case BINOMIAL:
+				glm = buildClassifier(trainSet, maxNumIters, lambda);
+				break;
+			default:
+				throw new IllegalArgumentException("Unsupported family: " + family);
 		}
 		return glm;
 	}
@@ -195,7 +212,7 @@ public class LassoLearner extends Learner {
 				intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 			}
 
-			doOnePass(x, theta, y, tl1, w, pTrain, rTrain);
+			doOnePassBinomial(x, theta, y, tl1, w, pTrain, rTrain);
 
 			double currLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 
@@ -215,7 +232,7 @@ public class LassoLearner extends Learner {
 			}
 			return refitClassifier(attrs, selected, x, y, maxNumIters);
 		} else {
-			return GLMOptimUtils.getGLM(attrs, w, intercept);
+			return GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.LOGIT);
 		}
 	}
 
@@ -256,7 +273,7 @@ public class LassoLearner extends Learner {
 				intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 			}
 
-			doOnePass(indices, values, theta, y, tl1, w, pTrain, rTrain);
+			doOnePassBinomial(indices, values, theta, y, tl1, w, pTrain, rTrain);
 
 			double currLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 
@@ -276,7 +293,7 @@ public class LassoLearner extends Learner {
 			}
 			return refitClassifier(attrs, selected, indices, values, y, maxNumIters);
 		} else {
-			return GLMOptimUtils.getGLM(attrs, w, intercept);
+			return GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.LOGIT);
 		}
 	}
 
@@ -308,7 +325,7 @@ public class LassoLearner extends Learner {
 			theta[i] = StatUtils.sumSq(x[i]) / 4;
 		}
 
-		double maxLambda = findMaxLambda(x, y, pTrain, rTrain);
+		double maxLambda = findMaxLambdaBinomial(x, y, pTrain, rTrain);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -327,7 +344,7 @@ public class LassoLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
 
-				doOnePass(x, theta, y, tl1, w, pTrain, rTrain);
+				doOnePassBinomial(x, theta, y, tl1, w, pTrain, rTrain);
 
 				double currLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 
@@ -353,7 +370,7 @@ public class LassoLearner extends Learner {
 					structures.add(structure);
 				}
 			} else {
-				GLM glm = GLMOptimUtils.getGLM(attrs, w, intercept);
+				GLM glm = GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.LOGIT);
 				glms.add(glm);
 			}
 		}
@@ -390,7 +407,7 @@ public class LassoLearner extends Learner {
 			theta[i] = StatUtils.sumSq(values[i]) / 4;
 		}
 
-		double maxLambda = findMaxLambda(indices, values, y, pTrain, rTrain);
+		double maxLambda = findMaxLambdaBinomial(indices, values, y, pTrain, rTrain);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -409,7 +426,7 @@ public class LassoLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
 
-				doOnePass(indices, values, theta, y, tl1, w, pTrain, rTrain);
+				doOnePassBinomial(indices, values, theta, y, tl1, w, pTrain, rTrain);
 
 				double currLoss = GLMOptimUtils.computeLassoLoss(pTrain, y, w, lambda);
 
@@ -435,7 +452,7 @@ public class LassoLearner extends Learner {
 					structures.add(structure);
 				}
 			} else {
-				GLM glm = GLMOptimUtils.getGLM(attrs, w, intercept);
+				GLM glm = GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.LOGIT);
 				glms.add(glm);
 			}
 		}
@@ -739,12 +756,12 @@ public class LassoLearner extends Learner {
 	 * @param lambda the lambda.
 	 * @return an L1-regularized regressor.
 	 */
-	public GLM buildRegressor(Instances trainSet, boolean isSparse, int maxNumIters, double lambda) {
+	public GLM buildGaussianRegressor(Instances trainSet, boolean isSparse, int maxNumIters, double lambda) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
 			double[] cList = sd.cList;
 
-			GLM glm = buildRegressor(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, lambda);
+			GLM glm = buildGaussianRegressor(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, lambda);
 
 			double[] w = glm.w[0];
 			for (int j = 0; j < cList.length; j++) {
@@ -757,7 +774,7 @@ public class LassoLearner extends Learner {
 			DenseDataset dd = getDenseDataset(trainSet, true);
 			double[] cList = dd.cList;
 
-			GLM glm = buildRegressor(dd.attrs, dd.x, dd.y, maxNumIters, lambda);
+			GLM glm = buildGaussianRegressor(dd.attrs, dd.x, dd.y, maxNumIters, lambda);
 
 			double[] w = glm.w[0];
 			for (int j = 0; j < cList.length; j++) {
@@ -776,8 +793,8 @@ public class LassoLearner extends Learner {
 	 * @param lambda the lambda.
 	 * @return an L1-regularized regressor.
 	 */
-	public GLM buildRegressor(Instances trainSet, int maxNumIters, double lambda) {
-		return buildRegressor(trainSet, isSparse(trainSet), maxNumIters, lambda);
+	public GLM buildGaussianRegressor(Instances trainSet, int maxNumIters, double lambda) {
+		return buildGaussianRegressor(trainSet, isSparse(trainSet), maxNumIters, lambda);
 	}
 
 	/**
@@ -792,7 +809,7 @@ public class LassoLearner extends Learner {
 	 * @param lambda the lambda.
 	 * @return an L1-regularized penalized regressor.
 	 */
-	public GLM buildRegressor(int[] attrs, double[][] x, double[] y, int maxNumIters, double lambda) {
+	public GLM buildGaussianRegressor(int[] attrs, double[][] x, double[] y, int maxNumIters, double lambda) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -817,7 +834,7 @@ public class LassoLearner extends Learner {
 				intercept += OptimUtils.fitIntercept(rTrain);
 			}
 
-			doOnePass(x, sq, tl1, w, rTrain);
+			doOnePassGaussian(x, sq, tl1, w, rTrain);
 
 			double currLoss = GLMOptimUtils.computeLassoLoss(rTrain, w, lambda);
 
@@ -835,9 +852,9 @@ public class LassoLearner extends Learner {
 			for (int i = 0; i < selected.length; i++) {
 				selected[i] = w[i] != 0;
 			}
-			return refitRegressor(attrs, selected, x, y, maxNumIters);
+			return refitGaussianRegressor(attrs, selected, x, y, maxNumIters);
 		} else {
-			return GLMOptimUtils.getGLM(attrs, w, intercept);
+			return GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.IDENTITY);
 		}
 	}
 
@@ -853,7 +870,7 @@ public class LassoLearner extends Learner {
 	 * @param lambda the lambda.
 	 * @return an L1-regularized regressor.
 	 */
-	public GLM buildRegressor(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
+	public GLM buildGaussianRegressor(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
 			double lambda) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
@@ -879,7 +896,7 @@ public class LassoLearner extends Learner {
 				intercept += OptimUtils.fitIntercept(rTrain);
 			}
 
-			doOnePass(indices, values, sq, tl1, w, rTrain);
+			doOnePassGaussian(indices, values, sq, tl1, w, rTrain);
 
 			double currLoss = GLMOptimUtils.computeLassoLoss(rTrain, w, lambda);
 
@@ -897,9 +914,9 @@ public class LassoLearner extends Learner {
 			for (int i = 0; i < selected.length; i++) {
 				selected[i] = w[i] != 0;
 			}
-			return refitRegressor(attrs, selected, indices, values, y, maxNumIters);
+			return refitGaussianRegressor(attrs, selected, indices, values, y, maxNumIters);
 		} else {
-			return GLMOptimUtils.getGLM(attrs, w, intercept);
+			return GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.IDENTITY);
 		}
 	}
 
@@ -913,13 +930,13 @@ public class LassoLearner extends Learner {
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return L1-regularized regressors.
 	 */
-	public List<GLM> buildRegressors(Instances trainSet, boolean isSparse, int maxNumIters, int numLambdas,
+	public List<GLM> buildGaussianRegressors(Instances trainSet, boolean isSparse, int maxNumIters, int numLambdas,
 			double minLambdaRatio) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
 			double[] cList = sd.cList;
 
-			List<GLM> glms = buildRegressors(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, numLambdas,
+			List<GLM> glms = buildGaussianRegressors(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, numLambdas,
 					minLambdaRatio);
 
 			for (GLM glm : glms) {
@@ -935,7 +952,7 @@ public class LassoLearner extends Learner {
 			DenseDataset dd = getDenseDataset(trainSet, true);
 			double[] cList = dd.cList;
 
-			List<GLM> glms = buildRegressors(dd.attrs, dd.x, dd.y, maxNumIters, numLambdas, minLambdaRatio);
+			List<GLM> glms = buildGaussianRegressors(dd.attrs, dd.x, dd.y, maxNumIters, numLambdas, minLambdaRatio);
 
 			for (GLM glm : glms) {
 				double[] w = glm.w[0];
@@ -958,8 +975,8 @@ public class LassoLearner extends Learner {
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return L1-regularized regressors.
 	 */
-	public List<GLM> buildRegressors(Instances trainSet, int maxNumIters, int numLambdas, double minLambdaRatio) {
-		return buildRegressors(trainSet, isSparse(trainSet), maxNumIters, numLambdas, minLambdaRatio);
+	public List<GLM> buildGaussianRegressors(Instances trainSet, int maxNumIters, int numLambdas, double minLambdaRatio) {
+		return buildGaussianRegressors(trainSet, isSparse(trainSet), maxNumIters, numLambdas, minLambdaRatio);
 	}
 
 	/**
@@ -975,7 +992,7 @@ public class LassoLearner extends Learner {
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return L1-regularized regressors.
 	 */
-	public List<GLM> buildRegressors(int[] attrs, double[][] x, double[] y, int maxNumIters, int numLambdas,
+	public List<GLM> buildGaussianRegressors(int[] attrs, double[][] x, double[] y, int maxNumIters, int numLambdas,
 			double minLambdaRatio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
@@ -993,7 +1010,7 @@ public class LassoLearner extends Learner {
 		}
 
 		// Determine max lambda
-		double maxLambda = findMaxLambda(x, rTrain);
+		double maxLambda = findMaxLambdaGaussian(x, rTrain);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -1012,7 +1029,7 @@ public class LassoLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(rTrain);
 				}
 
-				doOnePass(x, sq, tl1, w, rTrain);
+				doOnePassGaussian(x, sq, tl1, w, rTrain);
 
 				double currLoss = GLMOptimUtils.computeLassoLoss(rTrain, w, lambda);
 				
@@ -1033,12 +1050,12 @@ public class LassoLearner extends Learner {
 				}
 				ModelStructure structure = new ModelStructure(selected);
 				if (!structures.contains(structure)) {
-					GLM glm = refitRegressor(attrs, selected, x, y, maxNumIters);
+					GLM glm = refitGaussianRegressor(attrs, selected, x, y, maxNumIters);
 					glms.add(glm);
 					structures.add(structure);
 				}
 			} else {
-				GLM glm = GLMOptimUtils.getGLM(attrs, w, intercept);
+				GLM glm = GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.IDENTITY);
 				glms.add(glm);
 			}
 		}
@@ -1059,7 +1076,7 @@ public class LassoLearner extends Learner {
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return L1-regularized regressors.
 	 */
-	public List<GLM> buildRegressors(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
+	public List<GLM> buildGaussianRegressors(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
 			int numLambdas, double minLambdaRatio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
@@ -1077,7 +1094,7 @@ public class LassoLearner extends Learner {
 		}
 
 		// Determine max lambda
-		double maxLambda = findMaxLambda(indices, values, y);
+		double maxLambda = findMaxLambdaGaussian(indices, values, y);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -1096,7 +1113,7 @@ public class LassoLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(rTrain);
 				}
 
-				doOnePass(indices, values, sq, tl1, w, rTrain);
+				doOnePassGaussian(indices, values, sq, tl1, w, rTrain);
 
 				double currLoss = GLMOptimUtils.computeLassoLoss(rTrain, w, lambda);
 				
@@ -1117,12 +1134,12 @@ public class LassoLearner extends Learner {
 				}
 				ModelStructure structure = new ModelStructure(selected);
 				if (!structures.contains(structure)) {
-					GLM glm = refitRegressor(attrs, selected, indices, values, y, maxNumIters);
+					GLM glm = refitGaussianRegressor(attrs, selected, indices, values, y, maxNumIters);
 					glms.add(glm);
 					structures.add(structure);
 				}
 			} else {
-				GLM glm = GLMOptimUtils.getGLM(attrs, w, intercept);
+				GLM glm = GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.IDENTITY);
 				glms.add(glm);
 			}
 		}
@@ -1130,7 +1147,7 @@ public class LassoLearner extends Learner {
 		return glms;
 	}
 
-	protected void doOnePass(double[][] x, double[] sq, final double tl1, double[] w, double[] rTrain) {
+	protected void doOnePassGaussian(double[][] x, double[] sq, final double tl1, double[] w, double[] rTrain) {
 		for (int j = 0; j < x.length; j++) {
 			double[] v = x[j];
 			// Calculate weight updates using naive updates
@@ -1154,8 +1171,38 @@ public class LassoLearner extends Learner {
 			}
 		}
 	}
+	
+	protected void doOnePassGaussian(int[][] indices, double[][] values, double[] sq, final double tl1, double[] w,
+			double[] rTrain) {
+		for (int j = 0; j < indices.length; j++) {
+			// Calculate weight updates using naive updates
+			double wNew = w[j] * sq[j];
+			int[] index = indices[j];
+			double[] value = values[j];
+			for (int i = 0; i < index.length; i++) {
+				wNew += rTrain[index[i]] * value[i];
+			}
 
-	protected void doOnePass(double[][] x, double[] theta, double[] y, final double tl1, double[] w, double[] pTrain,
+			if (Math.abs(wNew) <= tl1) {
+				wNew = 0;
+			} else if (wNew > 0) {
+				wNew -= tl1;
+			} else {
+				wNew += tl1;
+			}
+			wNew /= sq[j];
+
+			double delta = wNew - w[j];
+			w[j] = wNew;
+
+			// Update residuals
+			for (int i = 0; i < index.length; i++) {
+				rTrain[index[i]] -= delta * value[i];
+			}
+		}
+	}
+
+	protected void doOnePassBinomial(double[][] x, double[] theta, double[] y, final double tl1, double[] w, double[] pTrain,
 			double[] rTrain) {
 		for (int j = 0; j < x.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
@@ -1186,37 +1233,7 @@ public class LassoLearner extends Learner {
 		}
 	}
 
-	protected void doOnePass(int[][] indices, double[][] values, double[] sq, final double tl1, double[] w,
-			double[] rTrain) {
-		for (int j = 0; j < indices.length; j++) {
-			// Calculate weight updates using naive updates
-			double wNew = w[j] * sq[j];
-			int[] index = indices[j];
-			double[] value = values[j];
-			for (int i = 0; i < index.length; i++) {
-				wNew += rTrain[index[i]] * value[i];
-			}
-
-			if (Math.abs(wNew) <= tl1) {
-				wNew = 0;
-			} else if (wNew > 0) {
-				wNew -= tl1;
-			} else {
-				wNew += tl1;
-			}
-			wNew /= sq[j];
-
-			double delta = wNew - w[j];
-			w[j] = wNew;
-
-			// Update residuals
-			for (int i = 0; i < index.length; i++) {
-				rTrain[index[i]] -= delta * value[i];
-			}
-		}
-	}
-
-	protected void doOnePass(int[][] indices, double[][] values, double[] theta, double[] y, final double tl1, double[] w,
+	protected void doOnePassBinomial(int[][] indices, double[][] values, double[] theta, double[] y, final double tl1, double[] w,
 			double[] pTrain, double[] rTrain) {
 		for (int j = 0; j < indices.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
@@ -1253,7 +1270,7 @@ public class LassoLearner extends Learner {
 		}
 	}
 
-	protected double findMaxLambda(double[][] x, double[] y) {
+	protected double findMaxLambdaGaussian(double[][] x, double[] y) {
 		double mean = 0;
 		if (fitIntercept) {
 			mean = OptimUtils.fitIntercept(y);
@@ -1272,8 +1289,32 @@ public class LassoLearner extends Learner {
 		}
 		return maxLambda;
 	}
+	
+	protected double findMaxLambdaGaussian(int[][] indices, double[][] values, double[] y) {
+		double mean = 0;
+		if (fitIntercept) {
+			mean = OptimUtils.fitIntercept(y);
+		}
 
-	protected double findMaxLambda(double[][] x, double[] y, double[] pTrain, double[] rTrain) {
+		DenseVector v = new DenseVector(y);
+		// Determine max lambda
+		double maxLambda = 0;
+		for (int i = 0; i < indices.length; i++) {
+			int[] index = indices[i];
+			double[] value = values[i];
+			double dot = Math.abs(VectorUtils.dotProduct(new SparseVector(index, value), v));
+			if (dot > maxLambda) {
+				maxLambda = dot;
+			}
+		}
+		maxLambda /= y.length;
+		if (fitIntercept) {
+			VectorUtils.add(y, mean);
+		}
+		return maxLambda;
+	}
+
+	protected double findMaxLambdaBinomial(double[][] x, double[] y, double[] pTrain, double[] rTrain) {
 		if (fitIntercept) {
 			OptimUtils.fitIntercept(pTrain, rTrain, y);
 		}
@@ -1299,31 +1340,7 @@ public class LassoLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(int[][] indices, double[][] values, double[] y) {
-		double mean = 0;
-		if (fitIntercept) {
-			mean = OptimUtils.fitIntercept(y);
-		}
-
-		DenseVector v = new DenseVector(y);
-		// Determine max lambda
-		double maxLambda = 0;
-		for (int i = 0; i < indices.length; i++) {
-			int[] index = indices[i];
-			double[] value = values[i];
-			double dot = Math.abs(VectorUtils.dotProduct(new SparseVector(index, value), v));
-			if (dot > maxLambda) {
-				maxLambda = dot;
-			}
-		}
-		maxLambda /= y.length;
-		if (fitIntercept) {
-			VectorUtils.add(y, mean);
-		}
-		return maxLambda;
-	}
-
-	protected double findMaxLambda(int[][] indices, double[][] values, double[] y, double[] pTrain, double[] rTrain) {
+	protected double findMaxLambdaBinomial(int[][] indices, double[][] values, double[] y, double[] pTrain, double[] rTrain) {
 		if (fitIntercept) {
 			OptimUtils.fitIntercept(pTrain, rTrain, y);
 		}
@@ -1352,48 +1369,12 @@ public class LassoLearner extends Learner {
 	}
 
 	/**
-	 * Returns <code>true</code> if we fit intercept.
-	 * 
-	 * @return <code>true</code> if we fit intercept.
-	 */
-	public boolean fitIntercept() {
-		return fitIntercept;
-	}
-
-	/**
-	 * Sets whether we fit intercept.
-	 * 
-	 * @param fitIntercept whether we fit intercept.
-	 */
-	public void fitIntercept(boolean fitIntercept) {
-		this.fitIntercept = fitIntercept;
-	}
-
-	/**
-	 * Returns the convergence threshold epsilon.
-	 * 
-	 * @return the convergence threshold epsilon.
-	 */
-	public double getEpsilon() {
-		return epsilon;
-	}
-
-	/**
 	 * Returns the lambda.
 	 * 
 	 * @return the lambda.
 	 */
 	public double getLambda() {
 		return lambda;
-	}
-
-	/**
-	 * Returns the maximum number of iterations.
-	 * 
-	 * @return the maximum number of iterations.
-	 */
-	public int getMaxNumIters() {
-		return maxNumIters;
 	}
 
 	/**
@@ -1432,7 +1413,7 @@ public class LassoLearner extends Learner {
 		this.refit = refit;
 	}
 
-	protected GLM refitRegressor(int[] attrs, boolean[] selected, double[][] x, double[] y, int maxNumIters) {
+	protected GLM refitGaussianRegressor(int[] attrs, boolean[] selected, double[][] x, double[] y, int maxNumIters) {
 		List<double[]> xList = new ArrayList<>();
 		for (int j = 0; j < attrs.length; j++) {
 			if (selected[j]) {
@@ -1461,7 +1442,7 @@ public class LassoLearner extends Learner {
 		learner.fitIntercept(fitIntercept);
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
-		GLM glm = learner.buildRegressor(attrsNew, xNew, y, maxNumIters, 1e-8);
+		GLM glm = learner.buildGaussianRegressor(attrsNew, xNew, y, maxNumIters, 1e-8);
 		double[] w = new double[attrs.length];
 		double[] coef = glm.coefficients(0);
 		int k = 0;
@@ -1471,11 +1452,11 @@ public class LassoLearner extends Learner {
 			}
 		}
 
-		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0));
+		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0), LinkFunction.IDENTITY);
 	}
 	
 
-	protected GLM refitRegressor(int[] attrs, boolean[] selected, int[][] indices, double[][] values, double[] y, int maxNumIters) {
+	protected GLM refitGaussianRegressor(int[] attrs, boolean[] selected, int[][] indices, double[][] values, double[] y, int maxNumIters) {
 		List<int[]> indicesList = new ArrayList<>();
 		List<double[]> valuesList = new ArrayList<>();
 		for (int j = 0; j < attrs.length; j++) {
@@ -1510,7 +1491,7 @@ public class LassoLearner extends Learner {
 		learner.fitIntercept(fitIntercept);
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
-		GLM glm = learner.buildRegressor(attrsNew, indicesNew, valuesNew, y, maxNumIters, 1e-8);
+		GLM glm = learner.buildGaussianRegressor(attrsNew, indicesNew, valuesNew, y, maxNumIters, 1e-8);
 		double[] w = new double[attrs.length];
 		double[] coef = glm.coefficients(0);
 		int k = 0;
@@ -1520,7 +1501,7 @@ public class LassoLearner extends Learner {
 			}
 		}
 
-		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0));
+		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0), LinkFunction.IDENTITY);
 	}
 
 	protected GLM refitClassifier(int[] attrs, boolean[] selected, double[][] x, double[] y, int maxNumIters) {
@@ -1556,7 +1537,7 @@ public class LassoLearner extends Learner {
 			}
 		}
 
-		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0));
+		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0), LinkFunction.LOGIT);
 	}
 
 	protected GLM refitClassifier(int[] attrs, boolean[] selected, int[][] indices, double[][] values, double[] y, int maxNumIters) {
@@ -1598,16 +1579,7 @@ public class LassoLearner extends Learner {
 			}
 		}
 
-		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0));
-	}
-
-	/**
-	 * Sets the convergence threshold epsilon.
-	 * 
-	 * @param epsilon the convergence threshold epsilon.
-	 */
-	public void setEpsilon(double epsilon) {
-		this.epsilon = epsilon;
+		return GLMOptimUtils.getGLM(attrs, w, glm.intercept(0), LinkFunction.LOGIT);
 	}
 
 	/**
@@ -1617,15 +1589,6 @@ public class LassoLearner extends Learner {
 	 */
 	public void setLambda(double lambda) {
 		this.lambda = lambda;
-	}
-
-	/**
-	 * Sets the maximum number of iterations.
-	 * 
-	 * @param maxNumIters the maximum number of iterations.
-	 */
-	public void setMaxNumIters(int maxNumIters) {
-		this.maxNumIters = maxNumIters;
 	}
 
 	/**

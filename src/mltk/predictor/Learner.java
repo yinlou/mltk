@@ -74,20 +74,25 @@ public abstract class Learner {
 		}
 
 		/**
-		 * Parses an enumeration from a string.
+		 * Parses a task from a string.
 		 * 
-		 * @param task the string.
+		 * @param name the name of the task.
 		 * @return a parsed task.
 		 */
-		public static Task getEnum(String task) {
-			for (Task re : Task.values()) {
-				if (re.task.startsWith(task)) {
-					return re;
+		public static Task get(String name) {
+			for (Task task : Task.values()) {
+				if (task.task.startsWith(name)) {
+					return task;
 				}
 			}
-			throw new IllegalArgumentException("Invalid Task value: " + task);
+			throw new IllegalArgumentException("Invalid task name: " + name);
 		}
 		
+		/**
+		 * Returns the default metric for this task.
+		 * 
+		 * @return the default metric for this task.
+		 */
 		public Metric getDefaultMetric() {
 			Metric metric = null;
 			switch (this) {

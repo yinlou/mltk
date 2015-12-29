@@ -56,7 +56,7 @@ public class ScorecardModelLearner extends Learner {
 		Task task = null;
 		try {
 			parser.parse(args);
-			task = Task.getEnum(opts.task);
+			task = Task.get(opts.task);
 		} catch (IllegalArgumentException e) {
 			parser.printUsage();
 			System.exit(1);

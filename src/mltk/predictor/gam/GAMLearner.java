@@ -89,7 +89,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		Metric metric = null;
 		try {
 			parser.parse(args);
-			task = Task.getEnum(opts.task);
+			task = Task.get(opts.task);
 			if (opts.metric == null) {
 				metric = task.getDefaultMetric();
 			} else {

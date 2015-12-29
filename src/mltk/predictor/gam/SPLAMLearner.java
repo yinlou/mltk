@@ -75,7 +75,7 @@ public class SPLAMLearner extends Learner {
 		Task task = null;
 		try {
 			parser.parse(args);
-			task = Task.getEnum(opts.task);
+			task = Task.get(opts.task);
 			if (opts.numKnots < 0) {
 				throw new IllegalArgumentException("Number of knots must be positive.");
 			}
@@ -1513,7 +1513,7 @@ public class SPLAMLearner extends Learner {
 		ridgeLearner.fitIntercept(fitIntercept);
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
-		GLM glm = ridgeLearner.buildRegressor(attrsNew, xNew, y, maxNumIters, 1e-8);
+		GLM glm = ridgeLearner.buildGaussianRegressor(attrsNew, xNew, y, maxNumIters, 1e-8);
 		
 		GAM gam = getGAM(attrs, knots, w, glm.intercept(0));
 		List<Regressor> regressors = gam.regressors;
@@ -1573,7 +1573,7 @@ public class SPLAMLearner extends Learner {
 		ridgeLearner.fitIntercept(fitIntercept);
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
-		GLM glm = ridgeLearner.buildRegressor(attrsNew, iNew, vNew, y, maxNumIters, 1e-8);
+		GLM glm = ridgeLearner.buildGaussianRegressor(attrsNew, iNew, vNew, y, maxNumIters, 1e-8);
 		
 		GAM gam = getGAM(attrs, knots, w, glm.intercept(0));
 		List<Regressor> regressors = gam.regressors;

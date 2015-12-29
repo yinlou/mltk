@@ -11,7 +11,8 @@ import java.util.Set;
 import mltk.core.Attribute;
 import mltk.core.Instances;
 import mltk.core.NominalAttribute;
-import mltk.predictor.Learner;
+import mltk.predictor.Family;
+import mltk.predictor.LinkFunction;
 import mltk.predictor.glm.GLM;
 import mltk.util.ArrayUtils;
 import mltk.util.MathUtils;
@@ -32,7 +33,7 @@ import mltk.util.VectorUtils;
  * @author Yin Lou
  * 
  */
-public class GroupLassoLearner extends Learner {
+public class GroupLassoLearner extends GLMLearner {
 	
 	class DenseDesignMatrix {
 
@@ -124,13 +125,29 @@ public class GroupLassoLearner extends Learner {
 		}
 		switch (task) {
 			case REGRESSION:
-				glm = buildRegressor(instances, groups, maxNumIters, lambda);
+				glm = buildGaussianRegressor(instances, groups, maxNumIters, lambda);
 				break;
 			case CLASSIFICATION:
 				glm = buildClassifier(instances, groups, maxNumIters, lambda);
 				break;
 			default:
 				break;
+		}
+		return glm;
+	}
+	
+	@Override
+	public GLM build(Instances trainSet, Family family) {
+		GLM glm = null;
+		switch (family) {
+			case GAUSSIAN:
+				glm = buildGaussianRegressor(trainSet, groups, maxNumIters, lambda);
+				break;
+			case BINOMIAL:
+				glm = buildClassifier(trainSet, groups, maxNumIters, lambda);
+				break;
+			default:
+				throw new IllegalArgumentException("Unsupported family: " + family);
 		}
 		return glm;
 	}
@@ -197,7 +214,7 @@ public class GroupLassoLearner extends Learner {
 				intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 			}
 
-			boolean activeSetChanged = doOnePass(x, y, tl1, true, activeSet, w, stepSize, 
+			boolean activeSetChanged = doOnePassBinomial(x, y, tl1, true, activeSet, w, stepSize, 
 					g, gradient, pTrain, rTrain);
 
 			iter++;
@@ -214,7 +231,7 @@ public class GroupLassoLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
 
-				doOnePass(x, y, tl1, false, activeSet, w, stepSize, g, gradient, pTrain, rTrain);
+				doOnePassBinomial(x, y, tl1, false, activeSet, w, stepSize, g, gradient, pTrain, rTrain);
 
 				double currLoss = GLMOptimUtils.computeGroupLassoLoss(pTrain, y, w, tl1);
 				
@@ -233,9 +250,9 @@ public class GroupLassoLearner extends Learner {
 			for (int i = 0; i < selected.length; i++) {
 				selected[i] = !ArrayUtils.isConstant(w[i], 0, w[i].length, 0);
 			}
-			return refitRegressor(p, attrs, selected, x, y, w, maxNumIters);
+			return refitGaussianRegressor(p, attrs, selected, x, y, w, maxNumIters);
 		} else {
-			return getGLM(p, attrs, w, intercept);
+			return getGLM(p, attrs, w, intercept, LinkFunction.LOGIT);
 		}
 	}
 
@@ -319,7 +336,7 @@ public class GroupLassoLearner extends Learner {
 				intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 			}
 
-			boolean activeSetChanged = doOnePass(indices, indexUnion, values, y, tl1, true, 
+			boolean activeSetChanged = doOnePassBinomial(indices, indexUnion, values, y, tl1, true, 
 					activeSet, w, stepSize, g, gradient, pTrain, rTrain);
 
 			iter++;
@@ -336,7 +353,7 @@ public class GroupLassoLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
 
-				doOnePass(indices, indexUnion, values, y, tl1, true, activeSet, w, stepSize, 
+				doOnePassBinomial(indices, indexUnion, values, y, tl1, true, activeSet, w, stepSize, 
 						g, gradient, pTrain, rTrain);
 
 				double currLoss = GLMOptimUtils.computeGroupLassoLoss(pTrain, y, w, tl1);
@@ -358,7 +375,7 @@ public class GroupLassoLearner extends Learner {
 			}
 			return refitClassifier(p, attrs, selected, indices, values, y, w, maxNumIters);
 		} else {
-			return getGLM(p, attrs, w, intercept);
+			return getGLM(p, attrs, w, intercept, LinkFunction.LOGIT);
 		}
 	}
 
@@ -416,7 +433,7 @@ public class GroupLassoLearner extends Learner {
 
 		boolean[] activeSet = new boolean[x.length];
 
-		double maxLambda = findMaxLambda(x, y, pTrain, rTrain, gradient);
+		double maxLambda = findMaxLambdaBinomial(x, y, pTrain, rTrain, gradient);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -440,7 +457,7 @@ public class GroupLassoLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
 
-				boolean activeSetChanged = doOnePass(x, y, tl1, true, activeSet, w,
+				boolean activeSetChanged = doOnePassBinomial(x, y, tl1, true, activeSet, w,
 						stepSize, g, gradient, pTrain, rTrain);
 
 				iter++;
@@ -457,7 +474,7 @@ public class GroupLassoLearner extends Learner {
 						intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 					}
 					
-					doOnePass(x, y, tl1, false, activeSet, w, stepSize, g, gradient, pTrain, rTrain);
+					doOnePassBinomial(x, y, tl1, false, activeSet, w, stepSize, g, gradient, pTrain, rTrain);
 
 					double currLoss = GLMOptimUtils.computeGroupLassoLoss(pTrain, y, w, tl1);
 
@@ -484,7 +501,7 @@ public class GroupLassoLearner extends Learner {
 					structures.add(structure);
 				}
 			} else {
-				GLM glm = getGLM(p, attrs, w, intercept);
+				GLM glm = getGLM(p, attrs, w, intercept, LinkFunction.LOGIT);
 				glms.add(glm);
 			}
 		}
@@ -563,7 +580,7 @@ public class GroupLassoLearner extends Learner {
 
 		boolean[] activeSet = new boolean[values.length];
 
-		double maxLambda = findMaxLambda(indices, values, y, pTrain, rTrain, gradient);
+		double maxLambda = findMaxLambdaBinomial(indices, values, y, pTrain, rTrain, gradient);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -587,7 +604,7 @@ public class GroupLassoLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
 
-				boolean activeSetChanged = doOnePass(indices, indexUnion, values, y, tl1, true, 
+				boolean activeSetChanged = doOnePassBinomial(indices, indexUnion, values, y, tl1, true, 
 						activeSet, w, stepSize, g, gradient, pTrain, rTrain);
 
 				iter++;
@@ -604,7 +621,7 @@ public class GroupLassoLearner extends Learner {
 						intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 					}
 
-					doOnePass(indices, indexUnion, values, y, tl1, false, activeSet, w, stepSize,
+					doOnePassBinomial(indices, indexUnion, values, y, tl1, false, activeSet, w, stepSize,
 							g, gradient, pTrain, rTrain);
 
 					double currLoss = GLMOptimUtils.computeGroupLassoLoss(pTrain, y, w, tl1);
@@ -631,7 +648,7 @@ public class GroupLassoLearner extends Learner {
 					glms.add(glm);
 				}
 			} else {
-				GLM glm = getGLM(p, attrs, w, intercept);
+				GLM glm = getGLM(p, attrs, w, intercept, LinkFunction.LOGIT);
 				glms.add(glm);
 			}
 		}
@@ -947,13 +964,13 @@ public class GroupLassoLearner extends Learner {
 	 * @param lambda the lambda.
 	 * @return a group-lasso penalized regressor.
 	 */
-	public GLM buildRegressor(Instances trainSet, boolean isSparse, List<int[]> groups, int maxNumIters, double lambda) {
+	public GLM buildGaussianRegressor(Instances trainSet, boolean isSparse, List<int[]> groups, int maxNumIters, double lambda) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
 			SparseDesignMatrix sm = createDesignMatrix(sd, groups);
 			double[] cList = sd.cList;
 
-			GLM glm = buildRegressor(sm.group, sm.indices, sm.values, sd.y, maxNumIters, lambda);
+			GLM glm = buildGaussianRegressor(sm.group, sm.indices, sm.values, sd.y, maxNumIters, lambda);
 			
 			double[] w = glm.coefficients(0);
 			for (int j = 0; j < cList.length; j++) {
@@ -967,7 +984,7 @@ public class GroupLassoLearner extends Learner {
 			DenseDesignMatrix dm = createDesignMatrix(dd, groups);
 			double[] cList = dd.cList;
 
-			GLM glm = buildRegressor(dm.groups, dm.x, dd.y, maxNumIters, lambda);
+			GLM glm = buildGaussianRegressor(dm.groups, dm.x, dd.y, maxNumIters, lambda);
 
 			double[] w = glm.coefficients(0);
 			for (int j = 0; j < cList.length; j++) {
@@ -988,8 +1005,8 @@ public class GroupLassoLearner extends Learner {
 	 * @param lambda the lambda.
 	 * @return a group-lasso penalized regressor.
 	 */
-	public GLM buildRegressor(Instances trainSet, List<int[]> groups, int maxNumIters, double lambda) {
-		return buildRegressor(trainSet, isSparse(trainSet), groups, maxNumIters, lambda);
+	public GLM buildGaussianRegressor(Instances trainSet, List<int[]> groups, int maxNumIters, double lambda) {
+		return buildGaussianRegressor(trainSet, isSparse(trainSet), groups, maxNumIters, lambda);
 	}
 
 	/**
@@ -1003,7 +1020,7 @@ public class GroupLassoLearner extends Learner {
 	 * @param lambda the lambda.
 	 * @return a group-lasso penalized regressor.
 	 */
-	public GLM buildRegressor(int[][] attrs, double[][][] x, double[] y, int maxNumIters, double lambda) {
+	public GLM buildGaussianRegressor(int[][] attrs, double[][][] x, double[] y, int maxNumIters, double lambda) {
 		int p = 0;
 		if (attrs.length > 0) {
 			for (int[] attr : attrs) {
@@ -1056,7 +1073,7 @@ public class GroupLassoLearner extends Learner {
 				intercept += OptimUtils.fitIntercept(rTrain);
 			}
 
-			boolean activeSetChanged = doOnePass(x, tl1, true, activeSet, w, stepSize, g, gradient, rTrain);
+			boolean activeSetChanged = doOnePassGaussian(x, tl1, true, activeSet, w, stepSize, g, gradient, rTrain);
 
 			iter++;
 
@@ -1072,7 +1089,7 @@ public class GroupLassoLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(rTrain);
 				}
 				
-				doOnePass(x, tl1, false, activeSet, w, stepSize, g, gradient, rTrain);
+				doOnePassGaussian(x, tl1, false, activeSet, w, stepSize, g, gradient, rTrain);
 				
 				double currLoss = GLMOptimUtils.computeGroupLassoLoss(rTrain, w, tl1);
 
@@ -1091,9 +1108,9 @@ public class GroupLassoLearner extends Learner {
 			for (int i = 0; i < selected.length; i++) {
 				selected[i] = !ArrayUtils.isConstant(w[i], 0, w[i].length, 0);
 			}
-			return refitRegressor(p, attrs, selected, x, y, w, maxNumIters);
+			return refitGaussianRegressor(p, attrs, selected, x, y, w, maxNumIters);
 		} else {
-			return getGLM(p, attrs, w, intercept);
+			return getGLM(p, attrs, w, intercept, LinkFunction.IDENTITY);
 		}
 	}
 	
@@ -1109,7 +1126,7 @@ public class GroupLassoLearner extends Learner {
 	 * @param lambda the lambda.
 	 * @return a group-lasso penalized regressor.
 	 */
-	public GLM buildRegressor(int[][] groups, int[][][] indices, double[][][] values, double[] y, int maxNumIters, double lambda) {
+	public GLM buildGaussianRegressor(int[][] groups, int[][][] indices, double[][][] values, double[] y, int maxNumIters, double lambda) {
 		int p = 0;
 		if (groups.length > 0) {
 			for (int[] group : groups) {
@@ -1160,7 +1177,7 @@ public class GroupLassoLearner extends Learner {
 				intercept += OptimUtils.fitIntercept(rTrain);
 			}
 
-			boolean activeSetChanged = doOnePass(indices, values, tl1, true, activeSet, w, stepSize, g, gradient, rTrain);
+			boolean activeSetChanged = doOnePassGaussian(indices, values, tl1, true, activeSet, w, stepSize, g, gradient, rTrain);
 
 			iter++;
 
@@ -1176,7 +1193,7 @@ public class GroupLassoLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(rTrain);
 				}
 				
-				doOnePass(indices, values, tl1, false, activeSet, w, stepSize, g, gradient, rTrain);
+				doOnePassGaussian(indices, values, tl1, false, activeSet, w, stepSize, g, gradient, rTrain);
 				
 				double currLoss = GLMOptimUtils.computeGroupLassoLoss(rTrain, w, tl1);
 
@@ -1195,9 +1212,9 @@ public class GroupLassoLearner extends Learner {
 			for (int i = 0; i < selected.length; i++) {
 				selected[i] = !ArrayUtils.isConstant(w[i], 0, w[i].length, 0);
 			}
-			return refitRegressor(p, groups, selected, indices, values, y, w, maxNumIters);
+			return refitGaussianRegressor(p, groups, selected, indices, values, y, w, maxNumIters);
 		} else {
-			return getGLM(p, groups, w, intercept);
+			return getGLM(p, groups, w, intercept, LinkFunction.IDENTITY);
 		}
 	}
 	
@@ -1212,14 +1229,14 @@ public class GroupLassoLearner extends Learner {
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return group-lasso penalized regressors.
 	 */
-	public List<GLM> buildRegressors(Instances trainSet, boolean isSparse, List<int[]> groups, int maxNumIters,
+	public List<GLM> buildGaussianRegressors(Instances trainSet, boolean isSparse, List<int[]> groups, int maxNumIters,
 			int numLambdas, double minLambdaRatio) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
 			SparseDesignMatrix sm = createDesignMatrix(sd, groups);
 			double[] cList = sd.cList;
 			
-			List<GLM> glms = buildRegressors(sm.group, sm.indices, sm.values, sd.y, maxNumIters, numLambdas, minLambdaRatio);
+			List<GLM> glms = buildGaussianRegressors(sm.group, sm.indices, sm.values, sd.y, maxNumIters, numLambdas, minLambdaRatio);
 			
 			for (GLM glm : glms) {
 				double[] w = glm.coefficients(0);
@@ -1235,7 +1252,7 @@ public class GroupLassoLearner extends Learner {
 			DenseDesignMatrix dm = createDesignMatrix(dd, groups);
 			double[] stdList = dd.stdList;
 
-			List<GLM> glms = buildRegressors(dm.groups, dm.x, dd.y, maxNumIters, numLambdas, minLambdaRatio);
+			List<GLM> glms = buildGaussianRegressors(dm.groups, dm.x, dd.y, maxNumIters, numLambdas, minLambdaRatio);
 
 			for (GLM glm : glms) {
 				double[] w = glm.coefficients(0);
@@ -1259,9 +1276,9 @@ public class GroupLassoLearner extends Learner {
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return group-lasso penalized regressors.
 	 */
-	public List<GLM> buildRegressors(Instances trainSet, List<int[]> groups, int maxNumIters,
+	public List<GLM> buildGaussianRegressors(Instances trainSet, List<int[]> groups, int maxNumIters,
 			int numLambdas, double minLambdaRatio) {
-		return buildRegressors(trainSet, isSparse(trainSet), groups, maxNumIters, numLambdas, minLambdaRatio);
+		return buildGaussianRegressors(trainSet, isSparse(trainSet), groups, maxNumIters, numLambdas, minLambdaRatio);
 	}
 
 	/**
@@ -1276,7 +1293,7 @@ public class GroupLassoLearner extends Learner {
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return group-lasso penalized regressors.
 	 */
-	public List<GLM> buildRegressors(int[][] groups, double[][][] x, double[] y, int maxNumIters,
+	public List<GLM> buildGaussianRegressors(int[][] groups, double[][][] x, double[] y, int maxNumIters,
 			int numLambdas, double minLambdaRatio) {
 		int p = 0;
 		if (groups.length > 0) {
@@ -1323,7 +1340,7 @@ public class GroupLassoLearner extends Learner {
 		boolean[] activeSet = new boolean[x.length];
 
 		// Determine max lambda
-		double maxLambda = findMaxLambda(x, rTrain, gradient);
+		double maxLambda = findMaxLambdaGaussian(x, rTrain, gradient);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -1347,7 +1364,7 @@ public class GroupLassoLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(rTrain);
 				}
 
-				boolean activeSetChanged = doOnePass(x, tl1, true, activeSet, w, stepSize, g, gradient, rTrain);
+				boolean activeSetChanged = doOnePassGaussian(x, tl1, true, activeSet, w, stepSize, g, gradient, rTrain);
 
 				iter++;
 
@@ -1363,7 +1380,7 @@ public class GroupLassoLearner extends Learner {
 						intercept += OptimUtils.fitIntercept(rTrain);
 					}
 					
-					doOnePass(x, tl1, false, activeSet, w, stepSize, g, gradient, rTrain);
+					doOnePassGaussian(x, tl1, false, activeSet, w, stepSize, g, gradient, rTrain);
 
 					double currLoss = GLMOptimUtils.computeGroupLassoLoss(rTrain, w, tl1);
 
@@ -1387,7 +1404,7 @@ public class GroupLassoLearner extends Learner {
 				}
 				ModelStructure structure = new ModelStructure(selected);
 				if (!structures.contains(structure)) {
-					GLM glm = refitRegressor(p, groups, selected, x, y, w, maxNumIters);
+					GLM glm = refitGaussianRegressor(p, groups, selected, x, y, w, maxNumIters);
 					glms.add(glm);
 					structures.add(structure);
 				}
@@ -1395,7 +1412,7 @@ public class GroupLassoLearner extends Learner {
 					break;
 				}
 			} else {
-				GLM glm = getGLM(p, groups, w, intercept);
+				GLM glm = getGLM(p, groups, w, intercept, LinkFunction.IDENTITY);
 				glms.add(glm);
 			}
 		}
@@ -1416,7 +1433,7 @@ public class GroupLassoLearner extends Learner {
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
 	 * @return group-lasso penalized regressors.
 	 */
-	public List<GLM> buildRegressors(int[][] groups, int[][][] indices, double[][][] values, double[] y, int maxNumIters,
+	public List<GLM> buildGaussianRegressors(int[][] groups, int[][][] indices, double[][][] values, double[] y, int maxNumIters,
 			int numLambdas, double minLambdaRatio) {
 		int p = 0;
 		if (groups.length > 0) {
@@ -1463,7 +1480,7 @@ public class GroupLassoLearner extends Learner {
 		boolean[] activeSet = new boolean[groups.length];
 
 		// Determine max lambda
-		double maxLambda = findMaxLambda(indices, values, rTrain, gradient);
+		double maxLambda = findMaxLambdaGaussian(indices, values, rTrain, gradient);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -1487,7 +1504,7 @@ public class GroupLassoLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(rTrain);
 				}
 
-				boolean activeSetChanged = doOnePass(indices, values, tl1, true, activeSet, w, stepSize, g, gradient, rTrain);
+				boolean activeSetChanged = doOnePassGaussian(indices, values, tl1, true, activeSet, w, stepSize, g, gradient, rTrain);
 
 				iter++;
 
@@ -1503,7 +1520,7 @@ public class GroupLassoLearner extends Learner {
 						intercept += OptimUtils.fitIntercept(rTrain);
 					}
 					
-					doOnePass(indices, values, tl1, false, activeSet, w, stepSize, g, gradient, rTrain);
+					doOnePassGaussian(indices, values, tl1, false, activeSet, w, stepSize, g, gradient, rTrain);
 
 					double currLoss = GLMOptimUtils.computeGroupLassoLoss(rTrain, w, tl1);
 
@@ -1527,7 +1544,7 @@ public class GroupLassoLearner extends Learner {
 				}
 				ModelStructure structure = new ModelStructure(selected);
 				if (!structures.contains(structure)) {
-					GLM glm = refitRegressor(p, groups, selected, indices, values, y, w, maxNumIters);
+					GLM glm = refitGaussianRegressor(p, groups, selected, indices, values, y, w, maxNumIters);
 					glms.add(glm);
 					structures.add(structure);
 				}
@@ -1535,39 +1552,12 @@ public class GroupLassoLearner extends Learner {
 					break;
 				}
 			} else {
-				GLM glm = getGLM(p, groups, w, intercept);
+				GLM glm = getGLM(p, groups, w, intercept, LinkFunction.IDENTITY);
 				glms.add(glm);
 			}
 		}
 
 		return glms;
-	}
-	
-	/**
-	 * Returns <code>true</code> if we fit intercept.
-	 * 
-	 * @return <code>true</code> if we fit intercept.
-	 */
-	public boolean fitIntercept() {
-		return fitIntercept;
-	}
-
-	/**
-	 * Sets whether we fit intercept.
-	 * 
-	 * @param fitIntercept whether we fit intercept.
-	 */
-	public void fitIntercept(boolean fitIntercept) {
-		this.fitIntercept = fitIntercept;
-	}
-	
-	/**
-	 * Returns the convergence threshold epsilon.
-	 * 
-	 * @return the convergence threshold epsilon.
-	 */
-	public double getEpsilon() {
-		return epsilon;
 	}
 
 	/**
@@ -1577,15 +1567,6 @@ public class GroupLassoLearner extends Learner {
 	 */
 	public double getLambda() {
 		return lambda;
-	}
-
-	/**
-	 * Returns the maximum number of iterations.
-	 * 
-	 * @return the maximum number of iterations.
-	 */
-	public int getMaxNumIters() {
-		return maxNumIters;
 	}
 
 	/**
@@ -1625,30 +1606,12 @@ public class GroupLassoLearner extends Learner {
 	}
 
 	/**
-	 * Sets the convergence threshold epsilon.
-	 * 
-	 * @param epsilon the convergence threshold epsilon.
-	 */
-	public void setEpsilon(double epsilon) {
-		this.epsilon = epsilon;
-	}
-
-	/**
 	 * Sets the lambda.
 	 * 
 	 * @param lambda the lambda.
 	 */
 	public void setLambda(double lambda) {
 		this.lambda = lambda;
-	}
-
-	/**
-	 * Sets the maximum number of iterations.
-	 * 
-	 * @param maxNumIters the maximum number of iterations.
-	 */
-	public void setMaxNumIters(int maxNumIters) {
-		this.maxNumIters = maxNumIters;
 	}
 
 	/**
@@ -1778,7 +1741,7 @@ public class GroupLassoLearner extends Learner {
 		return new SparseDesignMatrix(groups, indices, values);
 	}
 
-	protected boolean doOnePass(double[][][] x, double[] tl1, boolean isFullPass, boolean[] activeSet,
+	protected boolean doOnePassGaussian(double[][][] x, double[] tl1, boolean isFullPass, boolean[] activeSet,
 			double[][] w, double[] stepSize, double[] g, double[] gradient, double[] rTrain) {
 		boolean activeSetChanged = false;
 
@@ -1828,60 +1791,8 @@ public class GroupLassoLearner extends Learner {
 
 		return activeSetChanged;
 	}
-
-	protected boolean doOnePass(double[][][] x, double[] y, double[] tl1, boolean isFullPass, boolean[] activeSet,
-			double[][] w, double[] stepSize, double[] g, double[] gradient, double[] pTrain, double[] rTrain) {
-		boolean activeSetChanged = false;
-
-		for (int k = 0; k < x.length; k++) {
-			if (!isFullPass && !activeSet[k]) {
-				continue;
-			}
-
-			double[][] block = x[k];
-			double[] beta = w[k];
-			double tk = stepSize[k];
-
-			// Proximal gradient method
-			computeGradient(block, rTrain, gradient);
-
-			for (int j = 0; j < beta.length; j++) {
-				g[j] = beta[j] + tk * gradient[j];
-			}
-
-			double norm = Math.sqrt(StatUtils.sumSq(g, 0, beta.length));
-			double lambda = tl1[k] * tk;
-			if (norm > lambda) {
-				VectorUtils.multiply(g, (1 - lambda / norm));
-			} else {
-				Arrays.fill(g, 0);
-			}
-
-			// Update predictions
-			for (int j = 0; j < beta.length; j++) {
-				double[] t = block[j];
-				double delta = g[j] - beta[j];
-				for (int i = 0; i < y.length; i++) {
-					pTrain[i] += delta * t[i];
-				}
-			}
-			OptimUtils.computePseudoResidual(pTrain, y, rTrain);
-
-			// Update weights
-			for (int j = 0; j < beta.length; j++) {
-				beta[j] = g[j];
-			}
-
-			if (isFullPass && !activeSet[k] && !ArrayUtils.isConstant(beta, 0, beta.length, 0)) {
-				activeSetChanged = true;
-				activeSet[k] = true;
-			}
-		}
-
-		return activeSetChanged;
-	}
 	
-	protected boolean doOnePass(int[][][] indices, double[][][] values, double[] tl1, boolean isFullPass,
+	protected boolean doOnePassGaussian(int[][][] indices, double[][][] values, double[] tl1, boolean isFullPass,
 			boolean[] activeSet, double[][] w, double[] stepSize, double[] g, double[] gradient, double[] rTrain) {
 		boolean activeSetChanged = false;
 
@@ -1934,7 +1845,59 @@ public class GroupLassoLearner extends Learner {
 		return activeSetChanged;
 	}
 
-	protected boolean doOnePass(int[][][] indices, int[][] indexUnion, double[][][] values, double[] y, double[] tl1, 
+	protected boolean doOnePassBinomial(double[][][] x, double[] y, double[] tl1, boolean isFullPass, boolean[] activeSet,
+			double[][] w, double[] stepSize, double[] g, double[] gradient, double[] pTrain, double[] rTrain) {
+		boolean activeSetChanged = false;
+
+		for (int k = 0; k < x.length; k++) {
+			if (!isFullPass && !activeSet[k]) {
+				continue;
+			}
+
+			double[][] block = x[k];
+			double[] beta = w[k];
+			double tk = stepSize[k];
+
+			// Proximal gradient method
+			computeGradient(block, rTrain, gradient);
+
+			for (int j = 0; j < beta.length; j++) {
+				g[j] = beta[j] + tk * gradient[j];
+			}
+
+			double norm = Math.sqrt(StatUtils.sumSq(g, 0, beta.length));
+			double lambda = tl1[k] * tk;
+			if (norm > lambda) {
+				VectorUtils.multiply(g, (1 - lambda / norm));
+			} else {
+				Arrays.fill(g, 0);
+			}
+
+			// Update predictions
+			for (int j = 0; j < beta.length; j++) {
+				double[] t = block[j];
+				double delta = g[j] - beta[j];
+				for (int i = 0; i < y.length; i++) {
+					pTrain[i] += delta * t[i];
+				}
+			}
+			OptimUtils.computePseudoResidual(pTrain, y, rTrain);
+
+			// Update weights
+			for (int j = 0; j < beta.length; j++) {
+				beta[j] = g[j];
+			}
+
+			if (isFullPass && !activeSet[k] && !ArrayUtils.isConstant(beta, 0, beta.length, 0)) {
+				activeSetChanged = true;
+				activeSet[k] = true;
+			}
+		}
+
+		return activeSetChanged;
+	}
+
+	protected boolean doOnePassBinomial(int[][][] indices, int[][] indexUnion, double[][][] values, double[] y, double[] tl1, 
 			boolean isFullPass, boolean[] activeSet, double[][] w, double[] stepSize, double[] g, double[] gradient,
 			double[] pTrain, double[] rTrain) {
 		boolean activeSetChanged = false;
@@ -1993,7 +1956,7 @@ public class GroupLassoLearner extends Learner {
 		return activeSetChanged;
 	}
 
-	protected double findMaxLambda(double[][][] x, double[] rTrain, double[] gradient) {
+	protected double findMaxLambdaGaussian(double[][][] x, double[] rTrain, double[] gradient) {
 		double mean = 0;
 		if (fitIntercept) {
 			mean = OptimUtils.fitIntercept(rTrain);
@@ -2011,27 +1974,8 @@ public class GroupLassoLearner extends Learner {
 		}
 		return maxLambda;
 	}
-
-	protected double findMaxLambda(double[][][] x, double[] y, double[] pTrain, double[] rTrain, double[] gradient) {
-		if (fitIntercept) {
-			OptimUtils.fitIntercept(pTrain, rTrain, y);
-		}
-		double maxLambda = 0;
-		for (double[][] block : x) {
-			computeGradient(block, rTrain, gradient);
-			double t = Math.sqrt(StatUtils.sumSq(gradient, 0, block.length)) / Math.sqrt(block.length);
-			if (t > maxLambda) {
-				maxLambda = t;
-			}
-		}
-		if (fitIntercept) {
-			Arrays.fill(pTrain, 0);
-			OptimUtils.computePseudoResidual(pTrain, y, rTrain);
-		}
-		return maxLambda;
-	}
 	
-	protected double findMaxLambda(int[][][] indices, double[][][] values, double[] rTrain, double[] gradient) {
+	protected double findMaxLambdaGaussian(int[][][] indices, double[][][] values, double[] rTrain, double[] gradient) {
 		double mean = 0;
 		if (fitIntercept) {
 			mean = OptimUtils.fitIntercept(rTrain);
@@ -2051,8 +1995,27 @@ public class GroupLassoLearner extends Learner {
 		}
 		return maxLambda;
 	}
+
+	protected double findMaxLambdaBinomial(double[][][] x, double[] y, double[] pTrain, double[] rTrain, double[] gradient) {
+		if (fitIntercept) {
+			OptimUtils.fitIntercept(pTrain, rTrain, y);
+		}
+		double maxLambda = 0;
+		for (double[][] block : x) {
+			computeGradient(block, rTrain, gradient);
+			double t = Math.sqrt(StatUtils.sumSq(gradient, 0, block.length)) / Math.sqrt(block.length);
+			if (t > maxLambda) {
+				maxLambda = t;
+			}
+		}
+		if (fitIntercept) {
+			Arrays.fill(pTrain, 0);
+			OptimUtils.computePseudoResidual(pTrain, y, rTrain);
+		}
+		return maxLambda;
+	}
 	
-	protected double findMaxLambda(int[][][] indices, double[][][] values, double[] y, double[] pTrain,
+	protected double findMaxLambdaBinomial(int[][][] indices, double[][][] values, double[] y, double[] pTrain,
 			double[] rTrain, double[] gradient) {
 		if (fitIntercept) {
 			OptimUtils.fitIntercept(pTrain, rTrain, y);
@@ -2074,7 +2037,7 @@ public class GroupLassoLearner extends Learner {
 		return maxLambda;
 	}
 	
-	protected GLM getGLM(int p, int[][] attrs, boolean[] selected, double[] coef, double intercept) {
+	protected GLM getGLM(int p, int[][] attrs, boolean[] selected, double[] coef, double intercept, LinkFunction link) {
 		GLM glm = new GLM(p);
 		int k = 0;
 		double[] w = glm.coefficients(0);
@@ -2087,10 +2050,11 @@ public class GroupLassoLearner extends Learner {
 			}
 		}
 		glm.intercept[0] = intercept;
+		glm.link = link;
 		return glm;
 	}
 	
-	protected GLM getGLM(int p, int[][] attrs, double[][] coef, double intercept) {
+	protected GLM getGLM(int p, int[][] attrs, double[][] coef, double intercept, LinkFunction link) {
 		GLM glm = new GLM(p);
 		double[] w = glm.coefficients(0);
 		for (int g = 0; g < attrs.length; g++) {
@@ -2101,6 +2065,7 @@ public class GroupLassoLearner extends Learner {
 			}
 		}
 		glm.intercept[0] = intercept;
+		glm.link = link;
 		return glm;
 	}
 	
@@ -2132,7 +2097,7 @@ public class GroupLassoLearner extends Learner {
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
 		GLM glm = ridgeLearner.buildBinaryClassifier(attrs, xNew, y, maxNumIters, 1e-8);
-		return getGLM(p, groups, selected, glm.coefficients(0), glm.intercept(0));
+		return getGLM(p, groups, selected, glm.coefficients(0), glm.intercept(0), LinkFunction.LOGIT);
 	}
 	
 	protected GLM refitClassifier(int p, int[][] groups, boolean[] selected, int[][][] indices, double[][][] values, double[] y, double[][] w, int maxNumIters) {
@@ -2170,10 +2135,10 @@ public class GroupLassoLearner extends Learner {
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
 		GLM glm = ridgeLearner.buildBinaryClassifier(attrs, idxNew, valNew, y, maxNumIters, 1e-8);
-		return getGLM(p, groups, selected, glm.coefficients(0), glm.intercept(0));
+		return getGLM(p, groups, selected, glm.coefficients(0), glm.intercept(0), LinkFunction.LOGIT);
 	}
 	
-	protected GLM refitRegressor(int p, int[][] attrs, boolean[] selected, double[][][] x, double[] y, double[][] w, int maxNumIters) {
+	protected GLM refitGaussianRegressor(int p, int[][] attrs, boolean[] selected, double[][][] x, double[] y, double[][] w, int maxNumIters) {
 		List<double[]> xList = new ArrayList<>();
 		for (int g = 0; g < selected.length; g++) {
 			if (selected[g]) {
@@ -2211,11 +2176,11 @@ public class GroupLassoLearner extends Learner {
 		ridgeLearner.fitIntercept(fitIntercept);
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
-		GLM glm = ridgeLearner.buildRegressor(attrsNew, xNew, y, maxNumIters, 1e-8);
-		return getGLM(p, attrs, selected, glm.coefficients(0), glm.intercept(0));
+		GLM glm = ridgeLearner.buildGaussianRegressor(attrsNew, xNew, y, maxNumIters, 1e-8);
+		return getGLM(p, attrs, selected, glm.coefficients(0), glm.intercept(0), LinkFunction.IDENTITY);
 	}
 
-	protected GLM refitRegressor(int p, int[][] groups, boolean[] selected, int[][][] indices, double[][][] values, double[] y, double[][] w, int maxNumIters) {
+	protected GLM refitGaussianRegressor(int p, int[][] groups, boolean[] selected, int[][][] indices, double[][][] values, double[] y, double[][] w, int maxNumIters) {
 		List<int[]> iList = new ArrayList<>();
 		List<double[]> vList = new ArrayList<>();
 		for (int g = 0; g < selected.length; g++) {
@@ -2260,8 +2225,8 @@ public class GroupLassoLearner extends Learner {
 		ridgeLearner.fitIntercept(fitIntercept);
 		// A ridge regression with very small regularization parameter
 		// This often improves stability a lot
-		GLM glm = ridgeLearner.buildRegressor(attrs, idxNew, valNew, y, maxNumIters, 1e-8);
-		return getGLM(p, groups, selected, glm.coefficients(0), glm.intercept(0));
+		GLM glm = ridgeLearner.buildGaussianRegressor(attrs, idxNew, valNew, y, maxNumIters, 1e-8);
+		return getGLM(p, groups, selected, glm.coefficients(0), glm.intercept(0), LinkFunction.IDENTITY);
 	}
 
 }

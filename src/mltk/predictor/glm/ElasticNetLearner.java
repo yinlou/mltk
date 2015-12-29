@@ -11,7 +11,8 @@ import mltk.core.Instances;
 import mltk.core.NominalAttribute;
 import mltk.core.SparseVector;
 import mltk.core.io.InstancesReader;
-import mltk.predictor.Learner;
+import mltk.predictor.Family;
+import mltk.predictor.LinkFunction;
 import mltk.predictor.io.PredictorWriter;
 import mltk.util.MathUtils;
 import mltk.util.OptimUtils;
@@ -24,7 +25,7 @@ import mltk.util.VectorUtils;
  * @author Yin Lou
  * 
  */
-public class ElasticNetLearner extends Learner {
+public class ElasticNetLearner extends GLMLearner {
 
 	static class Options extends LearnerWithTaskOptions {
 
@@ -64,7 +65,7 @@ public class ElasticNetLearner extends Learner {
 		Task task = null;
 		try {
 			parser.parse(args);
-			task = Task.getEnum(opts.task);
+			task = Task.get(opts.task);
 		} catch (IllegalArgumentException e) {
 			parser.printUsage();
 			System.exit(1);
@@ -116,13 +117,29 @@ public class ElasticNetLearner extends Learner {
 		}
 		switch (task) {
 			case REGRESSION:
-				glm = buildRegressor(instances, maxNumIters, lambda, l1Ratio);
+				glm = buildGaussianRegressor(instances, maxNumIters, lambda, l1Ratio);
 				break;
 			case CLASSIFICATION:
 				glm = buildClassifier(instances, maxNumIters, lambda, l1Ratio);
 				break;
 			default:
 				break;
+		}
+		return glm;
+	}
+	
+	@Override
+	public GLM build(Instances trainSet, Family family) {
+		GLM glm = null;
+		switch (family) {
+			case GAUSSIAN:
+				glm = buildGaussianRegressor(trainSet, maxNumIters, lambda, l1Ratio);
+				break;
+			case BINOMIAL:
+				glm = buildClassifier(trainSet, maxNumIters, lambda, l1Ratio);
+				break;
+			default:
+				throw new IllegalArgumentException("Unsupported family: " + family);
 		}
 		return glm;
 	}
@@ -167,7 +184,7 @@ public class ElasticNetLearner extends Learner {
 				intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 			}
 
-			doOnePass(x, theta, y, tl1, tl2, w, pTrain, rTrain);
+			doOnePassBinomial(x, theta, y, tl1, tl2, w, pTrain, rTrain);
 
 			double currLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 
@@ -180,7 +197,7 @@ public class ElasticNetLearner extends Learner {
 			}
 		}
 
-		return GLMOptimUtils.getGLM(attrs, w, intercept);
+		return GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.LOGIT);
 	}
 
 	/**
@@ -225,7 +242,7 @@ public class ElasticNetLearner extends Learner {
 				intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 			}
 
-			doOnePass(indices, values, theta, y, tl1, tl2, w, pTrain, rTrain);
+			doOnePassBinomial(indices, values, theta, y, tl1, tl2, w, pTrain, rTrain);
 
 			double currLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 
@@ -238,7 +255,7 @@ public class ElasticNetLearner extends Learner {
 			}
 		}
 
-		return GLMOptimUtils.getGLM(attrs, w, intercept);
+		return GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.LOGIT);
 	}
 
 	/**
@@ -270,7 +287,7 @@ public class ElasticNetLearner extends Learner {
 			theta[i] = StatUtils.sumSq(x[i]) / 4;
 		}
 
-		double maxLambda = findMaxLambda(x, y, pTrain, rTrain, l1Ratio);
+		double maxLambda = findMaxLambdaBinomial(x, y, pTrain, rTrain, l1Ratio);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -291,7 +308,7 @@ public class ElasticNetLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
 
-				doOnePass(x, theta, y, tl1, tl2, w, pTrain, rTrain);
+				doOnePassBinomial(x, theta, y, tl1, tl2, w, pTrain, rTrain);
 
 				double currLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 
@@ -304,7 +321,7 @@ public class ElasticNetLearner extends Learner {
 				}
 			}
 
-			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept);
+			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.LOGIT);
 			lambda *= alpha;
 		}
 
@@ -341,7 +358,7 @@ public class ElasticNetLearner extends Learner {
 			theta[i] = StatUtils.sumSq(values[i]) / 4;
 		}
 
-		double maxLambda = findMaxLambda(indices, values, y, pTrain, rTrain, l1Ratio);
+		double maxLambda = findMaxLambdaBinomial(indices, values, y, pTrain, rTrain, l1Ratio);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -362,7 +379,7 @@ public class ElasticNetLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(pTrain, rTrain, y);
 				}
 
-				doOnePass(indices, values, theta, y, tl1, tl2, w, pTrain, rTrain);
+				doOnePassBinomial(indices, values, theta, y, tl1, tl2, w, pTrain, rTrain);
 
 				double currLoss = GLMOptimUtils.computeElasticNetLoss(pTrain, y, w, lambda1, lambda2);
 
@@ -375,7 +392,7 @@ public class ElasticNetLearner extends Learner {
 				}
 			}
 
-			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept);
+			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.LOGIT);
 			lambda *= alpha;
 		}
 
@@ -669,12 +686,12 @@ public class ElasticNetLearner extends Learner {
 	 * @param l1Ratio the L1 ratio.
 	 * @return an elastic-net penalized regressor.
 	 */
-	public GLM buildRegressor(Instances trainSet, boolean isSparse, int maxNumIters, double lambda, double l1Ratio) {
+	public GLM buildGaussianRegressor(Instances trainSet, boolean isSparse, int maxNumIters, double lambda, double l1Ratio) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
 			double[] cList = sd.cList;
 
-			GLM glm = buildRegressor(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, lambda, l1Ratio);
+			GLM glm = buildGaussianRegressor(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, lambda, l1Ratio);
 
 			double[] w = glm.w[0];
 			for (int j = 0; j < cList.length; j++) {
@@ -687,7 +704,7 @@ public class ElasticNetLearner extends Learner {
 			DenseDataset dd = getDenseDataset(trainSet, true);
 			double[] cList = dd.cList;
 
-			GLM glm = buildRegressor(dd.attrs, dd.x, dd.y, maxNumIters, lambda, l1Ratio);
+			GLM glm = buildGaussianRegressor(dd.attrs, dd.x, dd.y, maxNumIters, lambda, l1Ratio);
 
 			double[] w = glm.w[0];
 			for (int j = 0; j < cList.length; j++) {
@@ -707,8 +724,8 @@ public class ElasticNetLearner extends Learner {
 	 * @param l1Ratio the L1 ratio.
 	 * @return an elastic-net penalized regressor.
 	 */
-	public GLM buildRegressor(Instances trainSet, int maxNumIters, double lambda, double l1Ratio) {
-		return buildRegressor(trainSet, isSparse(trainSet), maxNumIters, lambda, l1Ratio);
+	public GLM buildGaussianRegressor(Instances trainSet, int maxNumIters, double lambda, double l1Ratio) {
+		return buildGaussianRegressor(trainSet, isSparse(trainSet), maxNumIters, lambda, l1Ratio);
 	}
 
 	/**
@@ -724,7 +741,7 @@ public class ElasticNetLearner extends Learner {
 	 * @param l1Ratio the L1 ratio.
 	 * @return an elastic-net penalized regressor.
 	 */
-	public GLM buildRegressor(int[] attrs, double[][] x, double[] y, int maxNumIters, double lambda, double l1Ratio) {
+	public GLM buildGaussianRegressor(int[] attrs, double[][] x, double[] y, int maxNumIters, double lambda, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
 
@@ -753,7 +770,7 @@ public class ElasticNetLearner extends Learner {
 				intercept += OptimUtils.fitIntercept(rTrain);
 			}
 
-			doOnePass(x, sq, tl1, tl2, w, rTrain);
+			doOnePassGaussian(x, sq, tl1, tl2, w, rTrain);
 
 			double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 
@@ -766,7 +783,7 @@ public class ElasticNetLearner extends Learner {
 			}
 		}
 
-		return GLMOptimUtils.getGLM(attrs, w, intercept);
+		return GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.IDENTITY);
 	}
 
 	/**
@@ -783,7 +800,7 @@ public class ElasticNetLearner extends Learner {
 	 * @param l1Ratio the L1 ratio.
 	 * @return an elastic-net penalized regressor.
 	 */
-	public GLM buildRegressor(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
+	public GLM buildGaussianRegressor(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
 			double lambda, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
@@ -813,7 +830,7 @@ public class ElasticNetLearner extends Learner {
 				intercept += OptimUtils.fitIntercept(rTrain);
 			}
 
-			doOnePass(indices, values, sq, tl1, tl2, w, rTrain);
+			doOnePassGaussian(indices, values, sq, tl1, tl2, w, rTrain);
 
 			double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 
@@ -826,7 +843,7 @@ public class ElasticNetLearner extends Learner {
 			}
 		}
 
-		return GLMOptimUtils.getGLM(attrs, w, intercept);
+		return GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.IDENTITY);
 	}
 
 	/**
@@ -840,13 +857,13 @@ public class ElasticNetLearner extends Learner {
 	 * @param l1Ratio the L1 ratio.
 	 * @return elastic-net penalized regressors.
 	 */
-	public GLM[] buildRegressors(Instances trainSet, boolean isSparse, int maxNumIters, int numLambdas,
+	public GLM[] buildGaussianRegressors(Instances trainSet, boolean isSparse, int maxNumIters, int numLambdas,
 			double minLambdaRatio, double l1Ratio) {
 		if (isSparse) {
 			SparseDataset sd = getSparseDataset(trainSet, true);
 			double[] cList = sd.cList;
 
-			GLM[] glms = buildRegressors(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, numLambdas,
+			GLM[] glms = buildGaussianRegressors(sd.attrs, sd.indices, sd.values, sd.y, maxNumIters, numLambdas,
 					minLambdaRatio, l1Ratio);
 
 			for (GLM glm : glms) {
@@ -862,7 +879,7 @@ public class ElasticNetLearner extends Learner {
 			DenseDataset dd = getDenseDataset(trainSet, true);
 			double[] cList = dd.cList;
 
-			GLM[] glms = buildRegressors(dd.attrs, dd.x, dd.y, maxNumIters, numLambdas, minLambdaRatio, l1Ratio);
+			GLM[] glms = buildGaussianRegressors(dd.attrs, dd.x, dd.y, maxNumIters, numLambdas, minLambdaRatio, l1Ratio);
 
 			for (GLM glm : glms) {
 				double[] w = glm.w[0];
@@ -886,9 +903,9 @@ public class ElasticNetLearner extends Learner {
 	 * @param l1Ratio the L1 ratio.
 	 * @return elastic-net penalized regressors.
 	 */
-	public GLM[] buildRegressors(Instances trainSet, int maxNumIters, int numLambdas, double minLambdaRatio,
+	public GLM[] buildGaussianRegressors(Instances trainSet, int maxNumIters, int numLambdas, double minLambdaRatio,
 			double l1Ratio) {
-		return buildRegressors(trainSet, isSparse(trainSet), maxNumIters, numLambdas, minLambdaRatio, l1Ratio);
+		return buildGaussianRegressors(trainSet, isSparse(trainSet), maxNumIters, numLambdas, minLambdaRatio, l1Ratio);
 	}
 
 	/**
@@ -905,7 +922,7 @@ public class ElasticNetLearner extends Learner {
 	 * @param l1Ratio the L1 ratio.
 	 * @return elastic-net penalized regressors.
 	 */
-	public GLM[] buildRegressors(int[] attrs, double[][] x, double[] y, int maxNumIters, int numLambdas,
+	public GLM[] buildGaussianRegressors(int[] attrs, double[][] x, double[] y, int maxNumIters, int numLambdas,
 			double minLambdaRatio, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
@@ -925,7 +942,7 @@ public class ElasticNetLearner extends Learner {
 		}
 
 		// Determine max lambda
-		double maxLambda = findMaxLambda(x, y, l1Ratio);
+		double maxLambda = findMaxLambdaGaussian(x, y, l1Ratio);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -947,7 +964,7 @@ public class ElasticNetLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(rTrain);
 				}
 
-				doOnePass(x, sq, tl1, tl2, w, rTrain);
+				doOnePassGaussian(x, sq, tl1, tl2, w, rTrain);
 
 				double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 
@@ -961,7 +978,7 @@ public class ElasticNetLearner extends Learner {
 			}
 
 			lambda *= alpha;
-			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept);
+			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.IDENTITY);
 		}
 
 		return glms;
@@ -982,7 +999,7 @@ public class ElasticNetLearner extends Learner {
 	 * @param l1Ratio the L1 ratio.
 	 * @return elastic-net penalized regressors.
 	 */
-	public GLM[] buildRegressors(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
+	public GLM[] buildGaussianRegressors(int[] attrs, int[][] indices, double[][] values, double[] y, int maxNumIters,
 			int numLambdas, double minLambdaRatio, double l1Ratio) {
 		double[] w = new double[attrs.length];
 		double intercept = 0;
@@ -1002,7 +1019,7 @@ public class ElasticNetLearner extends Learner {
 		}
 
 		// Determine max lambda
-		double maxLambda = findMaxLambda(indices, values, y, l1Ratio);
+		double maxLambda = findMaxLambdaGaussian(indices, values, y, l1Ratio);
 
 		// Dampening factor for lambda
 		double alpha = Math.pow(minLambdaRatio, 1.0 / numLambdas);
@@ -1024,7 +1041,7 @@ public class ElasticNetLearner extends Learner {
 					intercept += OptimUtils.fitIntercept(rTrain);
 				}
 
-				doOnePass(indices, values, sq, tl1, tl2, w, rTrain);
+				doOnePassGaussian(indices, values, sq, tl1, tl2, w, rTrain);
 
 				double currLoss = GLMOptimUtils.computeElasticNetLoss(rTrain, w, lambda1, lambda2);
 
@@ -1038,13 +1055,13 @@ public class ElasticNetLearner extends Learner {
 			}
 			
 			lambda *= alpha;
-			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept);
+			glms[g] = GLMOptimUtils.getGLM(attrs, w, intercept, LinkFunction.IDENTITY);
 		}
 
 		return glms;
 	}
 
-	protected void doOnePass(double[][] x, double[] sq, final double tl1, final double tl2, double[] w, double[] rTrain) {
+	protected void doOnePassGaussian(double[][] x, double[] sq, final double tl1, final double tl2, double[] w, double[] rTrain) {
 		for (int j = 0; j < x.length; j++) {
 			double[] v = x[j];
 
@@ -1068,8 +1085,38 @@ public class ElasticNetLearner extends Learner {
 			}
 		}
 	}
+	
+	protected void doOnePassGaussian(int[][] indices, double[][] values, double[] sq, final double tl1, final double tl2,
+			double[] w, double[] rTrain) {
+		for (int j = 0; j < indices.length; j++) {
+			// Calculate weight updates using naive updates
+			double wNew = w[j] * sq[j];
+			int[] index = indices[j];
+			double[] value = values[j];
+			for (int i = 0; i < index.length; i++) {
+				wNew += rTrain[index[i]] * value[i];
+			}
 
-	protected void doOnePass(double[][] x, double[] theta, double[] y, final double tl1, final double tl2, double[] w,
+			if (Math.abs(wNew) <= tl1) {
+				wNew = 0;
+			} else if (wNew > 0) {
+				wNew -= tl1;
+			} else {
+				wNew += tl1;
+			}
+			wNew /= (sq[j] + tl2);
+
+			double delta = wNew - w[j];
+			w[j] = wNew;
+
+			// Update residuals
+			for (int i = 0; i < index.length; i++) {
+				rTrain[index[i]] -= delta * value[i];
+			}
+		}
+	}
+
+	protected void doOnePassBinomial(double[][] x, double[] theta, double[] y, final double tl1, final double tl2, double[] w,
 			double[] pTrain, double[] rTrain) {
 		for (int j = 0; j < x.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
@@ -1100,38 +1147,8 @@ public class ElasticNetLearner extends Learner {
 			}
 		}
 	}
-
-	protected void doOnePass(int[][] indices, double[][] values, double[] sq, final double tl1, final double tl2,
-			double[] w, double[] rTrain) {
-		for (int j = 0; j < indices.length; j++) {
-			// Calculate weight updates using naive updates
-			double wNew = w[j] * sq[j];
-			int[] index = indices[j];
-			double[] value = values[j];
-			for (int i = 0; i < index.length; i++) {
-				wNew += rTrain[index[i]] * value[i];
-			}
-
-			if (Math.abs(wNew) <= tl1) {
-				wNew = 0;
-			} else if (wNew > 0) {
-				wNew -= tl1;
-			} else {
-				wNew += tl1;
-			}
-			wNew /= (sq[j] + tl2);
-
-			double delta = wNew - w[j];
-			w[j] = wNew;
-
-			// Update residuals
-			for (int i = 0; i < index.length; i++) {
-				rTrain[index[i]] -= delta * value[i];
-			}
-		}
-	}
-
-	protected void doOnePass(int[][] indices, double[][] values, double[] theta, double[] y, final double tl1,
+	
+	protected void doOnePassBinomial(int[][] indices, double[][] values, double[] theta, double[] y, final double tl1,
 			final double tl2, double[] w, double[] pTrain, double[] rTrain) {
 		for (int j = 0; j < indices.length; j++) {
 			if (Math.abs(theta[j]) <= MathUtils.EPSILON) {
@@ -1169,7 +1186,7 @@ public class ElasticNetLearner extends Learner {
 		}
 	}
 
-	protected double findMaxLambda(double[][] x, double[] y, double l1Ratio) {
+	protected double findMaxLambdaGaussian(double[][] x, double[] y, double l1Ratio) {
 		double mean = 0;
 		if (fitIntercept) {
 			mean = OptimUtils.fitIntercept(y);
@@ -1189,33 +1206,8 @@ public class ElasticNetLearner extends Learner {
 		}
 		return maxLambda;
 	}
-
-	protected double findMaxLambda(double[][] x, double[] y, double[] pTrain, double[] rTrain, double l1Ratio) {
-		if (fitIntercept) {
-			OptimUtils.fitIntercept(pTrain, rTrain, y);
-		}
-		double maxLambda = 0;
-		for (double[] col : x) {
-			double eta = 0;
-			for (int i = 0; i < col.length; i++) {
-				eta += rTrain[i] * col[i];
-			}
-
-			double t = Math.abs(eta);
-			if (t > maxLambda) {
-				maxLambda = t;
-			}
-		}
-		maxLambda /= y.length;
-		maxLambda /= l1Ratio;
-		if (fitIntercept) {
-			Arrays.fill(pTrain, 0);
-			OptimUtils.computePseudoResidual(pTrain, y, rTrain);
-		}
-		return maxLambda;
-	}
-
-	protected double findMaxLambda(int[][] indices, double[][] values, double[] y, double l1Ratio) {
+	
+	protected double findMaxLambdaGaussian(int[][] indices, double[][] values, double[] y, double l1Ratio) {
 		double mean = 0;
 		if (fitIntercept) {
 			mean = OptimUtils.fitIntercept(y);
@@ -1240,7 +1232,32 @@ public class ElasticNetLearner extends Learner {
 		return maxLambda;
 	}
 
-	protected double findMaxLambda(int[][] indices, double[][] values, double[] y, double[] pTrain, double[] rTrain, double l1Ratio) {
+	protected double findMaxLambdaBinomial(double[][] x, double[] y, double[] pTrain, double[] rTrain, double l1Ratio) {
+		if (fitIntercept) {
+			OptimUtils.fitIntercept(pTrain, rTrain, y);
+		}
+		double maxLambda = 0;
+		for (double[] col : x) {
+			double eta = 0;
+			for (int i = 0; i < col.length; i++) {
+				eta += rTrain[i] * col[i];
+			}
+
+			double t = Math.abs(eta);
+			if (t > maxLambda) {
+				maxLambda = t;
+			}
+		}
+		maxLambda /= y.length;
+		maxLambda /= l1Ratio;
+		if (fitIntercept) {
+			Arrays.fill(pTrain, 0);
+			OptimUtils.computePseudoResidual(pTrain, y, rTrain);
+		}
+		return maxLambda;
+	}
+
+	protected double findMaxLambdaBinomial(int[][] indices, double[][] values, double[] y, double[] pTrain, double[] rTrain, double l1Ratio) {
 		if (fitIntercept) {
 			OptimUtils.fitIntercept(pTrain, rTrain, y);
 		}
@@ -1270,33 +1287,6 @@ public class ElasticNetLearner extends Learner {
 	}
 
 	/**
-	 * Returns <code>true</code> if we fit intercept.
-	 * 
-	 * @return <code>true</code> if we fit intercept.
-	 */
-	public boolean fitIntercept() {
-		return fitIntercept;
-	}
-
-	/**
-	 * Sets whether we fit intercept.
-	 * 
-	 * @param fitIntercept whether we fit intercept.
-	 */
-	public void fitIntercept(boolean fitIntercept) {
-		this.fitIntercept = fitIntercept;
-	}
-
-	/**
-	 * Returns the convergence threshold epsilon.
-	 * 
-	 * @return the convergence threshold epsilon.
-	 */
-	public double getEpsilon() {
-		return epsilon;
-	}
-
-	/**
 	 * Returns the l1 ratio.
 	 * 
 	 * @return the l1 ratio.
@@ -1315,30 +1305,12 @@ public class ElasticNetLearner extends Learner {
 	}
 
 	/**
-	 * Returns the maximum number of iterations.
-	 * 
-	 * @return the maximum number of iterations.
-	 */
-	public int getMaxNumIters() {
-		return maxNumIters;
-	}
-
-	/**
 	 * Returns the task of this learner.
 	 * 
 	 * @return the task of this learner.
 	 */
 	public Task getTask() {
 		return task;
-	}
-
-	/**
-	 * Sets the convergence threshold epsilon.
-	 * 
-	 * @param epsilon the convergence threshold epsilon.
-	 */
-	public void setEpsilon(double epsilon) {
-		this.epsilon = epsilon;
 	}
 
 	/**
@@ -1357,15 +1329,6 @@ public class ElasticNetLearner extends Learner {
 	 */
 	public void setLambda(double lambda) {
 		this.lambda = lambda;
-	}
-
-	/**
-	 * Sets the maximum number of iterations.
-	 * 
-	 * @param maxNumIters the maximum number of iterations.
-	 */
-	public void setMaxNumIters(int maxNumIters) {
-		this.maxNumIters = maxNumIters;
 	}
 
 	/**
