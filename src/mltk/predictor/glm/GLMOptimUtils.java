@@ -6,7 +6,7 @@ import mltk.util.StatUtils;
 import mltk.util.VectorUtils;
 
 class GLMOptimUtils {
-	
+
 	static GLM getGLM(int[] attrs, double[] w, double intercept, LinkFunction link) {
 		final int p = attrs.length == 0 ? 0 : (StatUtils.max(attrs) + 1);
 		GLM glm = new GLM(p);

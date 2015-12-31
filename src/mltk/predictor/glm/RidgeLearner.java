@@ -122,6 +122,9 @@ public class RidgeLearner extends GLMLearner {
 	@Override
 	public GLM build(Instances trainSet, Family family) {
 		GLM glm = null;
+		if (maxNumIters < 0) {
+			maxNumIters = 20;
+		}
 		switch (family) {
 			case GAUSSIAN:
 				glm = buildGaussianRegressor(trainSet, maxNumIters, lambda);

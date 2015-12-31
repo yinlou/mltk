@@ -138,7 +138,13 @@ public class GroupLassoLearner extends GLMLearner {
 	
 	@Override
 	public GLM build(Instances trainSet, Family family) {
+		if (groups == null) {
+			throw new IllegalArgumentException("Groups are not set.");
+		}
 		GLM glm = null;
+		if (maxNumIters < 0) {
+			maxNumIters = 20;
+		}
 		switch (family) {
 			case GAUSSIAN:
 				glm = buildGaussianRegressor(trainSet, groups, maxNumIters, lambda);
