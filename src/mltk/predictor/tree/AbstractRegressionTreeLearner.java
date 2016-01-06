@@ -20,31 +20,30 @@ public abstract class AbstractRegressionTreeLearner extends AbstractTreeLearner 
 	
 	protected void getHistogram(Instances instances, List<IntDoublePair> pairs, List<Double> uniqueValues, double w,
 			double s, List<DoublePair> histogram) {
-		if (pairs.size() == 0) {
-			return;
-		}
-		double lastValue = pairs.get(0).v2;
-		double totalWeight = instances.get(pairs.get(0).v1).getWeight();
-		double sum = instances.get(pairs.get(0).v1).getTarget() * totalWeight;
+		if (pairs.size() > 0) {
+			double lastValue = pairs.get(0).v2;
+			double totalWeight = instances.get(pairs.get(0).v1).getWeight();
+			double sum = instances.get(pairs.get(0).v1).getTarget() * totalWeight;
 
-		for (int i = 1; i < pairs.size(); i++) {
-			IntDoublePair pair = pairs.get(i);
-			double value = pair.v2;
-			double weight = instances.get(pairs.get(i).v1).getWeight();
-			double resp = instances.get(pairs.get(i).v1).getTarget();
-			if (value != lastValue) {
-				uniqueValues.add(lastValue);
-				histogram.add(new DoublePair(totalWeight, sum));
-				lastValue = value;
-				totalWeight = weight;
-				sum = resp * weight;
-			} else {
-				totalWeight += weight;
-				sum += resp * weight;
+			for (int i = 1; i < pairs.size(); i++) {
+				IntDoublePair pair = pairs.get(i);
+				double value = pair.v2;
+				double weight = instances.get(pairs.get(i).v1).getWeight();
+				double resp = instances.get(pairs.get(i).v1).getTarget();
+				if (value != lastValue) {
+					uniqueValues.add(lastValue);
+					histogram.add(new DoublePair(totalWeight, sum));
+					lastValue = value;
+					totalWeight = weight;
+					sum = resp * weight;
+				} else {
+					totalWeight += weight;
+					sum += resp * weight;
+				}
 			}
+			uniqueValues.add(lastValue);
+			histogram.add(new DoublePair(totalWeight, sum));
 		}
-		uniqueValues.add(lastValue);
-		histogram.add(new DoublePair(totalWeight, sum));
 
 		if (pairs.size() != instances.size()) {
 			// Zero entries are present
