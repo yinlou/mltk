@@ -254,7 +254,7 @@ public class RegressionTreeLearner extends AbstractRegressionTreeLearner {
 		// stats[1]: weightedMean
 		// stats[2]: splitEval
 		double[] stats = new double[3];
-		if (maxDepth == 1) {
+		if (maxDepth == 0) {
 			getStats(instances, stats);
 			tree.root = new RegressionTreeLeaf(stats[1]);
 			return tree;
@@ -266,7 +266,7 @@ public class RegressionTreeLearner extends AbstractRegressionTreeLearner {
 		PriorityQueue<Element<RegressionTreeNode>> q = new PriorityQueue<>();
 		q.add(new Element<RegressionTreeNode>(tree.root, stats[2]));
 		datasets.put(tree.root, dataset);
-		depths.put(tree.root, 1);
+		depths.put(tree.root, 0);
 
 		while (!q.isEmpty()) {
 			Element<RegressionTreeNode> elemt = q.remove();
@@ -279,7 +279,7 @@ public class RegressionTreeLearner extends AbstractRegressionTreeLearner {
 				Dataset right = new Dataset(data.instances);
 				split(data, interiorNode, left, right);
 
-				if (depth + 1 == maxDepth) {
+				if (depth == maxDepth) {
 					getStats(left.instances, stats);
 					interiorNode.left = new RegressionTreeLeaf(stats[1]);
 					getStats(right.instances, stats);
