@@ -18,19 +18,11 @@ public class AUC extends SimpleMetric {
 
 		@Override
 		public int compare(DoublePair o1, DoublePair o2) {
-			if (o1.v1 < o2.v1) {
-				return -1;
-			} else if (o1.v1 > o2.v1) {
-				return 1;
-			} else {
-				if (o1.v2 < o2.v2) {
-					return -1;
-				} else if (o1.v2 > o2.v2) {
-					return 1;
-				} else {
-					return 0;
-				}
+			int cmp = Double.compare(o1.v1, o2.v1);
+			if (cmp == 0) {
+				cmp = Double.compare(o2.v2, o2.v2);
 			}
+			return cmp;
 		}
 
 	}
