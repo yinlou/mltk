@@ -6,7 +6,9 @@ import java.io.PrintWriter;
 import mltk.core.Instance;
 import mltk.predictor.ProbabilisticClassifier;
 import mltk.predictor.Regressor;
-import mltk.predictor.tree.RegressionTree;
+import mltk.predictor.tree.RTree;
+import mltk.predictor.tree.ensemble.BoostedRTrees;
+import mltk.util.MathUtils;
 import mltk.util.StatUtils;
 import mltk.util.VectorUtils;
 
@@ -18,7 +20,7 @@ import mltk.util.VectorUtils;
  */
 public class BRT implements ProbabilisticClassifier, Regressor {
 
-	protected BoostedRegressionTrees[] trees;
+	protected BoostedRTrees[] trees;
 
 	/**
 	 * Constructor.
@@ -33,9 +35,9 @@ public class BRT implements ProbabilisticClassifier, Regressor {
 	 * @param k the number of classes.
 	 */
 	public BRT(int k) {
-		trees = new BoostedRegressionTrees[k];
+		trees = new BoostedRTrees[k];
 		for (int i = 0; i < trees.length; i++) {
-			trees[i] = new BoostedRegressionTrees();
+			trees[i] = new BoostedRTrees();
 		}
 	}
 
@@ -45,7 +47,7 @@ public class BRT implements ProbabilisticClassifier, Regressor {
 	 * @param k the class k.
 	 * @return the tree list for class k.
 	 */
-	public BoostedRegressionTrees getRegressionTreeList(int k) {
+	public BoostedRTrees getRegressionTreeList(int k) {
 		return trees[k];
 	}
 
@@ -58,13 +60,15 @@ public class BRT implements ProbabilisticClassifier, Regressor {
 	@Override
 	public void read(BufferedReader in) throws Exception {
 		int k = Integer.parseInt(in.readLine().split(": ")[1]);
-		trees = new BoostedRegressionTrees[k];
+		trees = new BoostedRTrees[k];
 		for (int i = 0; i < trees.length; i++) {
 			int n = Integer.parseInt(in.readLine().split(": ")[1]);
-			trees[i] = new BoostedRegressionTrees();
+			trees[i] = new BoostedRTrees();
 			for (int j = 0; j < n; j++) {
-				in.readLine();
-				RegressionTree rt = new RegressionTree();
+				String line = in.readLine();
+				String predictorName = line.substring(1, line.length() - 1).split(": ")[1];
+				Class<?> clazz = Class.forName(predictorName);
+				RTree rt = (RTree) clazz.newInstance();
 				rt.read(in);
 				trees[i].add(rt);
 
@@ -78,9 +82,9 @@ public class BRT implements ProbabilisticClassifier, Regressor {
 	public void write(PrintWriter out) throws Exception {
 		out.printf("[Predictor: %s]\n", this.getClass().getCanonicalName());
 		out.println("K: " + trees.length);
-		for (BoostedRegressionTrees rtList : trees) {
+		for (BoostedRTrees rtList : trees) {
 			out.println("Length: " + rtList.size());
-			for (RegressionTree rt : rtList) {
+			for (RTree rt : rtList) {
 				rt.write(out);
 				out.println();
 			}
@@ -95,27 +99,35 @@ public class BRT implements ProbabilisticClassifier, Regressor {
 
 	@Override
 	public double[] predictProbabilities(Instance instance) {
-		double[] prob = new double[trees.length];
-		double[] pred = new double[trees.length];
-		for (int i = 0; i < trees.length; i++) {
-			pred[i] = trees[i].regress(instance);
+		if (trees.length == 1) {
+			double[] prob = new double[2];
+			double pred = regress(instance);
+			prob[1] = MathUtils.sigmoid(pred);
+			prob[0] = 1 - prob[1];
+			return prob;
+		} else {
+			double[] prob = new double[trees.length];
+			double[] pred = new double[trees.length];
+			for (int i = 0; i < trees.length; i++) {
+				pred[i] = trees[i].regress(instance);
+			}
+			double max = StatUtils.max(pred);
+			double sum = 0;
+			for (int i = 0; i < prob.length; i++) {
+				prob[i] = Math.exp(pred[i] - max);
+				sum += prob[i];
+			}
+			VectorUtils.divide(prob, sum);
+			return prob;
 		}
-		double max = StatUtils.max(pred);
-		double sum = 0;
-		for (int i = 0; i < prob.length; i++) {
-			prob[i] = Math.exp(pred[i] - max);
-			sum += prob[i];
-		}
-		VectorUtils.divide(prob, sum);
-		return prob;
 	}
 
 	@Override
 	public BRT copy() {
 		BRT copy = new BRT(trees.length);
 		for (int i = 0; i < trees.length; i++) {
-			BoostedRegressionTrees brts = trees[i];
-			for (RegressionTree rt : brts) {
+			BoostedRTrees brts = trees[i];
+			for (RTree rt : brts) {
 				copy.trees[i].add(rt.copy());
 			}
 		}

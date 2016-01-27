@@ -9,7 +9,7 @@ import java.io.PrintWriter;
  * @author Yin Lou
  * 
  */
-public class RegressionTreeLeaf extends RegressionTreeNode {
+public class RegressionTreeLeaf extends TreeNode {
 
 	protected double prediction;
 

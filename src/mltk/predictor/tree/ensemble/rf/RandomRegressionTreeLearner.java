@@ -8,10 +8,10 @@ import java.util.Set;
 import mltk.core.Attribute;
 import mltk.core.Instances;
 import mltk.predictor.tree.RegressionTree;
-import mltk.predictor.tree.RegressionTreeInteriorNode;
 import mltk.predictor.tree.RegressionTreeLeaf;
 import mltk.predictor.tree.RegressionTreeLearner;
-import mltk.predictor.tree.RegressionTreeNode;
+import mltk.predictor.tree.TreeInteriorNode;
+import mltk.predictor.tree.TreeNode;
 import mltk.util.Permutation;
 import mltk.util.Random;
 import mltk.util.tuple.DoublePair;
@@ -25,8 +25,8 @@ import mltk.util.tuple.IntDoublePair;
  */
 public class RandomRegressionTreeLearner extends RegressionTreeLearner {
 
-	private int numFeatures;
-	private Permutation perm;
+	protected int numFeatures;
+	protected Permutation perm;
 
 	/**
 	 * Constructor.
@@ -82,15 +82,15 @@ public class RandomRegressionTreeLearner extends RegressionTreeLearner {
 		return rt;
 	}
 
-	protected RegressionTreeNode createNode(Dataset dataset, int limit, double[] stats) {
+	protected TreeNode createNode(Dataset dataset, int limit, double[] stats) {
 		boolean stdIs0 = getStats(dataset.instances, stats);
 		final double totalWeights = stats[0];
-		final double weightedMean = stats[1];
-		final double sum = totalWeights * weightedMean;
+		final double sum = stats[1];
+		final double weightedMean = stats[2];
 
 		// 1. Check basic leaf conditions
 		if (stats[0] < limit || stdIs0) {
-			RegressionTreeNode node = new RegressionTreeLeaf(weightedMean);
+			RegressionTreeLeaf node = new RegressionTreeLeaf(weightedMean);
 			return node;
 		}
 
@@ -130,13 +130,11 @@ public class RandomRegressionTreeLearner extends RegressionTreeLearner {
 			Random rand = Random.getInstance();
 			IntDoublePair splitPoint = splits.get(rand.nextInt(splits.size()));
 			int attIndex = splitPoint.v1;
-			RegressionTreeNode node = new RegressionTreeInteriorNode(attIndex, splitPoint.v2);
-			if (stats.length > 2) {
-				stats[2] = bestEval + totalWeights * weightedMean * weightedMean;
-			}
+			TreeNode node = new TreeInteriorNode(attIndex, splitPoint.v2);
+			stats[3] = bestEval + totalWeights * weightedMean * weightedMean;
 			return node;
 		} else {
-			RegressionTreeNode node = new RegressionTreeLeaf(weightedMean);
+			RegressionTreeLeaf node = new RegressionTreeLeaf(weightedMean);
 			return node;
 		}
 	}

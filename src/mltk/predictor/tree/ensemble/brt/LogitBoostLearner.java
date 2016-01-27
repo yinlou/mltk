@@ -1,5 +1,6 @@
 package mltk.predictor.tree.ensemble.brt;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,11 +12,15 @@ import mltk.core.Instance;
 import mltk.core.Instances;
 import mltk.core.NominalAttribute;
 import mltk.core.io.InstancesReader;
-import mltk.predictor.Learner;
+import mltk.predictor.evaluation.Metric;
 import mltk.predictor.io.PredictorWriter;
-import mltk.predictor.tree.RegressionTree;
+import mltk.predictor.tree.RTree;
+import mltk.predictor.tree.RegressionTreeLearner;
+import mltk.predictor.tree.TreeLearner;
 import mltk.predictor.tree.RegressionTreeLearner.Mode;
+import mltk.predictor.tree.ensemble.TreeEnsembleLearner;
 import mltk.util.MathUtils;
+import mltk.util.OptimUtils;
 import mltk.util.Permutation;
 import mltk.util.Random;
 
@@ -31,7 +36,7 @@ import mltk.util.Random;
  * @author Yin Lou
  * 
  */
-public class LogitBoostLearner extends Learner {
+public class LogitBoostLearner extends TreeEnsembleLearner {
 	
 	static class Options extends LearnerOptions {
 
@@ -83,26 +88,29 @@ public class LogitBoostLearner extends Learner {
 
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
 
-		LogitBoostLearner logitBoostLearner = new LogitBoostLearner();
-		logitBoostLearner.setLearningRate(opts.learningRate);
-		logitBoostLearner.setMaxNumIters(opts.maxNumIters);
-		logitBoostLearner.setMaxNumLeaves(opts.maxNumLeaves);
-		logitBoostLearner.setVerbose(true);
+		LogitBoostLearner learner = new LogitBoostLearner();
+		learner.setLearningRate(opts.learningRate);
+		learner.setMaxNumIters(opts.maxNumIters);
+		learner.setVerbose(true);
+		
+		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
+		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
+		rtLearner.setMaxNumLeaves(opts.maxNumLeaves);
+		learner.setTreeLearner(rtLearner);
 
 		long start = System.currentTimeMillis();
-		BRT brt = logitBoostLearner.build(trainSet);
+		BRT brt = learner.build(trainSet);
 		long end = System.currentTimeMillis();
-		System.out.println("Time: " + (end - start) / 1000.0);
+		System.out.println("Time: " + (end - start) / 1000.0 + " (s).");
 
 		if (opts.outputModelPath != null) {
 			PredictorWriter.write(brt, opts.outputModelPath);
 		}
 	}
 
-	private int maxNumIters;
-	private int maxNumLeaves;
-	private double learningRate;
-	private double alpha;
+	protected int maxNumIters;
+	protected double learningRate;
+	protected double alpha;
 
 	/**
 	 * Constructor.
@@ -110,8 +118,7 @@ public class LogitBoostLearner extends Learner {
 	public LogitBoostLearner() {
 		verbose = false;
 		maxNumIters = 3500;
-		maxNumLeaves = 100;
-		learningRate = 1;
+		learningRate = 0.01;
 		alpha = 1;
 	}
 
@@ -150,23 +157,120 @@ public class LogitBoostLearner extends Learner {
 	public void setLearningRate(double learningRate) {
 		this.learningRate = learningRate;
 	}
-
+	
 	/**
-	 * Returns the maximum number of leaves.
+	 * Builds a classifier.
 	 * 
-	 * @return the maximum number of leaves.
-	 */
-	public int getMaxNumLeaves() {
-		return maxNumLeaves;
-	}
-
-	/**
-	 * Sets the maximum number of leaves.
-	 * 
+	 * @param trainSet the training set.
+	 * @param validSet the validation set.
+	 * @param maxNumIters the maximum number of iterations.
 	 * @param maxNumLeaves the maximum number of leaves.
+	 * @return a classifier.
 	 */
-	public void setMaxNumLeaves(int maxNumLeaves) {
-		this.maxNumLeaves = maxNumLeaves;
+	public BRT buildBinaryClassifier(Instances trainSet, Instances validSet, int maxNumIters, Metric metric) {
+		Attribute classAttribute = trainSet.getTargetAttribute();
+		if (classAttribute.getType() != Attribute.Type.NOMINAL) {
+			throw new IllegalArgumentException("Class attribute must be nominal.");
+		}
+		NominalAttribute clazz = (NominalAttribute) classAttribute;
+		if (clazz.getCardinality() != 2) {
+			throw new IllegalArgumentException("Only binary classification is accepted.");
+		}
+
+		BRT brt = new BRT(1);
+
+		List<Attribute> attributes = trainSet.getAttributes();
+		int limit = (int) (attributes.size() * alpha);
+		int[] indices = new int[limit];
+		Permutation perm = new Permutation(attributes.size());
+		if (alpha < 1) {
+			perm.permute();
+		}
+
+		// Backup targets and weights
+		double[] targetTrain = new double[trainSet.size()];
+		double[] weightTrain = new double[targetTrain.length];
+		for (int i = 0; i < targetTrain.length; i++) {
+			Instance instance = trainSet.get(i);
+			targetTrain[i] = instance.getTarget();
+			weightTrain[i] = instance.getWeight();
+		}
+
+		// Initialization
+		double[] predTrain = new double[targetTrain.length];
+		double[] probTrain = new double[targetTrain.length];
+		computeProbabilities(predTrain, probTrain);
+		double[] rTrain = new double[targetTrain.length];
+		OptimUtils.computePseudoResidual(predTrain, targetTrain, rTrain);
+		double[] predValid = new double[validSet.size()];
+
+		List<Double> measureList = new ArrayList<>(maxNumIters);
+		for (int iter = 0; iter < maxNumIters; iter++) {
+			// Prepare attributes
+			if (alpha < 1) {
+				int[] a = perm.getPermutation();
+				for (int i = 0; i < indices.length; i++) {
+					indices[i] = a[i];
+				}
+				Arrays.sort(indices);
+				List<Attribute> attList = trainSet.getAttributes(indices);
+				trainSet.setAttributes(attList);
+			}
+			
+			// Prepare training set
+			for (int i = 0; i < targetTrain.length; i++) {
+				Instance instance = trainSet.get(i);
+				double prob = probTrain[i];
+				double w = prob * (1 - prob);
+				instance.setTarget(rTrain[i] * weightTrain[i]);
+				instance.setWeight(w * weightTrain[i]);
+			}
+			
+			RTree rt = (RTree) treeLearner.build(trainSet);
+			if (learningRate != 1) {
+				rt.multiply(learningRate);
+			}
+			brt.trees[0].add(rt);
+			
+			for (int i = 0; i < predTrain.length; i++) {
+				double pred = rt.regress(trainSet.get(i));
+				predTrain[i] += pred;
+			}
+			for (int i = 0; i < predValid.length; i++) {
+				double pred = rt.regress(validSet.get(i));
+				predValid[i] += pred;
+			}
+
+			if (alpha < 1) {
+				// Restore attributes
+				trainSet.setAttributes(attributes);
+			}
+
+			// Update residuals and probabilities
+			OptimUtils.computePseudoResidual(predTrain, targetTrain, rTrain);
+			computeProbabilities(predTrain, probTrain);
+			
+			double measure = metric.eval(predValid, validSet);
+			measureList.add(measure);
+			if (verbose) {
+				System.out.println("Iteration " + iter + ": " + measure);
+			}
+		}
+		
+		// Search the best model on validation set
+		int idx = metric.searchBestMetricValueIndex(measureList);
+		for (int i = brt.trees[0].size() - 1; i > idx; i--) {
+			brt.trees[0].removeLast();
+		}
+
+		// Restore targets and weights
+		for (int i = 0; i < targetTrain.length; i++) {
+			Instance instance = trainSet.get(i);
+			instance.setTarget(targetTrain[i]);
+			instance.setWeight(weightTrain[i]);
+		}
+
+		return brt;
 	}
 
 	/**
@@ -178,7 +282,7 @@ public class LogitBoostLearner extends Learner {
 	 * @param maxNumLeaves the maximum number of leaves.
 	 * @return a classifier.
 	 */
-	public BRT buildClassifier(Instances trainSet, Instances validSet, int maxNumIters, int maxNumLeaves) {
+	public BRT buildClassifier(Instances trainSet, Instances validSet, int maxNumIters) {
 		Attribute classAttribute = trainSet.getTargetAttribute();
 		if (classAttribute.getType() != Attribute.Type.NOMINAL) {
 			throw new IllegalArgumentException("Class attribute must be nominal.");
@@ -224,10 +328,6 @@ public class LogitBoostLearner extends Learner {
 		}
 		double[][] predValid = new double[numClasses][validSet.size()];
 
-		RobustRegressionTreeLearner rtLearner = new RobustRegressionTreeLearner();
-		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
-		rtLearner.setMaxNumLeaves(maxNumLeaves);
-
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			// Prepare attributes
 			if (alpha < 1) {
@@ -253,7 +353,7 @@ public class LogitBoostLearner extends Learner {
 					instance.setWeight(w * weightTrain[i]);
 				}
 
-				RegressionTree rt = rtLearner.build(trainSet);
+				RTree rt = (RTree) treeLearner.build(trainSet);
 				rt.multiply(l);
 				brt.trees[k].add(rt);
 
@@ -276,7 +376,7 @@ public class LogitBoostLearner extends Learner {
 			}
 
 			// Update probabilities
-			predictProbabilities(predTrain, probTrain);
+			computeProbabilities(predTrain, probTrain);
 
 			if (verbose) {
 				double error = 0;
@@ -316,7 +416,7 @@ public class LogitBoostLearner extends Learner {
 	 * @param maxNumLeaves the maximum number of leaves.
 	 * @return a classifier.
 	 */
-	public BRT buildClassifier(Instances trainSet, int maxNumIters, int maxNumLeaves) {
+	public BRT buildClassifier(Instances trainSet, int maxNumIters) {
 		Attribute classAttribute = trainSet.getTargetAttribute();
 		if (classAttribute.getType() != Attribute.Type.NOMINAL) {
 			throw new IllegalArgumentException("Class attribute must be nominal.");
@@ -358,10 +458,6 @@ public class LogitBoostLearner extends Learner {
 			}
 		}
 
-		RobustRegressionTreeLearner rtLearner = new RobustRegressionTreeLearner();
-		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
-		rtLearner.setMaxNumLeaves(maxNumLeaves);
-
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			// Prepare attributes
 			if (alpha < 1) {
@@ -387,7 +483,7 @@ public class LogitBoostLearner extends Learner {
 					instance.setWeight(w * weight[i]);
 				}
 
-				RegressionTree rt = rtLearner.build(trainSet);
+				RTree rt = (RTree) treeLearner.build(trainSet);
 				rt.multiply(l);
 				brt.trees[k].add(rt);
 
@@ -404,7 +500,7 @@ public class LogitBoostLearner extends Learner {
 			}
 
 			// Update probabilities
-			predictProbabilities(predTrain, probTrain);
+			computeProbabilities(predTrain, probTrain);
 
 			if (verbose) {
 				double error = 0;
@@ -436,7 +532,7 @@ public class LogitBoostLearner extends Learner {
 		return brt;
 	}
 
-	protected void predictProbabilities(double[][] pred, double[][] prob) {
+	protected void computeProbabilities(double[][] pred, double[][] prob) {
 		for (int i = 0; i < pred[0].length; i++) {
 			double max = Double.NEGATIVE_INFINITY;
 			for (int k = 0; k < pred.length; k++) {
@@ -455,10 +551,24 @@ public class LogitBoostLearner extends Learner {
 			}
 		}
 	}
+	
+	protected void computeProbabilities(double[] pred, double[] prob) {
+		for (int i = 0; i < pred.length; i++) {
+			prob[i] = MathUtils.sigmoid(pred[i]);
+		}
+	}
 
 	@Override
 	public BRT build(Instances instances) {
-		return buildClassifier(instances, maxNumIters, maxNumLeaves);
+		return buildClassifier(instances, maxNumIters);
+	}
+	
+	@Override
+	public void setTreeLearner(TreeLearner treeLearner) {
+		if (!(treeLearner instanceof RobustRegressionTreeLearner)) {
+			throw new IllegalArgumentException("Only robust regression tree learners are accepted");
+		}
+		this.treeLearner = treeLearner;
 	}
 
 }

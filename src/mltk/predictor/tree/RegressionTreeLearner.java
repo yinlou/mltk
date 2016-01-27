@@ -26,7 +26,7 @@ import mltk.util.tuple.IntDoublePair;
  * @author Yin Lou
  *
  */
-public class RegressionTreeLearner extends AbstractRegressionTreeLearner {
+public class RegressionTreeLearner extends RTreeLearner {
 	
 	static class Options extends LearnerOptions {
 
@@ -251,49 +251,50 @@ public class RegressionTreeLearner extends AbstractRegressionTreeLearner {
 		RegressionTree tree = new RegressionTree();
 		final int limit = 5;
 		// stats[0]: totalWeights
-		// stats[1]: weightedMean
-		// stats[2]: splitEval
-		double[] stats = new double[3];
-		if (maxDepth == 0) {
+		// stats[1]: sum
+		// stats[2]: weightedMean
+		// stats[3]: splitEval
+		double[] stats = new double[4];
+		if (maxDepth <= 0) {
 			getStats(instances, stats);
 			tree.root = new RegressionTreeLeaf(stats[1]);
 			return tree;
 		}
-		Map<RegressionTreeNode, Dataset> datasets = new HashMap<>();
-		Map<RegressionTreeNode, Integer> depths = new HashMap<>();
+		Map<TreeNode, Dataset> datasets = new HashMap<>();
+		Map<TreeNode, Integer> depths = new HashMap<>();
 		Dataset dataset = Dataset.create(instances);
 		tree.root = createNode(dataset, limit, stats);
-		PriorityQueue<Element<RegressionTreeNode>> q = new PriorityQueue<>();
-		q.add(new Element<RegressionTreeNode>(tree.root, stats[2]));
+		PriorityQueue<Element<TreeNode>> q = new PriorityQueue<>();
+		q.add(new Element<TreeNode>(tree.root, stats[2]));
 		datasets.put(tree.root, dataset);
 		depths.put(tree.root, 0);
 
 		while (!q.isEmpty()) {
-			Element<RegressionTreeNode> elemt = q.remove();
-			RegressionTreeNode node = elemt.element;
+			Element<TreeNode> elemt = q.remove();
+			TreeNode node = elemt.element;
 			Dataset data = datasets.get(node);
 			int depth = depths.get(node);
 			if (!node.isLeaf()) {
-				RegressionTreeInteriorNode interiorNode = (RegressionTreeInteriorNode) node;
+				TreeInteriorNode interiorNode = (TreeInteriorNode) node;
 				Dataset left = new Dataset(data.instances);
 				Dataset right = new Dataset(data.instances);
 				split(data, interiorNode, left, right);
 
-				if (depth == maxDepth) {
+				if (depth >= maxDepth) {
 					getStats(left.instances, stats);
-					interiorNode.left = new RegressionTreeLeaf(stats[1]);
+					interiorNode.left = new RegressionTreeLeaf(stats[2]);
 					getStats(right.instances, stats);
-					interiorNode.right = new RegressionTreeLeaf(stats[1]);
+					interiorNode.right = new RegressionTreeLeaf(stats[2]);
 				} else {
 					interiorNode.left = createNode(left, limit, stats);
 					if (!interiorNode.left.isLeaf()) {
-						q.add(new Element<RegressionTreeNode>(interiorNode.left, stats[2]));
+						q.add(new Element<TreeNode>(interiorNode.left, stats[3]));
 						datasets.put(interiorNode.left, left);
 						depths.put(interiorNode.left, depth + 1);
 					}
 					interiorNode.right = createNode(right, limit, stats);
 					if (!interiorNode.right.isLeaf()) {
-						q.add(new Element<RegressionTreeNode>(interiorNode.right, stats[2]));
+						q.add(new Element<TreeNode>(interiorNode.right, stats[3]));
 						datasets.put(interiorNode.right, right);
 						depths.put(interiorNode.right, depth + 1);
 					}
@@ -306,18 +307,22 @@ public class RegressionTreeLearner extends AbstractRegressionTreeLearner {
 
 	protected RegressionTree buildMinLeafSizeLimitedTree(Instances instances, int limit) {
 		RegressionTree tree = new RegressionTree();
-		double[] stats = new double[3];
+		// stats[0]: totalWeights
+		// stats[1]: sum
+		// stats[2]: weightedMean
+		// stats[3]: splitEval
+		double[] stats = new double[4];
 		Dataset dataset = Dataset.create(instances);
-		Stack<RegressionTreeNode> nodes = new Stack<>();
+		Stack<TreeNode> nodes = new Stack<>();
 		Stack<Dataset> datasets = new Stack<>();
 		tree.root = createNode(dataset, limit, stats);
 		nodes.push(tree.root);
 		datasets.push(dataset);
 		while (!nodes.isEmpty()) {
-			RegressionTreeNode node = nodes.pop();
+			TreeNode node = nodes.pop();
 			Dataset data = datasets.pop();
 			if (!node.isLeaf()) {
-				RegressionTreeInteriorNode interiorNode = (RegressionTreeInteriorNode) node;
+				TreeInteriorNode interiorNode = (TreeInteriorNode) node;
 				Dataset left = new Dataset(data.instances);
 				Dataset right = new Dataset(data.instances);
 				split(data, interiorNode, left, right);
@@ -336,41 +341,42 @@ public class RegressionTreeLearner extends AbstractRegressionTreeLearner {
 		RegressionTree tree = new RegressionTree();
 		final int limit = 5;
 		// stats[0]: totalWeights
-		// stats[1]: weightedMean
-		// stats[2]: splitEval
-		double[] stats = new double[3];
-		Map<RegressionTreeNode, Double> nodePred = new HashMap<>();
-		Map<RegressionTreeNode, Dataset> datasets = new HashMap<>();
+		// stats[1]: sum
+		// stats[2]: weightedMean
+		// stats[3]: splitEval
+		double[] stats = new double[4];
+		Map<TreeNode, Double> nodePred = new HashMap<>();
+		Map<TreeNode, Dataset> datasets = new HashMap<>();
 		Dataset dataset = Dataset.create(instances);
-		PriorityQueue<Element<RegressionTreeNode>> q = new PriorityQueue<>();
+		PriorityQueue<Element<TreeNode>> q = new PriorityQueue<>();
 		tree.root = createNode(dataset, limit, stats);
-		q.add(new Element<RegressionTreeNode>(tree.root, stats[2]));
+		q.add(new Element<TreeNode>(tree.root, stats[2]));
 		datasets.put(tree.root, dataset);
 		nodePred.put(tree.root, stats[1]);
 
 		int numLeaves = 0;
 		while (!q.isEmpty()) {
-			Element<RegressionTreeNode> elemt = q.remove();
-			RegressionTreeNode node = elemt.element;
+			Element<TreeNode> elemt = q.remove();
+			TreeNode node = elemt.element;
 			Dataset data = datasets.get(node);
 			if (!node.isLeaf()) {
-				RegressionTreeInteriorNode interiorNode = (RegressionTreeInteriorNode) node;
+				TreeInteriorNode interiorNode = (TreeInteriorNode) node;
 				Dataset left = new Dataset(data.instances);
 				Dataset right = new Dataset(data.instances);
 				split(data, interiorNode, left, right);
 
 				interiorNode.left = createNode(left, limit, stats);
 				if (!interiorNode.left.isLeaf()) {
-					nodePred.put(interiorNode.left, stats[1]);
-					q.add(new Element<RegressionTreeNode>(interiorNode.left, stats[2]));
+					nodePred.put(interiorNode.left, stats[2]);
+					q.add(new Element<TreeNode>(interiorNode.left, stats[3]));
 					datasets.put(interiorNode.left, left);
 				} else {
 					numLeaves++;
 				}
 				interiorNode.right = createNode(right, limit, stats);
 				if (!interiorNode.right.isLeaf()) {
-					nodePred.put(interiorNode.right, stats[1]);
-					q.add(new Element<RegressionTreeNode>(interiorNode.right, stats[2]));
+					nodePred.put(interiorNode.right, stats[2]);
+					q.add(new Element<TreeNode>(interiorNode.right, stats[3]));
 					datasets.put(interiorNode.right, right);
 				} else {
 					numLeaves++;
@@ -383,14 +389,14 @@ public class RegressionTreeLearner extends AbstractRegressionTreeLearner {
 		}
 
 		// Convert interior nodes to leaves
-		Map<RegressionTreeNode, RegressionTreeNode> parent = new HashMap<>();
+		Map<TreeNode, TreeNode> parent = new HashMap<>();
 		traverse(tree.root, parent);
 		while (!q.isEmpty()) {
-			Element<RegressionTreeNode> elemt = q.remove();
-			RegressionTreeNode node = elemt.element;
+			Element<TreeNode> elemt = q.remove();
+			TreeNode node = elemt.element;
 
 			double prediction = nodePred.get(node);
-			RegressionTreeInteriorNode interiorNode = (RegressionTreeInteriorNode) parent.get(node);
+			TreeInteriorNode interiorNode = (TreeInteriorNode) parent.get(node);
 			if (interiorNode.left == node) {
 				interiorNode.left = new RegressionTreeLeaf(prediction);
 			} else {
@@ -401,15 +407,15 @@ public class RegressionTreeLearner extends AbstractRegressionTreeLearner {
 		return tree;
 	}
 
-	protected RegressionTreeNode createNode(Dataset dataset, int limit, double[] stats) {
+	protected TreeNode createNode(Dataset dataset, int limit, double[] stats) {
 		boolean stdIs0 = getStats(dataset.instances, stats);
 		final double totalWeights = stats[0];
-		final double weightedMean = stats[1];
-		final double sum = totalWeights * weightedMean;
+		final double sum = stats[1];
+		final double weightedMean = stats[2];
 
 		// 1. Check basic leaf conditions
 		if (dataset.instances.size() < limit || stdIs0) {
-			RegressionTreeNode node = new RegressionTreeLeaf(weightedMean);
+			TreeNode node = new RegressionTreeLeaf(weightedMean);
 			return node;
 		}
 
@@ -440,18 +446,16 @@ public class RegressionTreeLearner extends AbstractRegressionTreeLearner {
 			Random rand = Random.getInstance();
 			IntDoublePair splitPoint = splits.get(rand.nextInt(splits.size()));
 			int attIndex = splitPoint.v1;
-			RegressionTreeNode node = new RegressionTreeInteriorNode(attIndex, splitPoint.v2);
-			if (stats.length > 2) {
-				stats[2] = bestEval + totalWeights * weightedMean * weightedMean;
-			}
+			TreeNode node = new TreeInteriorNode(attIndex, splitPoint.v2);
+			stats[3] = bestEval + totalWeights * weightedMean * weightedMean;
 			return node;
 		} else {
-			RegressionTreeNode node = new RegressionTreeLeaf(weightedMean);
+			TreeNode node = new RegressionTreeLeaf(weightedMean);
 			return node;
 		}
 	}
 
-	protected void split(Dataset data, RegressionTreeInteriorNode node, Dataset left, Dataset right) {
+	protected void split(Dataset data, TreeInteriorNode node, Dataset left, Dataset right) {
 		data.split(node.getSplitAttributeIndex(), node.getSplitPoint(), left, right);
 	}
 
@@ -486,9 +490,9 @@ public class RegressionTreeLearner extends AbstractRegressionTreeLearner {
 		return new DoublePair(split, bestEval);
 	}
 
-	protected void traverse(RegressionTreeNode node, Map<RegressionTreeNode, RegressionTreeNode> parent) {
+	protected void traverse(TreeNode node, Map<TreeNode, TreeNode> parent) {
 		if (!node.isLeaf()) {
-			RegressionTreeInteriorNode interiorNode = (RegressionTreeInteriorNode) node;
+			TreeInteriorNode interiorNode = (TreeInteriorNode) node;
 			if (interiorNode.left != null) {
 				parent.put(interiorNode.left, node);
 				traverse(interiorNode.left, parent);

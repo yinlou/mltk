@@ -5,8 +5,9 @@ import java.io.PrintWriter;
 
 import mltk.core.Instance;
 import mltk.predictor.Regressor;
+import mltk.predictor.tree.RTree;
 import mltk.predictor.tree.RegressionTree;
-import mltk.predictor.tree.RegressionTreeList;
+import mltk.predictor.tree.ensemble.RTreeList;
 
 /**
  * Class for random forests.
@@ -16,13 +17,13 @@ import mltk.predictor.tree.RegressionTreeList;
  */
 public class RandomForest implements Regressor {
 	
-	protected RegressionTreeList rtList;
+	protected RTreeList rtList;
 	
 	/**
 	 * Constructor.
 	 */
 	public RandomForest() {
-		rtList = new RegressionTreeList();
+		rtList = new RTreeList();
 	}
 	
 	/**
@@ -31,13 +32,13 @@ public class RandomForest implements Regressor {
 	 * @param capacity the capacity of this random forest.
 	 */
 	public RandomForest(int capacity) {
-		rtList = new RegressionTreeList(capacity);
+		rtList = new RTreeList(capacity);
 	}
 
 	@Override
 	public void read(BufferedReader in) throws Exception {
 		int capacity = Integer.parseInt(in.readLine().split(": ")[1]);
-		rtList = new RegressionTreeList(capacity);
+		rtList = new RTreeList(capacity);
 		in.readLine();
 		for (int i = 0; i < capacity; i++) {
 			in.readLine();
@@ -54,7 +55,7 @@ public class RandomForest implements Regressor {
 		out.printf("[Predictor: %s]\n", this.getClass().getCanonicalName());
 		out.println("Ensemble: " + size());
 		out.println();
-		for (RegressionTree rt : rtList) {
+		for (RTree rt : rtList) {
 			rt.write(out);
 			out.println();
 		}
@@ -63,7 +64,7 @@ public class RandomForest implements Regressor {
 	@Override
 	public RandomForest copy() {
 		RandomForest copy = new RandomForest(size());
-		for (RegressionTree rt : rtList) {
+		for (RTree rt : rtList) {
 			copy.add(rt.copy());
 		}
 		return copy;
@@ -75,7 +76,7 @@ public class RandomForest implements Regressor {
 			return 0.0;
 		} else {
 			double prediction = 0.0;
-			for (RegressionTree rt : rtList) {
+			for (RTree rt : rtList) {
 				prediction += rt.regress(instance);
 			}
 			return prediction / size();
@@ -87,7 +88,7 @@ public class RandomForest implements Regressor {
 	 * 
 	 * @param rt the regression tree.
 	 */
-	public void add(RegressionTree rt) {
+	public void add(RTree rt) {
 		rtList.add(rt);
 	}
 	

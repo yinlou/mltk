@@ -1,54 +1,30 @@
-package mltk.predictor.tree.ensemble.brt;
+package mltk.predictor.tree;
 
 import java.util.Collections;
 import java.util.List;
 
 import mltk.core.Instance;
 import mltk.core.Instances;
-import mltk.predictor.tree.RegressionTreeLearner;
 import mltk.util.tuple.DoublePair;
 import mltk.util.tuple.IntDoublePair;
 
 /**
- * Class for learning regression trees in logit boost algorithms. The splitting criteria ignores the weights when
- * calculating sum of responses.
+ * Abstract class for learning regression trees.
  * 
  * @author Yin Lou
  *
  */
-public class RobustRegressionTreeLearner extends RegressionTreeLearner {
-
-	protected boolean getStats(Instances instances, double[] stats) {
-		stats[0] = stats[1] = stats[2] = 0;
-		if (instances.size() == 0) {
-			return true;
-		}
-		double firstTarget = instances.get(0).getTarget();
-		boolean stdIs0 = true;
-		for (Instance instance : instances) {
-			double weight = instance.getWeight();
-			double target = instance.getTarget();
-			stats[0] += weight;
-			// The key difference is we do not use weighted sum.
-			stats[1] += target;
-			if (stdIs0 && target != firstTarget) {
-				stdIs0 = false;
-			}
-		}
-		stats[2] = stats[1] / stats[0];
-		if (Double.isNaN(stats[2])) {
-			stats[2] = 0;
-		}
-		return stdIs0;
-	}
-
+public abstract class RTreeLearner extends TreeLearner {
+	
+	@Override
+	public abstract RTree build(Instances instances);
+	
 	protected void getHistogram(Instances instances, List<IntDoublePair> pairs, List<Double> uniqueValues, double w,
 			double s, List<DoublePair> histogram) {
 		if (pairs.size() > 0) {
 			double lastValue = pairs.get(0).v2;
 			double totalWeight = instances.get(pairs.get(0).v1).getWeight();
-			// The key difference is we do not use weighted sum.
-			double sum = instances.get(pairs.get(0).v1).getTarget();
+			double sum = instances.get(pairs.get(0).v1).getTarget() * totalWeight;
 
 			for (int i = 1; i < pairs.size(); i++) {
 				IntDoublePair pair = pairs.get(i);
@@ -60,10 +36,10 @@ public class RobustRegressionTreeLearner extends RegressionTreeLearner {
 					histogram.add(new DoublePair(totalWeight, sum));
 					lastValue = value;
 					totalWeight = weight;
-					sum = resp;
+					sum = resp * weight;
 				} else {
 					totalWeight += weight;
-					sum += resp;
+					sum += resp * weight;
 				}
 			}
 			uniqueValues.add(lastValue);
@@ -88,6 +64,29 @@ public class RobustRegressionTreeLearner extends RegressionTreeLearner {
 				histogram.add(-idx - 1, new DoublePair(weightOnZero, sumOnZero));
 			}
 		}
+	}
+
+	protected boolean getStats(Instances instances, double[] stats) {
+		stats[0] = stats[1] = stats[2] = 0;
+		if (instances.size() == 0) {
+			return true;
+		}
+		double firstTarget = instances.get(0).getTarget();
+		boolean stdIs0 = true;
+		for (Instance instance : instances) {
+			double weight = instance.getWeight();
+			double target = instance.getTarget();
+			stats[0] += weight;
+			stats[1] += weight * target;
+			if (stdIs0 && target != firstTarget) {
+				stdIs0 = false;
+			}
+		}
+		stats[2] = stats[1] / stats[0];
+		if (Double.isNaN(stats[2])) {
+			stats[2] = 0;
+		}
+		return stdIs0;
 	}
 
 }

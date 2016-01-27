@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.PrintWriter;
 
 import mltk.core.Instance;
-import mltk.predictor.Regressor;
 
 /**
  * Class for regression trees.
@@ -12,12 +11,12 @@ import mltk.predictor.Regressor;
  * @author Yin Lou
  * 
  */
-public class RegressionTree implements Regressor {
+public class RegressionTree implements RTree {
 
 	/**
 	 * The root of a tree.
 	 */
-	protected RegressionTreeNode root;
+	protected TreeNode root;
 
 	/**
 	 * Constructs an empty tree.
@@ -31,7 +30,7 @@ public class RegressionTree implements Regressor {
 	 * 
 	 * @param root the root.
 	 */
-	public RegressionTree(RegressionTreeNode root) {
+	public RegressionTree(TreeNode root) {
 		this.root = root;
 	}
 
@@ -40,7 +39,7 @@ public class RegressionTree implements Regressor {
 	 * 
 	 * @return the root of this regression tree.
 	 */
-	public RegressionTreeNode getRoot() {
+	public TreeNode getRoot() {
 		return root;
 	}
 
@@ -49,7 +48,7 @@ public class RegressionTree implements Regressor {
 	 * 
 	 * @param root the new root.
 	 */
-	public void setRoot(RegressionTreeNode root) {
+	public void setRoot(TreeNode root) {
 		this.root = root;
 	}
 
@@ -60,9 +59,9 @@ public class RegressionTree implements Regressor {
 	 * @return the leaf node.
 	 */
 	public RegressionTreeLeaf getLeafNode(Instance instance) {
-		RegressionTreeNode node = root;
+		TreeNode node = root;
 		while (!node.isLeaf()) {
-			RegressionTreeInteriorNode interiorNode = (RegressionTreeInteriorNode) node;
+			TreeInteriorNode interiorNode = (TreeInteriorNode) node;
 			if (interiorNode.goLeft(instance)) {
 				node = interiorNode.getLeftChild();
 			} else {
@@ -87,12 +86,12 @@ public class RegressionTree implements Regressor {
 	 * @param node the root of the subtree.
 	 * @param c the constant.
 	 */
-	protected void multiply(RegressionTreeNode node, double c) {
+	protected void multiply(TreeNode node, double c) {
 		if (node.isLeaf()) {
 			RegressionTreeLeaf leaf = (RegressionTreeLeaf) node;
 			leaf.prediction *= c;
 		} else {
-			RegressionTreeInteriorNode interiorNode = (RegressionTreeInteriorNode) node;
+			TreeInteriorNode interiorNode = (TreeInteriorNode) node;
 			multiply(interiorNode.left, c);
 			multiply(interiorNode.right, c);
 		}
@@ -107,7 +106,7 @@ public class RegressionTree implements Regressor {
 	public void read(BufferedReader in) throws Exception {
 		in.readLine();
 		Class<?> clazz = Class.forName(in.readLine());
-		root = (RegressionTreeNode) clazz.newInstance();
+		root = (TreeNode) clazz.newInstance();
 		root.read(in);
 	}
 
