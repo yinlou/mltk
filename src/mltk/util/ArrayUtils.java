@@ -1,7 +1,6 @@
 package mltk.util;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Class for utility functions for arrays.
@@ -10,34 +9,6 @@ import java.util.List;
  * 
  */
 public class ArrayUtils {
-	
-	/**
-	 * Converts an integer list to int array.
-	 * 
-	 * @param list the list.
-	 * @return an int array.
-	 */
-	public int[] toIntArray(List<Integer> list) {
-		int[] a = new int[list.size()];
-		for (int i = 0; i < list.size(); i++) {
-			a[i] = list.get(i);
-		}
-		return a;
-	}
-	
-	/**
-	 * Converts a double list to double array.
-	 * 
-	 * @param list the list.
-	 * @return a double array.
-	 */
-	public double[] toDoubleArray(List<Double> list) {
-		double[] a = new double[list.size()];
-		for (int i = 0; i < list.size(); i++) {
-			a[i] = list.get(i);
-		}
-		return a;
-	}
 	
 	/**
 	 * Converts a double array to an int array.
