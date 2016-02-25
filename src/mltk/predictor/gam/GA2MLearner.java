@@ -1,6 +1,7 @@
 package mltk.predictor.gam;
 
 import java.io.BufferedReader;
+
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +69,9 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 		@Argument(name = "-l", description = "learning rate (default: 0.01)")
 		double learningRate = 0.01;
+		
+		@Argument(name = "-p", description = "maximum number of pairs")
+		double numPairs = Integer.MAX_VALUE;
 
 	}
 
@@ -89,6 +93,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 	 * [-b]	bagging iterations (default: 100)
 	 * [-s]	seed of the random number generator (default: 0)
 	 * [-l]	learning rate (default: 0.01)
+	 * [-p] maximum number of pairs
 	 * </pre>
 	 * 
 	 * </p>
@@ -101,6 +106,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		CmdLineParser parser = new CmdLineParser(GA2MLearner.class, opts);
 		Task task = null;
 		Metric metric = null;
+		int numPairs = (int) opts.numPairs;
 		try {
 			parser.parse(args);
 			task = Task.get(opts.task);
@@ -120,7 +126,9 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 		List<IntPair> terms = new ArrayList<>();
 		BufferedReader br = new BufferedReader(new FileReader(opts.interactionsPath));
-		for (;;) {
+		int npairs = 0;
+		while(npairs < numPairs) {
+			npairs ++;
 			String line = br.readLine();
 			if (line == null) {
 				break;
