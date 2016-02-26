@@ -71,7 +71,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		double learningRate = 0.01;
 		
 		@Argument(name = "-p", description = "maximum number of pairs")
-		double numPairs = Integer.MAX_VALUE;
+		int numPairs = Integer.MAX_VALUE;
 
 	}
 
@@ -106,7 +106,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		CmdLineParser parser = new CmdLineParser(GA2MLearner.class, opts);
 		Task task = null;
 		Metric metric = null;
-		int numPairs = (int) opts.numPairs;
+
 		try {
 			parser.parse(args);
 			task = Task.get(opts.task);
@@ -124,6 +124,8 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
 
+		int numPairs = (int) opts.numPairs;
+		System.out.println("Using only " + numPairs + " pairs");
 		List<IntPair> terms = new ArrayList<>();
 		BufferedReader br = new BufferedReader(new FileReader(opts.interactionsPath));
 		int npairs = 0;
@@ -142,6 +144,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		GAM gam = PredictorReader.read(opts.inputModelPath, GAM.class);
 
 		GA2MLearner learner = new GA2MLearner();
+		learner.setPairs(terms);
 		learner.setBaggingIters(opts.baggingIters);
 		learner.setGAM(gam);
 		learner.setMaxNumIters(opts.maxNumIters);
