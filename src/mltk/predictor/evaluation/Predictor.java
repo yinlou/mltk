@@ -98,7 +98,7 @@ public class Predictor {
 	 * <p>
 	 * 
 	 * <pre>
-	 * Usage: Predictor
+	 * Usage: mltk.predictor.evaluation.Predictor
 	 * -d	data set path
 	 * -m	model path
 	 * [-r]	attribute file path

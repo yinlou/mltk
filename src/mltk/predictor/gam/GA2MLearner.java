@@ -139,6 +139,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		learner.setMaxNumIters(opts.maxNumIters);
 		learner.setTask(task);
 		learner.setMetric(metric);
+		learner.setPairs(terms);
 		learner.setLearningRate(opts.learningRate);
 		learner.setVerbose(opts.verbose);
 
