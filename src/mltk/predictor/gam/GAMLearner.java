@@ -1,7 +1,11 @@
 package mltk.predictor.gam;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
@@ -57,6 +61,8 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		@Argument(name = "-l", description = "learning rate (default: 0.01)")
 		double learningRate = 0.01;
 
+		@Argument(name = "-f", description = "feature importances path")
+		String featPath = null;
 	}
 
 	/**
@@ -102,9 +108,34 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 		Random.getInstance().setSeed(opts.seed);
 
-		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-
 		GAMLearner learner = new GAMLearner();
+
+		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
+		if(opts.featPath != null) {
+			Set<Integer> feats = new HashSet<Integer>();
+			System.out.println("Reading feature file...");
+			BufferedReader br = new BufferedReader(new FileReader(opts.featPath));
+
+			// read first line: features
+
+			String line = br.readLine();
+			String[] data1 = line.split(",");
+
+			// read second line: importance
+			line = br.readLine();
+			String[] data2 = line.split(",");
+
+			double impThreshold = 0.05;
+			for(int k=0; k < data1.length; k++) {
+				if(Double.parseDouble(data2[k]) > impThreshold) {
+					feats.add(Integer.parseInt(data1[k]));
+				}
+			}
+			System.out.println("Using " + feats.size() + " variables...");
+			br.close();
+			learner.setFeatures(feats);
+		}
+
 		learner.setBaseLearner(opts.baseLearner);
 		learner.setMaxNumIters(opts.maxNumIters);
 		learner.setLearningRate(opts.learningRate);
@@ -132,6 +163,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	private int maxNumLeaves;
 	private Task task;
 	private double learningRate;
+	private Set<Integer> features;
 
 	/**
 	 * Constructor.
@@ -144,6 +176,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		learningRate = 1;
 		task = Task.REGRESSION;
 		metric = task.getDefaultMetric();
+		features = null;
 	}
 
 	/**
@@ -237,6 +270,13 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	}
 
 	/**
+	 * Sets the features to use for this learner.
+	 */
+	public void setFeatures(Set<Integer> feats) {
+		this.features = feats;
+	}
+
+	/**
 	 * Sets the base learner.<br>
 	 * 
 	 * @param option the option string.
@@ -299,41 +339,43 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			for (int j = 0; j < attributes.size(); j++) {
-				// Derivitive to attribute k
-				// Minimizes the loss function: log(1 + exp(-yF))
-				for (int i = 0; i < trainSet.size(); i++) {
-					trainSet.get(i).setTarget(rTrain[i]);
-				}
+				if(features.contains(j)) {
+					// Derivitive to attribute k
+					// Minimizes the loss function: log(1 + exp(-yF))
+					for (int i = 0; i < trainSet.size(); i++) {
+						trainSet.get(i).setTarget(rTrain[i]);
+					}
 
-				BoostedEnsemble boostedEnsemble = regressors.get(j);
+					BoostedEnsemble boostedEnsemble = regressors.get(j);
 
-				// Train model
-				lineCutter.setAttributeIndex(j);
-				BaggedEnsemble baggedEnsemble = learner.build(bags);
-				Function1D func = CompressionUtils.compress(attributes.get(j).getIndex(), baggedEnsemble);
-				if (learningRate != 1) {
-					func.multiply(learningRate);
-				}
-				boostedEnsemble.add(func);
-				baggedEnsemble = null;
+					// Train model
+					lineCutter.setAttributeIndex(j);
+					BaggedEnsemble baggedEnsemble = learner.build(bags);
+					Function1D func = CompressionUtils.compress(attributes.get(j).getIndex(), baggedEnsemble);
+					if (learningRate != 1) {
+						func.multiply(learningRate);
+					}
+					boostedEnsemble.add(func);
+					baggedEnsemble = null;
 
-				// Update predictions
-				for (int i = 0; i < trainSet.size(); i++) {
-					Instance instance = trainSet.get(i);
-					double pred = func.regress(instance);
-					pTrain[i] += pred;
-					rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], target[i]);
-				}
-				for (int i = 0; i < validSet.size(); i++) {
-					Instance instance = validSet.get(i);
-					double pred = func.regress(instance);
-					pValid[i] += pred;
-				}
+					// Update predictions
+					for (int i = 0; i < trainSet.size(); i++) {
+						Instance instance = trainSet.get(i);
+						double pred = func.regress(instance);
+						pTrain[i] += pred;
+						rTrain[i] = OptimUtils.getPseudoResidual(pTrain[i], target[i]);
+					}
+					for (int i = 0; i < validSet.size(); i++) {
+						Instance instance = validSet.get(i);
+						double pred = func.regress(instance);
+						pValid[i] += pred;
+					}
 
-				double measure = metric.eval(pValid, validSet);
-				measureList.add(measure);
-				if (verbose) {
-					System.out.println("Iteration " + iter + " Feature " + j + ": " + measure);
+					double measure = metric.eval(pValid, validSet);
+					measureList.add(measure);
+					if (verbose) {
+						System.out.println("Iteration " + iter + " Feature " + j + ": " + measure);
+					}
 				}
 			}
 		}
