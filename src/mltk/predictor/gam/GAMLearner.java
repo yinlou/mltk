@@ -339,7 +339,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			for (int j = 0; j < attributes.size(); j++) {
-				if(features.contains(j)) {
+				if(features == null || features.contains(j)) {
 					// Derivitive to attribute k
 					// Minimizes the loss function: log(1 + exp(-yF))
 					for (int i = 0; i < trainSet.size(); i++) {
