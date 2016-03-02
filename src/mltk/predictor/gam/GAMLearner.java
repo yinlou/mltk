@@ -2,6 +2,7 @@ package mltk.predictor.gam;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,18 +36,18 @@ import mltk.util.Random;
 
 /**
  * Class for learning GAMs via gradient tree boosting.
- * 
+ *
  * <p>
  * Reference:<br>
  * Y. Lou, R. Caruana and J. Gehrke. Intelligible models for classification and regression. In <i>Proceedings of the
  * 18th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD)</i>, Beijing, China, 2012.
  * </p>
- * 
+ *
  * @author Yin Lou
- * 
+ *
  */
 public class GAMLearner extends HoldoutValidatedLearner {
-	
+
 	static class Options extends HoldoutValidatedLearnerWithTaskOptions {
 
 		@Argument(name = "-b", description = "base learner (default: tr:3:100)")
@@ -67,7 +68,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * <p>
-	 * 
+	 *
 	 * <pre>
 	 * Usage: mltk.predictor.gam.GAMLearner
 	 * -t	train set path
@@ -81,10 +82,11 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	 * [-b]	base learner (default: tr:3:100)
 	 * [-s]	seed of the random number generator (default: 0)
 	 * [-l]	learning rate (default: 0.01)
+	 * [-f] path to the features info if feature selection (ex: featInfo.txt:N:500)
 	 * </pre>
-	 * 
+	 *
 	 * </p>
-	 * 
+	 *
 	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
@@ -112,25 +114,22 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
 		if(opts.featPath != null) {
-			Set<Integer> feats = new HashSet<Integer>();
 			System.out.println("Reading feature file...");
-			BufferedReader br = new BufferedReader(new FileReader(opts.featPath));
+			String[] opts_feats = (opts.featPath).split(":");
+			BufferedReader br = new BufferedReader(new FileReader(opts_feats[0]));
+			Set<Integer> feats = new HashSet<Integer>();
 
-			// read first line: features
-
-			String line = br.readLine();
-			String[] data1 = line.split(",");
-
-			// read second line: importance
-			line = br.readLine();
-			String[] data2 = line.split(",");
-
-			double impThreshold = 0.05;
-			for(int k=0; k < data1.length; k++) {
-				if(Double.parseDouble(data2[k]) > impThreshold) {
-					feats.add(Integer.parseInt(data1[k]));
-				}
+			if(opts_feats[1].equals("N")) {
+				feats = getFeaturesByRank(br, Integer.parseInt(opts_feats[2]));
 			}
+			else if(opts_feats[1].equals("T")) {
+				feats = getFeaturesByValue(br, Double.parseDouble(opts_feats[2]));
+			}
+			else {
+				System.out.println("ERROR: Could not read featInfo argument");
+				feats = null;
+			}
+
 			System.out.println("Using " + feats.size() + " variables...");
 			br.close();
 			learner.setFeatures(feats);
@@ -180,8 +179,53 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	}
 
 	/**
+	 * Returns the first k features in the file given by br.
+	 * Assume features are sorted in the file.
+	 * @param br A BufferReader of the featureInfo file.
+	 * @param k The number of features to read.
+	 * @return The set of feature index.
+	 * @throws IOException
+	 */
+	public static Set<Integer> getFeaturesByRank(BufferedReader br, int k) throws IOException {
+		Set<Integer> feats = new HashSet<Integer>();
+		// read first line: features
+		String line = br.readLine();
+		String[] data1 = line.split(",");
+
+		for(int i=0; i < k; i++) {
+			feats.add(Integer.parseInt(data1[i]));
+		}
+		return feats;
+	}
+
+	/**
+	 * Returns all features that have a minimum importance in the file given by br.
+	 * @param br A BufferReader of the featureInfo file.
+	 * @param impThreshold The threshold below which features are disregarded.
+	 * @return The set of feature index.
+	 * @throws IOException
+	 */
+	public static Set<Integer> getFeaturesByValue(BufferedReader br, double impThreshold) throws IOException {
+		Set<Integer> feats = new HashSet<Integer>();
+		// read first line: features
+		String line = br.readLine();
+		String[] data1 = line.split(",");
+
+		// read second line: importance
+		line = br.readLine();
+		String[] data2 = line.split(",");
+
+		for(int k=0; k < data1.length; k++) {
+			if(Double.parseDouble(data2[k]) > impThreshold) {
+				feats.add(Integer.parseInt(data1[k]));
+			}
+		}
+		return feats;
+	}
+
+	/**
 	 * Returns the number of bagging iterations.
-	 * 
+	 *
 	 * @return the number of bagging iterations.
 	 */
 	public int getBaggingIters() {
@@ -190,7 +234,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Sets the number of bagging iterations.
-	 * 
+	 *
 	 * @param baggingIters the bagging iterations.
 	 */
 	public void setBaggingIters(int baggingIters) {
@@ -199,7 +243,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Returns the maximum number of iterations.
-	 * 
+	 *
 	 * @return the maximum number of iterations.
 	 */
 	public int getMaxNumIters() {
@@ -208,7 +252,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Sets the maximum number of iterations.
-	 * 
+	 *
 	 * @param maxNumIters the maximum number of iterations.
 	 */
 	public void setMaxNumIters(int maxNumIters) {
@@ -217,7 +261,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Returns the maximum number of leaves.
-	 * 
+	 *
 	 * @return the maximum number of leaves.
 	 */
 	public int getMaxNumLeaves() {
@@ -226,7 +270,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Sets the maximum number of leaves.
-	 * 
+	 *
 	 * @param maxNumLeaves the maximum number of leaves.
 	 */
 	public void setMaxNumLeaves(int maxNumLeaves) {
@@ -235,7 +279,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Returns the learning rate.
-	 * 
+	 *
 	 * @return the learning rate.
 	 */
 	public double getLearningRate() {
@@ -244,7 +288,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Sets the learning rate.
-	 * 
+	 *
 	 * @param learningRate the learning rate.
 	 */
 	public void setLearningRate(double learningRate) {
@@ -253,7 +297,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Returns the task of this learner.
-	 * 
+	 *
 	 * @return the task of this learner.
 	 */
 	public Task getTask() {
@@ -262,7 +306,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Sets the task of this learner.
-	 * 
+	 *
 	 * @param task the task of this learner.
 	 */
 	public void setTask(Task task) {
@@ -278,7 +322,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Sets the base learner.<br>
-	 * 
+	 *
 	 * @param option the option string.
 	 */
 	public void setBaseLearner(String option) {
@@ -299,7 +343,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Builds a classifier.
-	 * 
+	 *
 	 * @param trainSet the training set.
 	 * @param validSet the validation set.
 	 * @param maxNumIters the maximum number of iterations.
@@ -423,7 +467,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Builds a classifier.
-	 * 
+	 *
 	 * @param trainSet the training set.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param maxNumLeaves the maximum number of leaves.
@@ -520,7 +564,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Builds a regressor.
-	 * 
+	 *
 	 * @param trainSet the training set.
 	 * @param validSet the validation set.
 	 * @param maxNumIters the maximum number of iterations.
@@ -648,7 +692,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Builds a regressor.
-	 * 
+	 *
 	 * @param trainSet the training set.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param maxNumLeaves the maximum number of leaves.
