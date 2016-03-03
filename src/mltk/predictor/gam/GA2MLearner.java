@@ -224,12 +224,13 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		// read first line: features
 		String line = br.readLine();
 		String[] data = line.split(",");
+		System.out.println("Start extraction");
 
-		int i = 0;
-		while(i < k) {
+		int n_term = 0;
+		for(int i=0; i < data.length && n_term < k; i++) {
 			String[] term = data[i].split(":");
 			if(term.length == 2) {
-				i ++;
+				n_term ++;
 				feats.add(new IntPair(Integer.parseInt(term[0]), Integer.parseInt(term[1])));
 			}
 		}
