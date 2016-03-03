@@ -1,10 +1,12 @@
 package mltk.predictor.gam;
 
 import java.io.BufferedReader;
-
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
@@ -37,19 +39,19 @@ import mltk.util.tuple.IntPair;
 
 /**
  * Class for learning GA^2M models via gradient boosting.
- * 
+ *
  * <p>
  * Reference:<br>
  * Y. Lou, R. Caruana, J. Gehrke, and G. Hooker. Accurate intelligible models with pairwise interactions. In
  * <i>Proceedings of the 19th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD)</i>,
  * Chicago, IL, USA, 2013.
  * </p>
- * 
+ *
  * @author Yin Lou
- * 
+ *
  */
 public class GA2MLearner extends HoldoutValidatedLearner {
-	
+
 	static class Options extends HoldoutValidatedLearnerWithTaskOptions {
 
 		@Argument(name = "-i", description = "input model path", required = true)
@@ -69,15 +71,17 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 		@Argument(name = "-l", description = "learning rate (default: 0.01)")
 		double learningRate = 0.01;
-		
+
 		@Argument(name = "-p", description = "maximum number of pairs")
 		int numPairs = Integer.MAX_VALUE;
 
+		@Argument(name = "-f", description = "feature importances path")
+		String featPath = null;
 	}
 
 	/**
 	 * <p>
-	 * 
+	 *
 	 * <pre>
 	 * Usage: mltk.predictor.gam.GA2MLearner
 	 * -t	train set path
@@ -94,10 +98,11 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 	 * [-s]	seed of the random number generator (default: 0)
 	 * [-l]	learning rate (default: 0.01)
 	 * [-p] maximum number of pairs
+	 * [-f] path to the features info if feature selection (ex: featInfo.txt:N:500)
 	 * </pre>
-	 * 
+	 *
 	 * </p>
-	 * 
+	 *
 	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
@@ -124,7 +129,24 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
 
-		int numPairs = (int) opts.numPairs;
+		Set<IntPair> best_terms = null;
+		if(opts.featPath != null) {
+			System.out.println("Reading feature file...");
+			String[] opts_feats = (opts.featPath).split(":");
+			BufferedReader feat_br = new BufferedReader(new FileReader(opts_feats[0]));
+
+			if(opts_feats[1].equals("N")) {
+				best_terms = getFeaturesByRank(feat_br, Integer.parseInt(opts_feats[2]));
+			}
+			else {
+				System.out.println("ERROR: Could not read featInfo argument");
+			}
+
+			System.out.println("Using best " + best_terms.size() + " terms...");
+			feat_br.close();
+		}
+
+		int numPairs = opts.numPairs;
 		System.out.println("Using only " + numPairs + " pairs");
 		List<IntPair> terms = new ArrayList<>();
 		BufferedReader br = new BufferedReader(new FileReader(opts.interactionsPath));
@@ -137,7 +159,9 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 			}
 			String[] data = line.split("\\s+");
 			IntPair term = new IntPair(Integer.parseInt(data[0]), Integer.parseInt(data[1]));
-			terms.add(term);
+			if(best_terms == null || best_terms.contains(term)) {
+				terms.add(term);
+			}
 		}
 		br.close();
 
@@ -188,8 +212,33 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 	}
 
 	/**
+	 * Returns the first k features in the file given by br.
+	 * Assume features are sorted in the file.
+	 * @param br A BufferReader of the featureInfo file.
+	 * @param k The number of features to read.
+	 * @return The set of feature index.
+	 * @throws IOException
+	 */
+	public static Set<IntPair> getFeaturesByRank(BufferedReader br, int k) throws IOException {
+		Set<IntPair> feats = new HashSet<IntPair>();
+		// read first line: features
+		String line = br.readLine();
+		String[] data = line.split(",");
+
+		int i = 0;
+		while(i < k) {
+			String[] term = data[i].split(":");
+			if(term.length == 2) {
+				i ++;
+				feats.add(new IntPair(Integer.parseInt(term[0]), Integer.parseInt(term[1])));
+			}
+		}
+		return feats;
+	}
+
+	/**
 	 * Returns the number of bagging iterations.
-	 * 
+	 *
 	 * @return the number of bagging iterations.
 	 */
 	public int getBaggingIters() {
@@ -198,7 +247,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Sets the number of bagging iterations.
-	 * 
+	 *
 	 * @param baggingIters the number of bagging iterations.
 	 */
 	public void setBaggingIters(int baggingIters) {
@@ -207,7 +256,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Returns the maximum number of iterations.
-	 * 
+	 *
 	 * @return the maximum number of iterations.
 	 */
 	public int getMaxNumIters() {
@@ -216,7 +265,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Sets the maximum number of iterations.
-	 * 
+	 *
 	 * @param maxNumIters the maximum number of iterations.
 	 */
 	public void setMaxNumIters(int maxNumIters) {
@@ -225,7 +274,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Returns the learning rate.
-	 * 
+	 *
 	 * @return the learning rate.
 	 */
 	public double getLearningRate() {
@@ -234,7 +283,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Sets the learning rate.
-	 * 
+	 *
 	 * @param learningRate the learning rate.
 	 */
 	public void setLearningRate(double learningRate) {
@@ -243,7 +292,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Returns the task of this learner.
-	 * 
+	 *
 	 * @return the task of this learner.
 	 */
 	public Task getTask() {
@@ -252,7 +301,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Sets the task of this learner.
-	 * 
+	 *
 	 * @param task the new task.
 	 */
 	public void setTask(Task task) {
@@ -261,7 +310,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Returns the GAM.
-	 * 
+	 *
 	 * @return the GAM.
 	 */
 	public GAM getGAM() {
@@ -270,7 +319,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Sets the GAM.
-	 * 
+	 *
 	 * @param gam the GAM.
 	 */
 	public void setGAM(GAM gam) {
@@ -279,7 +328,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Returns the list of feature interaction pairs.
-	 * 
+	 *
 	 * @return the list of feature interaction pairs.
 	 */
 	public List<IntPair> getPairs() {
@@ -288,7 +337,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Sets the list of feature interaction pairs.
-	 * 
+	 *
 	 * @param pairs the list of feature interaction pairs.
 	 */
 	public void setPairs(List<IntPair> pairs) {
@@ -297,7 +346,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Builds a classifier.
-	 * 
+	 *
 	 * @param gam the GAM.
 	 * @param terms the list of feature interaction pairs.
 	 * @param trainSet the training set.
@@ -333,7 +382,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 			pTrain[i] = gam.regress(instance);
 		}
 		OptimUtils.computePseudoResidual(pTrain, target, rTrain);
-		
+
 		for (int i = 0; i < pValid.length; i++) {
 			Instance instance = validSet.get(i);
 			pValid[i] = gam.regress(instance);
@@ -449,7 +498,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Builds a classifier.
-	 * 
+	 *
 	 * @param gam the GAM.
 	 * @param terms the list of feature interaction pairs.
 	 * @param trainSet the training set.
@@ -571,7 +620,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Builds a regressor.
-	 * 
+	 *
 	 * @param gam the GAM.
 	 * @param terms the list of feature interaction pairs.
 	 * @param trainSet the training set.
@@ -721,7 +770,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 	/**
 	 * Builds a regressor.
-	 * 
+	 *
 	 * @param gam the GAM.
 	 * @param terms the list of feature interaction pairs.
 	 * @param trainSet the training set.
