@@ -67,10 +67,10 @@ public class Diagnostics {
 	static class Options {
 
 		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
+		String attPath = "binned_attr.txt";
 
-		@Argument(name = "-d", description = "dataset path", required = true)
-		String datasetPath = null;
+		@Argument(name = "-d", description = "dataset path")
+		String datasetPath = "binned_train.txt";
 
 		@Argument(name = "-i", description = "input model path", required = true)
 		String inputModelPath = null;

@@ -25,16 +25,16 @@ import mltk.util.tuple.IntPair;
 
 /**
  * Class for fast interaction detection.
- * 
+ *
  * <p>
  * Reference:<br>
  * Y. Lou, R. Caruana, J. Gehrke, and G. Hooker. Accurate intelligible models with pairwise interactions. In
  * <i>Proceedings of the 19th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD)</i>,
  * Chicago, IL, USA, 2013.
  * </p>
- * 
+ *
  * @author Yin Lou
- * 
+ *
  */
 public class FAST {
 
@@ -52,6 +52,7 @@ public class FAST {
 			pairs.add(pair);
 		}
 
+		@Override
 		public void run() {
 			FAST.computeWeights(instances, pairs);
 		}
@@ -71,10 +72,10 @@ public class FAST {
 	static class Options {
 
 		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
+		String attPath = "binned_attr.txt";
 
-		@Argument(name = "-d", description = "dataset path", required = true)
-		String datasetPath = null;
+		@Argument(name = "-d", description = "dataset path")
+		String datasetPath = "binned_train.txt";
 
 		@Argument(name = "-R", description = "residual path", required = true)
 		String residualPath = null;
@@ -92,7 +93,7 @@ public class FAST {
 
 	/**
 	 * <p>
-	 * 
+	 *
 	 * <pre>
 	 * Usage: mltk.predictor.gam.interaction.FAST
 	 * -d	dataset path
@@ -102,9 +103,9 @@ public class FAST {
 	 * [-b]	number of bins (default: 256)
 	 * [-p]	number of threads (default: 1)
 	 * </pre>
-	 * 
+	 *
 	 * </p>
-	 * 
+	 *
 	 * @param args the command line arguments
 	 * @throws Exception
 	 */
@@ -181,7 +182,7 @@ public class FAST {
 
 	/**
 	 * Computes the weights of pairwise interactions.
-	 * 
+	 *
 	 * @param instances the training set.
 	 * @param pairs the list of pairs to compute.
 	 */

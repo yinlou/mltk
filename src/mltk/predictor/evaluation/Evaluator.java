@@ -14,15 +14,15 @@ import mltk.predictor.io.PredictorReader;
 
 /**
  * Class for making evaluations.
- * 
+ *
  * @author Yin Lou
- * 
+ *
  */
 public class Evaluator {
 
 	/**
 	 * Returns the area under ROC curve.
-	 * 
+	 *
 	 * @param classifier a classifier that outputs probability.
 	 * @param instances the instances.
 	 * @return the area under ROC curve.
@@ -40,7 +40,7 @@ public class Evaluator {
 
 	/**
 	 * Returns the root mean squared error.
-	 * 
+	 *
 	 * @param preds the predictions.
 	 * @param targets the targets.
 	 * @return the root mean squared error.
@@ -57,7 +57,7 @@ public class Evaluator {
 
 	/**
 	 * Returns the root mean squared error.
-	 * 
+	 *
 	 * @param regressor the regressor.
 	 * @param instances the instances.
 	 * @return the root mean squared error.
@@ -77,7 +77,7 @@ public class Evaluator {
 
 	/**
 	 * Returns the classification error.
-	 * 
+	 *
 	 * @param classifier the classifier.
 	 * @param instances the instances.
 	 * @return the classification error.
@@ -99,10 +99,10 @@ public class Evaluator {
 	static class Options {
 
 		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
+		String attPath = "binned_attr.txt";
 
-		@Argument(name = "-d", description = "data set path", required = true)
-		String dataPath = null;
+		@Argument(name = "-d", description = "data set path")
+		String dataPath = "binned_test.txt";
 
 		@Argument(name = "-m", description = "model path", required = true)
 		String modelPath = null;
@@ -114,7 +114,7 @@ public class Evaluator {
 
 	/**
 	 * <p>
-	 * 
+	 *
 	 * <pre>
 	 * Usage: Evaluator
 	 * -d	data set path
@@ -122,9 +122,9 @@ public class Evaluator {
 	 * [-r]	attribute file path
 	 * [-e]	AUC (a), Error (c), RMSE (r) (default: r)
 	 * </pre>
-	 * 
+	 *
 	 * </p>
-	 * 
+	 *
 	 * @param args the command line arguments.
 	 * @throws Exception
 	 */

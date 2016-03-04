@@ -18,15 +18,15 @@ import mltk.util.OptimUtils;
 
 /**
  * Class for making predictions.
- * 
+ *
  * @author Yin Lou
- * 
+ *
  */
 public class Predictor {
 
 	/**
 	 * Makes predictions for a dataset.
-	 * 
+	 *
 	 * @param regressor the model.
 	 * @param instances the dataset.
 	 * @param path the output path.
@@ -53,7 +53,7 @@ public class Predictor {
 
 	/**
 	 * Makes predictions for a dataset.
-	 * 
+	 *
 	 * @param classifier the model.
 	 * @param instances the dataset.
 	 * @param path the output path.
@@ -72,10 +72,10 @@ public class Predictor {
 	static class Options {
 
 		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
+		String attPath = "binned_attr.txt";
 
-		@Argument(name = "-d", description = "data set path", required = true)
-		String dataPath = null;
+		@Argument(name = "-d", description = "data set path")
+		String dataPath = "binned_train.txt";
 
 		@Argument(name = "-m", description = "model path", required = true)
 		String modelPath = null;
@@ -96,7 +96,7 @@ public class Predictor {
 
 	/**
 	 * <p>
-	 * 
+	 *
 	 * <pre>
 	 * Usage: Predictor
 	 * -d	data set path
@@ -107,9 +107,9 @@ public class Predictor {
 	 * [-g]	task between classification (c) and regression (r) (default: r)
 	 * [-P]	output probablity (default: false)
 	 * </pre>
-	 * 
+	 *
 	 * </p>
-	 * 
+	 *
 	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
