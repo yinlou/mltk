@@ -8,12 +8,13 @@ options(warn=-1, verbose = FALSE)
 
 suppressMessages(library(readr))
 suppressMessages(library(ggplot2))
-suppressMessages(library(dplyr))
+suppressMessages(library(magrittr))
+suppressMessages(library(plyr))
 
 roc_file <- read_csv(args[1], col_names = FALSE)
 roc_file <- roc_file %>% as.matrix() %>% t()
 
-roc_df <- roc_file %>% as.data.frame() %>% rename(TPR = V1, FPR = V2)
+roc_df <- roc_file %>% as.data.frame() %>% setNames(c("TPR", "FPR")) %>% subset(TPR < 1.1 & FPR < 1.1)
 
 plot <- roc_df %>%
   ggplot() +
