@@ -27,7 +27,7 @@ public class Evaluator {
 	 * @param instances the instances.
 	 * @return the area under ROC curve.
 	 */
-	public static double evalAreaUnderROC(ProbabilisticClassifier classifier, Instances instances) {
+	public static double evalAreaUnderROC(ProbabilisticClassifier classifier, Instances instances, String outPath) {
 		double[] probs = new double[instances.size()];
 		double[] targets = new double[instances.size()];
 		for (int i = 0; i < probs.length; i++) {
@@ -35,7 +35,9 @@ public class Evaluator {
 			probs[i] = classifier.predictProbabilities(instance)[1];
 			targets[i] = instance.getTarget();
 		}
-		return new AUC().eval(probs, targets);
+		AUC auc = new AUC();
+		auc.outPath = outPath;
+		return auc.eval(probs, targets);
 	}
 
 	/**
@@ -110,6 +112,9 @@ public class Evaluator {
 		@Argument(name = "-e", description = "AUC (a), Error (c), RMSE (r) (default: r)")
 		String task = "r";
 
+		@Argument(name = "-o", description = "output path")
+		String outPath = null;
+
 	}
 
 	/**
@@ -121,6 +126,7 @@ public class Evaluator {
 	 * -m	model path
 	 * [-r]	attribute file path
 	 * [-e]	AUC (a), Error (c), RMSE (r) (default: r)
+	 * [-o] output path
 	 * </pre>
 	 *
 	 * </p>
@@ -144,7 +150,7 @@ public class Evaluator {
 		switch (opts.task) {
 			case "a":
 				ProbabilisticClassifier probClassifier = (ProbabilisticClassifier) predictor;
-				double auc = Evaluator.evalAreaUnderROC(probClassifier, instances);
+				double auc = Evaluator.evalAreaUnderROC(probClassifier, instances, opts.outPath);
 				System.out.println("AUC: " + auc);
 				break;
 			case "c":
