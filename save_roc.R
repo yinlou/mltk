@@ -23,11 +23,11 @@ plot1 <- roc_df %>%
   ggplot() +
   geom_point(aes(x = FPR, y = TPR))
 
-ggsave(plot1, file = paste(args[2], "_roc", ".txt"))
+ggsave(plot1, file = paste(args[2], "_roc", ".png"))
 
 
 plot2 <- roc_df %>%
   ggplot() +
   geom_point(aes(x = TPR, y = Precision))
 
-ggsave(plot2, file = paste(args[2], "_pr", ".txt"))
+ggsave(plot2, file = paste(args[2], "_pr", ".png"))
