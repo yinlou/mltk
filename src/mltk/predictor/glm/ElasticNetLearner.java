@@ -1130,11 +1130,10 @@ public class ElasticNetLearner extends GLMLearner {
 			double eta = VectorUtils.dotProduct(rTrain, v);
 
 			double newW = w[j] * theta[j] + eta;
-			double t = tl1;
-			if (newW > t) {
-				newW -= t;
-			} else if (newW < -t) {
-				newW += t;
+			if (newW > tl1) {
+				newW -= tl1;
+			} else if (newW < -tl1) {
+				newW += tl1;
 			} else {
 				newW = 0;
 			}
@@ -1167,11 +1166,10 @@ public class ElasticNetLearner extends GLMLearner {
 			}
 
 			double newW = w[j] * theta[j] + eta;
-			double t = tl1;
-			if (newW > t) {
-				newW -= t;
-			} else if (newW < -t) {
-				newW += t;
+			if (newW > tl1) {
+				newW -= tl1;
+			} else if (newW < -tl1) {
+				newW += tl1;
 			} else {
 				newW = 0;
 			}
