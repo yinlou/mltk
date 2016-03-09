@@ -14,10 +14,20 @@ suppressMessages(library(plyr))
 roc_file <- read_csv(args[1], col_names = FALSE)
 roc_file <- roc_file %>% as.matrix() %>% t()
 
-roc_df <- roc_file %>% as.data.frame() %>% setNames(c("TPR", "FPR")) %>% subset(TPR < 1.1 & FPR < 1.1)
+roc_df <- roc_file %>%
+  as.data.frame() %>%
+  setNames(c("TPR", "FPR", "Precision")) %>%
+  subset(TPR < 1.1 & FPR < 1.1)
 
-plot <- roc_df %>%
+plot1 <- roc_df %>%
   ggplot() +
   geom_point(aes(x = FPR, y = TPR))
 
-ggsave(plot, file = args[2])
+ggsave(plot1, file = paste(args[2], "_roc", ".txt"))
+
+
+plot2 <- roc_df %>%
+  ggplot() +
+  geom_point(aes(x = TPR, y = Precision))
+
+ggsave(plot2, file = paste(args[2], "_pr", ".txt"))
