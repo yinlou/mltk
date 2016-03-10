@@ -3,6 +3,7 @@ package mltk.predictor.gam;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -64,6 +65,9 @@ public class GAMLearner extends HoldoutValidatedLearner {
 
 		@Argument(name = "-f", description = "feature importances path")
 		String featPath = null;
+
+		@Argument(name = "-w", description = "selected features path")
+		String featPathOut = null;
 	}
 
 	/**
@@ -83,6 +87,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	 * [-s]	seed of the random number generator (default: 0)
 	 * [-l]	learning rate (default: 0.01)
 	 * [-f] path to the features info if feature selection (ex: featInfo.txt:N:500)
+	 * [-w] path to save the selected features
 	 * </pre>
 	 *
 	 * </p>
@@ -133,6 +138,28 @@ public class GAMLearner extends HoldoutValidatedLearner {
 			System.out.println("Using " + feats.size() + " variables...");
 			br.close();
 			learner.setFeatures(feats);
+
+			if(opts.featPathOut != null) {
+				PrintWriter featOut = new PrintWriter(opts.featPathOut);
+				StringBuilder sbuilder1 = new StringBuilder(feats.toString());
+				// remove brackets
+				sbuilder1.deleteCharAt(0);
+				sbuilder1.deleteCharAt(sbuilder1.length()-1);
+				featOut.println(sbuilder1.toString());
+
+				List<Attribute> attributes = trainSet.getAttributes();
+				StringBuilder sbuilder2 = new StringBuilder();
+				for(int i : feats) {
+					sbuilder2.append(attributes.get(i).getName() + ",");
+				}
+				// remove last ','
+				sbuilder2.deleteCharAt(sbuilder2.length()-1);
+				featOut.println(sbuilder2.toString());
+
+				featOut.flush();
+				featOut.close();
+				System.out.println("Selected features saved");
+			}
 		}
 
 		learner.setBaseLearner(opts.baseLearner);

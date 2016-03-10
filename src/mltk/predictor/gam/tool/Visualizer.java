@@ -1,6 +1,8 @@
 package mltk.predictor.gam.tool;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -25,17 +27,17 @@ import mltk.predictor.io.PredictorReader;
 
 /**
  * Class for visualizing 1D and 2D components in a GAM.
- * 
+ *
  * @author Yin Lou
- * 
+ *
  */
 public class Visualizer {
 
 	/**
 	 * Enumeration of output terminals.
-	 * 
+	 *
 	 * @author Yin Lou
-	 * 
+	 *
 	 */
 	public enum Terminal {
 
@@ -54,13 +56,14 @@ public class Visualizer {
 			this.term = term;
 		}
 
+		@Override
 		public String toString() {
 			return term;
 		}
 
 		/**
 		 * Parses an enumeration from a string.
-		 * 
+		 *
 		 * @param term the string.
 		 * @return a parsed terminal.
 		 */
@@ -77,14 +80,14 @@ public class Visualizer {
 
 	/**
 	 * Generates a set of Gnuplot scripts for visualizing low dimensional components in a GAM.
-	 * 
+	 *
 	 * @param gam the GAM model.
 	 * @param instances the training set.
 	 * @param dirPath the directory path to write to.
 	 * @param outputTerminal output plot format (png or pdf).
 	 * @throws IOException
 	 */
-	public static void generateGnuplotScripts(GAM gam, Instances instances, String dirPath, Terminal outputTerminal)
+	public static void generateGnuplotScripts(GAM gam, Instances instances, String dirPath, Terminal outputTerminal, Set<Integer> feats)
 			throws IOException {
 		List<Attribute> attributes = instances.getAttributes();
 		List<int[]> terms = gam.getTerms();
@@ -102,7 +105,7 @@ public class Visualizer {
 		for (int i = 0; i < terms.size(); i++) {
 			int[] term = terms.get(i);
 			Regressor regressor = regressors.get(i);
-			if (term.length == 1) {
+			if (term.length == 1 && (feats == null || feats.contains(term[0]))) {
 				Attribute f = attributes.get(term[0]);
 				switch (f.getType()) {
 					case BINNED:
@@ -205,11 +208,11 @@ public class Visualizer {
 			} else if (term.length == 2) {
 				Attribute f1 = attributes.get(term[0]);
 				Attribute f2 = attributes.get(term[1]);
-				PrintWriter out = new PrintWriter(dir.getAbsolutePath() 
-						+ File.separator + f1.getName() + "_" + f2.getName() 
+				PrintWriter out = new PrintWriter(dir.getAbsolutePath()
+						+ File.separator + f1.getName() + "_" + f2.getName()
 						+ ".plt");
 				out.printf("set term %s\n", terminal);
-				out.printf("set output \"%s_%s.%s\"\n", f1.getName(), 
+				out.printf("set output \"%s_%s.%s\"\n", f1.getName(),
 						f2.getName(), terminal);
 				out.println("set datafile separator \"\t\"");
 				int size1 = 0;
@@ -309,11 +312,13 @@ public class Visualizer {
 		@Argument(name = "-t", description = "output terminal (default: png)")
 		String terminal = "png";
 
+		@Argument(name = "-f", description = "selected features path")
+		String featPath = null;
 	}
 
 	/**
 	 * <p>
-	 * 
+	 *
 	 * <pre>
 	 * Usage: mltk.predictor.gam.tool.Visualizer
 	 * -r	attribute file path
@@ -321,10 +326,11 @@ public class Visualizer {
 	 * -i	input model path
 	 * -o	output directory path
 	 * [-t]	output terminal (default: png)
+	 * [-f] features path
 	 * </pre>
-	 * 
+	 *
 	 * </p>
-	 * 
+	 *
 	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
@@ -340,7 +346,20 @@ public class Visualizer {
 		Instances dataset = InstancesReader.read(opts.attPath, opts.datasetPath);
 		GAM gam = PredictorReader.read(opts.inputModelPath, GAM.class);
 
-		Visualizer.generateGnuplotScripts(gam, dataset, opts.dirPath, Terminal.getEnum(opts.terminal));
+		Set<Integer> feats = null;
+		if(opts.featPath != null) {
+			feats = new HashSet<Integer>();
+			BufferedReader br = new BufferedReader(new FileReader(opts.featPath));
+			String line = br.readLine();
+			String[] data = line.split(", ");
+			br.close();
+
+			for(int i=0; i < data.length; i++) {
+				feats.add(Integer.parseInt(data[i]));
+			}
+		}
+
+		Visualizer.generateGnuplotScripts(gam, dataset, opts.dirPath, Terminal.getEnum(opts.terminal), feats);
 	}
 
 }
