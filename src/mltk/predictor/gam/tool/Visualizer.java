@@ -227,8 +227,6 @@ public class Visualizer {
 					size2 = ((NominalAttribute) f2).getCardinality();
 				}
 				if(f1.getType() == Attribute.Type.BINNED && f2.getType() == Attribute.Type.BINNED) {
-					System.out.println("Ploting binned terms : " +  f1.getName() + " - " + f2.getName());
-
 					dataout.println(f2.getName() + "\t" + f1.getName() + "\tz");
 					Bins bins1 = ((BinnedAttribute) f1).getBins();
 					double[] boundaries1 = bins1.getBoundaries();
@@ -271,8 +269,6 @@ public class Visualizer {
 					cmd = "Rscript " + scriptDir + File.separator + "plot_binned_terms.R " + filename ;
 				}
 				else if(f1.getType() == Attribute.Type.NOMINAL && f2.getType() == Attribute.Type.NOMINAL) {
-					// System.out.println("Ploting categorical terms : " +  f1.getName() + " - " + f2.getName());
-
 					dataout.println(f2.getName() + "\t" + f1.getName() + "\tz");
 					String[] states1 = ((NominalAttribute) f1).getStates();
 					String[] states2 = ((NominalAttribute) f2).getStates();
@@ -289,8 +285,6 @@ public class Visualizer {
 					cmd = "Rscript " + scriptDir + File.separator + "plot_cat_terms.R " + filename ;
 				}
 				else {
-					// System.out.println("Ploting mixed term : " +  f1.getName() + " - " + f2.getName());
-
 					BinnedAttribute f;
 					NominalAttribute nf;
 					int idx_f;
