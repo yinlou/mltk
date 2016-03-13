@@ -320,7 +320,7 @@ public class Visualizer {
 					point.setValue(term[idx_f], 0);
 					dataout.printf("%f", start);
 					for(int k=0; k < states.length; k++) {
-						point.setValue(term[idx_nf], 0);
+						point.setValue(term[idx_nf], k);
 						dataout.printf("\t%f", regressor.regress(point));
 					}
 					dataout.print("\n");
