@@ -393,7 +393,7 @@ public class Visualizer {
 	 * [-r]	attribute file path
 	 * [-d]	dataset path
 	 * [-f] features path
-	 * [-s] Rscript directory
+	 * [-s] Rscript directory (default : ../../utils)
 	 * </pre>
 	 *
 	 * </p>

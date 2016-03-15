@@ -20,9 +20,9 @@ import mltk.util.tuple.DoublePair;
 
 /**
  * Class for discretizers.
- * 
+ *
  * @author Yin Lou
- * 
+ *
  */
 public class Discretizer {
 
@@ -35,7 +35,7 @@ public class Discretizer {
 
 	/**
 	 * Discretizes an attribute using bins.
-	 * 
+	 *
 	 * @param instances the dataset to discretize.
 	 * @param attIndex the attribute index.
 	 * @param bins the bins.
@@ -53,7 +53,7 @@ public class Discretizer {
 
 	/**
 	 * Discretized an attribute with specified number of bins.
-	 * 
+	 *
 	 * @param instances the dataset to discretize.
 	 * @param attIndex the attribute index.
 	 * @param maxNumBins the number of bins.
@@ -65,7 +65,7 @@ public class Discretizer {
 
 	/**
 	 * Compute bins for a specified attribute.
-	 * 
+	 *
 	 * @param instances the dataset to discretize.
 	 * @param attIndex the attribute index.
 	 * @param maxNumBins the number of bins.
@@ -138,7 +138,7 @@ public class Discretizer {
 
 	/**
 	 * Compute bins for a list of values.
-	 * 
+	 *
 	 * @param x the vector of input data.
 	 * @param maxNumBins the number of bins.
 	 */
@@ -209,7 +209,7 @@ public class Discretizer {
 
 	/**
 	 * Compute bins for a list of values.
-	 * 
+	 *
 	 * @param list the histogram.
 	 * @param maxNumBins the number of bins.
 	 */
@@ -308,20 +308,20 @@ public class Discretizer {
 
 	static class Options {
 
-		@Argument(name = "-r", description = "attribute file path", required = true)
-		String attPath = null;
-		
+		@Argument(name = "-r", description = "attribute file path (default : data_attr.txt)")
+		String attPath = "data_attr.txt";
+
 		@Argument(name = "-t", description = "training file path")
 		String trainPath = null;
 
 		@Argument(name = "-i", description = "input dataset path", required = true)
 		String inputPath = null;
 
-		@Argument(name = "-d", description = "discretized attribute file path")
-		String disAttPath = null;
+		@Argument(name = "-d", description = "discretized attribute file path (default : binned_attr.txt)")
+		String disAttPath = "binned_attr.txt";
 
-		@Argument(name = "-m", description = "output attribute file path")
-		String outputAttPath = null;
+		@Argument(name = "-m", description = "output attribute file path (default : binned_attr.txt)")
+		String outputAttPath = "binned_attr.txt";
 
 		@Argument(name = "-o", description = "output dataset path", required = true)
 		String outputPath = null;
@@ -333,20 +333,20 @@ public class Discretizer {
 
 	/**
 	 * <p>
-	 * 
+	 *
 	 * <pre>
 	 * Usage: Discretizer
-	 * -r	attribute file path
 	 * -i	input dataset path
 	 * -o	output dataset path
+	 * [-r]	attribute file path
 	 * [-d]	discretized attribute file path
 	 * [-m]	output attribute file path
 	 * [-n]	maximum num of bins (default: 256)
 	 * [-t]	training file path
 	 * </pre>
-	 * 
+	 *
 	 * </p>
-	 * 
+	 *
 	 * @param args the command line arguments.
 	 * @throws Exception
 	 */

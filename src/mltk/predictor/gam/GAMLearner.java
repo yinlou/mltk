@@ -75,8 +75,8 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	 *
 	 * <pre>
 	 * Usage: mltk.predictor.gam.GAMLearner
-	 * -t	train set path
 	 * -m	maximum number of iterations
+	 * [-t]	train set path
 	 * [-g]	task between classification (c) and regression (r) (default: r)
 	 * [-v]	valid set path
 	 * [-e]	evaluation metric (default: default metric of task)

@@ -84,10 +84,10 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 	 *
 	 * <pre>
 	 * Usage: mltk.predictor.gam.GA2MLearner
-	 * -t	train set path
 	 * -i	input model path
 	 * -I	list of pairwise interactions path
 	 * -m	maximum number of iterations
+	 * [-t]	train set path
 	 * [-g]	task between classification (c) and regression (r) (default: r)
 	 * [-v]	valid set path
 	 * [-e]	evaluation metric (default: default metric of task)
