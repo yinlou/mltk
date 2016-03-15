@@ -1,5 +1,7 @@
 package mltk.predictor.evaluation;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -8,7 +10,7 @@ import mltk.util.tuple.DoublePair;
 
 /**
  * Class for evaluating area under ROC curve.
- * 
+ *
  * @author Yin Lou
  *
  */
@@ -26,6 +28,8 @@ public class AUC extends SimpleMetric {
 		}
 
 	}
+
+	public String outPath = null;
 
 	/**
 	 * Constructor.
@@ -51,7 +55,7 @@ public class AUC extends SimpleMetric {
 		}
 		return eval(a);
 	}
-	
+
 	protected double eval(DoublePair[] a) {
 		Arrays.sort(a, new DoublePairComparator());
 		double[] fraction = new double[a.length];
@@ -81,6 +85,11 @@ public class AUC extends SimpleMetric {
 		double tpfPrev = 0;
 		double fpfPrev = 0;
 
+		double[] all_tpf = new double[a.length];
+		double[] all_fpf = new double[a.length];
+		double[] precisions = new double[a.length];
+
+		// tt : True Positive, tf : False Negative, ff : True Negative, ft : False Positive
 		for (int i = a.length - 1; i >= 0; i--) {
 			tt += fraction[i];
 			tf -= fraction[i];
@@ -88,9 +97,46 @@ public class AUC extends SimpleMetric {
 			ff -= 1 - fraction[i];
 			double tpf = tt / (tt + tf);
 			double fpf = 1.0 - ff / (ft + ff);
+			if(outPath != null) {
+				all_tpf[i] = tpf;
+				all_fpf[i] = fpf;
+				precisions[i] = tt / (tt + ft);
+			}
+
 			area += 0.5 * (tpf + tpfPrev) * (fpf - fpfPrev);
 			tpfPrev = tpf;
 			fpfPrev = fpf;
+		}
+
+		if(outPath != null) {
+			try {
+				PrintWriter out = new PrintWriter(outPath);
+
+				StringBuilder sbuilder1 = new StringBuilder(Arrays.toString(all_tpf));
+				// delete first and last bracket
+				sbuilder1.deleteCharAt(0);
+				sbuilder1.deleteCharAt(sbuilder1.length()-1);
+				out.println(sbuilder1.toString());
+
+				StringBuilder sbuilder2 = new StringBuilder(Arrays.toString(all_fpf));
+				// delete first and last bracket
+				sbuilder2.deleteCharAt(0);
+				sbuilder2.deleteCharAt(sbuilder2.length()-1);
+				out.println(sbuilder2.toString());
+
+				StringBuilder sbuilder3 = new StringBuilder(Arrays.toString(precisions));
+				// delete first and last bracket
+				sbuilder3.deleteCharAt(0);
+				sbuilder3.deleteCharAt(sbuilder3.length()-1);
+				out.println(sbuilder3.toString());
+
+				out.flush();
+				out.close();
+
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		return area;

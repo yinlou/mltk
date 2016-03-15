@@ -2,7 +2,6 @@ package mltk.predictor.gam.tool;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -21,15 +20,15 @@ import mltk.util.Element;
 
 /**
  * Class for GAM diagnostics.
- * 
+ *
  * @author Yin Lou
- * 
+ *
  */
 public class Diagnostics {
 
 	/**
 	 * Computes the weights for each term in a GAM.
-	 * 
+	 *
 	 * @param gam the GAM model.
 	 * @param instances the training set.
 	 * @return the list of weights for each term in a GAM.
@@ -68,10 +67,10 @@ public class Diagnostics {
 	static class Options {
 
 		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
+		String attPath = "binned_attr.txt";
 
-		@Argument(name = "-d", description = "dataset path", required = true)
-		String datasetPath = null;
+		@Argument(name = "-d", description = "dataset path")
+		String datasetPath = "binned_train.txt";
 
 		@Argument(name = "-i", description = "input model path", required = true)
 		String inputModelPath = null;
@@ -83,7 +82,7 @@ public class Diagnostics {
 
 	/**
 	 * <p>
-	 * 
+	 *
 	 * <pre>
 	 * Usage: mltk.predictor.gam.tool.Diagnostics
 	 * -d	dataset path
@@ -91,9 +90,9 @@ public class Diagnostics {
 	 * -o	output path
 	 * [-r]	attribute file path
 	 * </pre>
-	 * 
+	 *
 	 * </p>
-	 * 
+	 *
 	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
@@ -114,11 +113,34 @@ public class Diagnostics {
 		Collections.reverse(list);
 
 		PrintWriter out = new PrintWriter(opts.outputPath);
+		StringBuilder sbuilder1 = new StringBuilder();
+		StringBuilder sbuilder2 = new StringBuilder();
 		for (Element<int[]> element : list) {
 			int[] term = element.element;
 			double weight = element.weight;
-			out.println(Arrays.toString(term) + ": " + weight);
+
+			if(term.length == 1) {
+				sbuilder1.append(term[0] + ",");
+				sbuilder2.append(weight + ",");
+			}
+			else if(term.length == 2) {
+				sbuilder1.append(term[0] + ":" + term[1] + ",");
+				sbuilder2.append(weight + ",");
+			}
+			else {
+				System.out.println("ERROR contain terms with more than two variables");
+			}
+
+
 		}
+		// remove last ','
+		sbuilder1.deleteCharAt(sbuilder1.length()-1);
+		sbuilder2.deleteCharAt(sbuilder2.length()-1);
+
+		// print to file
+		out.println(sbuilder1.toString());
+		out.println(sbuilder2.toString());
+
 		out.flush();
 		out.close();
 	}

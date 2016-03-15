@@ -14,20 +14,20 @@ import mltk.predictor.io.PredictorReader;
 
 /**
  * Class for making evaluations.
- * 
+ *
  * @author Yin Lou
- * 
+ *
  */
 public class Evaluator {
 
 	/**
 	 * Returns the area under ROC curve.
-	 * 
+	 *
 	 * @param classifier a classifier that outputs probability.
 	 * @param instances the instances.
 	 * @return the area under ROC curve.
 	 */
-	public static double evalAreaUnderROC(ProbabilisticClassifier classifier, Instances instances) {
+	public static double evalAreaUnderROC(ProbabilisticClassifier classifier, Instances instances, String outPath) {
 		double[] probs = new double[instances.size()];
 		double[] targets = new double[instances.size()];
 		for (int i = 0; i < probs.length; i++) {
@@ -35,12 +35,14 @@ public class Evaluator {
 			probs[i] = classifier.predictProbabilities(instance)[1];
 			targets[i] = instance.getTarget();
 		}
-		return new AUC().eval(probs, targets);
+		AUC auc = new AUC();
+		auc.outPath = outPath;
+		return auc.eval(probs, targets);
 	}
 
 	/**
 	 * Returns the root mean squared error.
-	 * 
+	 *
 	 * @param preds the predictions.
 	 * @param targets the targets.
 	 * @return the root mean squared error.
@@ -57,7 +59,7 @@ public class Evaluator {
 
 	/**
 	 * Returns the root mean squared error.
-	 * 
+	 *
 	 * @param regressor the regressor.
 	 * @param instances the instances.
 	 * @return the root mean squared error.
@@ -77,7 +79,7 @@ public class Evaluator {
 
 	/**
 	 * Returns the classification error.
-	 * 
+	 *
 	 * @param classifier the classifier.
 	 * @param instances the instances.
 	 * @return the classification error.
@@ -99,10 +101,10 @@ public class Evaluator {
 	static class Options {
 
 		@Argument(name = "-r", description = "attribute file path")
-		String attPath = null;
+		String attPath = "binned_attr.txt";
 
-		@Argument(name = "-d", description = "data set path", required = true)
-		String dataPath = null;
+		@Argument(name = "-d", description = "data set path")
+		String dataPath = "binned_test.txt";
 
 		@Argument(name = "-m", description = "model path", required = true)
 		String modelPath = null;
@@ -110,21 +112,25 @@ public class Evaluator {
 		@Argument(name = "-e", description = "AUC (a), Error (c), RMSE (r) (default: r)")
 		String task = "r";
 
+		@Argument(name = "-o", description = "output path")
+		String outPath = null;
+
 	}
 
 	/**
 	 * <p>
-	 * 
+	 *
 	 * <pre>
 	 * Usage: Evaluator
 	 * -d	data set path
 	 * -m	model path
 	 * [-r]	attribute file path
 	 * [-e]	AUC (a), Error (c), RMSE (r) (default: r)
+	 * [-o] output path
 	 * </pre>
-	 * 
+	 *
 	 * </p>
-	 * 
+	 *
 	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
@@ -144,7 +150,7 @@ public class Evaluator {
 		switch (opts.task) {
 			case "a":
 				ProbabilisticClassifier probClassifier = (ProbabilisticClassifier) predictor;
-				double auc = Evaluator.evalAreaUnderROC(probClassifier, instances);
+				double auc = Evaluator.evalAreaUnderROC(probClassifier, instances, opts.outPath);
 				System.out.println("AUC: " + auc);
 				break;
 			case "c":
