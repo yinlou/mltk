@@ -130,7 +130,7 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	public void read(BufferedReader in) throws Exception {
 		in.readLine();
 		link = LinkFunction.get(in.readLine().split(": ")[1]);
-        in.readLine();
+        	in.readLine();
 		intercept = ArrayUtils.parseDoubleArray(in.readLine());
 		int p = Integer.parseInt(in.readLine().split(": ")[1]);
 		w = new double[intercept.length][p];
