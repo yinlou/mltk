@@ -130,6 +130,7 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	public void read(BufferedReader in) throws Exception {
 		in.readLine();
 		link = LinkFunction.get(in.readLine().split(": ")[1]);
+        	in.readLine();
 		intercept = ArrayUtils.parseDoubleArray(in.readLine());
 		int p = Integer.parseInt(in.readLine().split(": ")[1]);
 		w = new double[intercept.length][p];
@@ -144,7 +145,7 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	@Override
 	public void write(PrintWriter out) throws Exception {
 		out.printf("[Predictor: %s]\n", this.getClass().getCanonicalName());
-		out.printf("Link: " + link);
+		out.println("Link: " + link);
 		out.println("Intercept: " + intercept.length);
 		out.println(Arrays.toString(intercept));
 		final int p = w[0].length;
@@ -235,3 +236,4 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	}
 
 }
+
