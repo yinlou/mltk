@@ -37,6 +37,7 @@ public class RandomForest implements Regressor {
 
 	@Override
 	public void read(BufferedReader in) throws Exception {
+		in.readLine();
 		int capacity = Integer.parseInt(in.readLine().split(": ")[1]);
 		rtList = new RTreeList(capacity);
 		in.readLine();
