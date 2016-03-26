@@ -126,9 +126,15 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 		return intercept[k];
 	}
 
+	/**
+	 * Please note that this is an internal method - to read a GLM please
+	 * use PredictorReader.read().
+	 * 
+	 * @param in The BufferedReader to read from
+	 * @throws Exception
+	 */
 	@Override
 	public void read(BufferedReader in) throws Exception {
-		in.readLine();
 		link = LinkFunction.get(in.readLine().split(": ")[1]);
         	in.readLine();
 		intercept = ArrayUtils.parseDoubleArray(in.readLine());
@@ -236,4 +242,5 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	}
 
 }
+
 
