@@ -109,6 +109,8 @@ public class Random {
 
 	/**
 	 * Generates random bytes and places them into a user-supplied byte array.
+	 * 
+	 * @param bytes the byte array to fill with random bytes.
 	 */
 	public void nextBytes(byte[] bytes) {
 		rand.nextBytes(bytes);

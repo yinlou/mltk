@@ -308,7 +308,7 @@ public class Discretizer {
 
 	static class Options {
 
-		@Argument(name = "-r", description = "attribute file path", required = true)
+		@Argument(name = "-r", description = "attribute file path")
 		String attPath = null;
 		
 		@Argument(name = "-t", description = "training file path")
@@ -335,14 +335,14 @@ public class Discretizer {
 	 * <p>
 	 * 
 	 * <pre>
-	 * Usage: Discretizer
-	 * -r	attribute file path
+	 * Usage: mltk.core.processor.Discretizer
 	 * -i	input dataset path
 	 * -o	output dataset path
+	 * [-r]	attribute file path
+	 * [-t]	training file path
 	 * [-d]	discretized attribute file path
 	 * [-m]	output attribute file path
 	 * [-n]	maximum num of bins (default: 256)
-	 * [-t]	training file path
 	 * </pre>
 	 * 
 	 * </p>

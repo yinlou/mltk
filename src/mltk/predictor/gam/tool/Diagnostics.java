@@ -82,7 +82,7 @@ public class Diagnostics {
 	}
 
 	/**
-	 * <p>
+	 * Generates term importance for GAMs.
 	 * 
 	 * <pre>
 	 * Usage: mltk.predictor.gam.tool.Diagnostics
@@ -91,8 +91,6 @@ public class Diagnostics {
 	 * -o	output path
 	 * [-r]	attribute file path
 	 * </pre>
-	 * 
-	 * </p>
 	 * 
 	 * @param args the command line arguments.
 	 * @throws Exception

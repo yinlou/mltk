@@ -28,7 +28,7 @@ public class BackwardElimination {
 	 * @param validSet the validation set.
 	 * @param learner the learner to use.
 	 * @param numIters the number of iterations to estimate the mean and std for full complexity models.
-	 * @return the list of selected features and <mean, std> pair for full complexity models.
+	 * @return the list of selected features and &lt;mean, std$gt; pair for full complexity models.
 	 */
 	public static Pair<List<Attribute>, DoublePair> select(Instances trainSet, Instances validSet,
 			BaggedEnsembleLearner learner, int numIters) {
@@ -79,7 +79,7 @@ public class BackwardElimination {
 	 * @param numTrees the number of trees in a grove.
 	 * @param alpha the alpha.
 	 * @param numIters the number of iterations to estimate the mean and std for full complexity models.
-	 * @return the list of selected features and <mean, std> pair for full complexity models.
+	 * @return the list of selected features and $lt;mean, std$gt; pair for full complexity models.
 	 */
 	public static Pair<List<Attribute>, DoublePair> select(Instances trainSet, Instances validSet,
 			AdditiveGrovesLearner learner, int baggingIters, int numTrees, double alpha, int numIters) {

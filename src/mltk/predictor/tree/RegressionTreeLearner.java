@@ -41,8 +41,6 @@ public class RegressionTreeLearner extends RTreeLearner {
 	/**
 	 * Trains a regression tree.
 	 *
-	 * <p>
-	 *
 	 * <pre>
 	 * Usage: mltk.predictor.tree.RegressionTreeLearner
 	 * -t	train set path
@@ -53,9 +51,7 @@ public class RegressionTreeLearner extends RTreeLearner {
 	 * [-s]	seed of the random number generator (default: 0)
 	 * </pre>
 	 *
-	 * </p>
-	 *
-	 * @param args
+	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
@@ -236,7 +232,7 @@ public class RegressionTreeLearner extends RTreeLearner {
 	/**
 	 * Sets the minimum leaf size.
 	 *
-	 * @param minLeafSize
+	 * @param minLeafSize the minimum leaf size.
 	 */
 	public void setMinLeafSize(int minLeafSize) {
 		this.minLeafSize = minLeafSize;

@@ -38,8 +38,6 @@ public class RandomForestLearner extends Learner {
 	 * When bagging is turned off (b = 0), this procedure generates a single random regression tree. When the number of
 	 * features to consider is the number of total features, this procedure builds bagged tree.
 	 *
-	 * <p>
-	 *
 	 * <pre>
 	 * Usage: mltk.predictor.tree.ensemble.rf.RandomForestLearner
 	 * -t	train set path
@@ -51,9 +49,7 @@ public class RandomForestLearner extends Learner {
 	 * [-b]	bagging iterations (default: 100)
 	 * </pre>
 	 *
-	 * </p>
-	 *
-	 * @param args
+	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {

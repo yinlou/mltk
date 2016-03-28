@@ -5,7 +5,7 @@ package mltk.util;
  * 
  * @author Yin Lou
  * 
- * @param <T>
+ * @param <T> the type of the element.
  */
 public class Element<T> implements Comparable<Element<T>> {
 

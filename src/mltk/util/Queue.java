@@ -7,7 +7,7 @@ import java.util.LinkedList;
  * 
  * @author Yin Lou
  * 
- * @param <T>
+ * @param <T> the type of the queue.
  */
 public class Queue<T> {
 

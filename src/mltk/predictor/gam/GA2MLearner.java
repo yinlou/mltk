@@ -72,7 +72,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 	}
 
 	/**
-	 * <p>
+	 * Trains a GA2M.
 	 * 
 	 * <pre>
 	 * Usage: mltk.predictor.gam.GA2MLearner
@@ -90,8 +90,6 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 	 * [-s]	seed of the random number generator (default: 0)
 	 * [-l]	learning rate (default: 0.01)
 	 * </pre>
-	 * 
-	 * </p>
 	 * 
 	 * @param args the command line arguments.
 	 * @throws Exception

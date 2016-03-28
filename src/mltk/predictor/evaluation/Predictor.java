@@ -95,7 +95,7 @@ public class Predictor {
 	}
 
 	/**
-	 * <p>
+	 * Makes predictions on a dataset.
 	 * 
 	 * <pre>
 	 * Usage: mltk.predictor.evaluation.Predictor
@@ -107,8 +107,6 @@ public class Predictor {
 	 * [-g]	task between classification (c) and regression (r) (default: r)
 	 * [-P]	output probablity (default: false)
 	 * </pre>
-	 * 
-	 * </p>
 	 * 
 	 * @param args the command line arguments.
 	 * @throws Exception

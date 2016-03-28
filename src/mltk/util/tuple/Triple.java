@@ -5,9 +5,9 @@ package mltk.util.tuple;
  * 
  * @author Yin Lou
  * 
- * @param <T1>
- * @param <T2>
- * @param <T3>
+ * @param <T1> the type of the 1st element.
+ * @param <T2> the type of the 2nd element.
+ * @param <T3> the type of the 3rd element.
  */
 public class Triple<T1, T2, T3> {
 

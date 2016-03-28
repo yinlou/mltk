@@ -36,7 +36,7 @@ public class RidgeLearner extends GLMLearner {
 	}
 
 	/**
-	 * <p>
+	 * Trains L2-regularized GLMs.
 	 * 
 	 * <pre>
 	 * Usage: mltk.predictor.glm.RidgeLearner
@@ -48,9 +48,8 @@ public class RidgeLearner extends GLMLearner {
 	 * [-m]	maximum num of iterations (default: 0)
 	 * [-l]	lambda (default: 0)
 	 * </pre>
-	 * </p>
 	 * 
-	 * @param args
+	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
