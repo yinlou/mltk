@@ -49,7 +49,7 @@ public class SPLAMLearner extends Learner {
 	}
 	
 	/**
-	 * <p>
+	 * Trains a SPLAM.
 	 * 
 	 * <pre>
 	 * Usage: mltk.predictor.gam.SPLAMLearner
@@ -63,8 +63,6 @@ public class SPLAMLearner extends Learner {
 	 * [-l]	lambda (default: 0)
 	 * [-a]	alpha (default: 1, i.e., SPAM model)
 	 * </pre>
-	 * 
-	 * </p>
 	 * 
 	 * @param args the command line arguments.
 	 * @throws Exception
@@ -497,7 +495,6 @@ public class SPLAMLearner extends Learner {
 	 * @param numKnots the number of knots.
 	 * @param lambda the lambda.
 	 * @param alpha the alpha.
-	 * @param fitIntercept whether the intercept is included.
 	 * @return a classifier.
 	 */
 	public GAM buildClassifier(Instances trainSet, int maxNumIters, int numKnots, double lambda, double alpha) {

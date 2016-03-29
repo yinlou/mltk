@@ -5,8 +5,8 @@ package mltk.util.tuple;
  * 
  * @author Yin Lou
  * 
- * @param <T1>
- * @param <T2>
+ * @param <T1> the type of the 1st element.
+ * @param <T2> the type of the 2nd element.
  */
 public class Pair<T1, T2> {
 

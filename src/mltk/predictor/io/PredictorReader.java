@@ -36,6 +36,7 @@ public class PredictorReader {
 	 * 
 	 * @param path the file path for the predictor.
 	 * @param clazz the class of the predictor.
+	 * @param <T> the type of the predictor class.
 	 * @return the parsed predictor.
 	 * @throws Exception
 	 */

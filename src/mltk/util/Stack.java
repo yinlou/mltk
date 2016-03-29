@@ -9,7 +9,7 @@ import java.util.List;
  * 
  * @author Yin Lou
  * 
- * @param <T>
+ * @param <T> the type of this stack.
  */
 public class Stack<T> {
 

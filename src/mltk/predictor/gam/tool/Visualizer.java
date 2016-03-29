@@ -312,7 +312,7 @@ public class Visualizer {
 	}
 
 	/**
-	 * <p>
+	 * Generates scripts for visualizing GAMs.
 	 * 
 	 * <pre>
 	 * Usage: mltk.predictor.gam.tool.Visualizer
@@ -322,8 +322,6 @@ public class Visualizer {
 	 * -o	output directory path
 	 * [-t]	output terminal (default: png)
 	 * </pre>
-	 * 
-	 * </p>
 	 * 
 	 * @param args the command line arguments.
 	 * @throws Exception

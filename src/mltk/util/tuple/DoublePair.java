@@ -1,7 +1,7 @@
 package mltk.util.tuple;
 
 /**
- * CLass for <double, double> pair.
+ * CLass for $lt;double, double$gt; pair.
  * 
  * @author Yin Lou
  * 

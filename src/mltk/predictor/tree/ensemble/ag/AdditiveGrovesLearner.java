@@ -64,7 +64,7 @@ public class AdditiveGrovesLearner extends Learner {
 	}
 
 	/**
-	 * <p>
+	 * Trains an additive groves model.
 	 * 
 	 * <pre>
 	 * Usage: mltk.predictor.tree.ensemble.ag.AdditiveGrovesLearner
@@ -81,9 +81,7 @@ public class AdditiveGrovesLearner extends Learner {
 	 * [-s]	seed of the random number generator (default: 0)
 	 * </pre>
 	 * 
-	 * </p>
-	 * 
-	 * @param args
+	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {

@@ -55,7 +55,7 @@ public class LogitBoostLearner extends TreeEnsembleLearner {
 	}
 
 	/**
-	 * <p>
+	 * Trains an additive logistic regression.
 	 * 
 	 * <pre>
 	 * Usage: mltk.predictor.tree.ensemble.brt.LogitBoostLearner
@@ -68,8 +68,6 @@ public class LogitBoostLearner extends TreeEnsembleLearner {
 	 * [-s]	seed of the random number generator (default: 0)
 	 * [-l]	learning rate (default: 0.01)
 	 * </pre>
-	 * 
-	 * </p>
 	 * 
 	 * @param args the command line arguments.
 	 * @throws Exception
@@ -164,7 +162,7 @@ public class LogitBoostLearner extends TreeEnsembleLearner {
 	 * @param trainSet the training set.
 	 * @param validSet the validation set.
 	 * @param maxNumIters the maximum number of iterations.
-	 * @param maxNumLeaves the maximum number of leaves.
+	 * @param metric the metric to optimize for on the validation set.
 	 * @return a classifier.
 	 */
 	public BRT buildBinaryClassifier(Instances trainSet, Instances validSet, int maxNumIters, Metric metric) {
@@ -279,7 +277,6 @@ public class LogitBoostLearner extends TreeEnsembleLearner {
 	 * @param trainSet the training set.
 	 * @param validSet the validation set.
 	 * @param maxNumIters the maximum number of iterations.
-	 * @param maxNumLeaves the maximum number of leaves.
 	 * @return a classifier.
 	 */
 	public BRT buildClassifier(Instances trainSet, Instances validSet, int maxNumIters) {
@@ -413,7 +410,6 @@ public class LogitBoostLearner extends TreeEnsembleLearner {
 	 * 
 	 * @param trainSet the training set.
 	 * @param maxNumIters the maximum number of iterations.
-	 * @param maxNumLeaves the maximum number of leaves.
 	 * @return a classifier.
 	 */
 	public BRT buildClassifier(Instances trainSet, int maxNumIters) {

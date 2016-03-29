@@ -44,8 +44,8 @@ public class Sampling {
 	 * Returns a bootstrap sample with out-of-bag samples.
 	 * 
 	 * @param instances the data set.
-	 * @param bagIndices
-	 * @param oobIndices
+	 * @param bagIndices the index of sampled instances with weights.
+	 * @param oobIndices the out-of-bag indexes.
 	 */
 	public static void createBootstrapSample(Instances instances, Map<Integer, Integer> bagIndices,
 			List<Integer> oobIndices) {

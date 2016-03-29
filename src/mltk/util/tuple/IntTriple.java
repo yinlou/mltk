@@ -1,7 +1,7 @@
 package mltk.util.tuple;
 
 /**
- * Class for <int, int, int> triples.
+ * Class for &lt;int, int, int&gt; triples.
  * 
  * @author Yin Lou
  * 

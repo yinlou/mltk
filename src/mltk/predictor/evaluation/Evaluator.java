@@ -113,7 +113,7 @@ public class Evaluator {
 	}
 
 	/**
-	 * <p>
+	 * Evaluates a predictor.
 	 * 
 	 * <pre>
 	 * Usage: Evaluator
@@ -122,8 +122,6 @@ public class Evaluator {
 	 * [-r]	attribute file path
 	 * [-e]	AUC (a), Error (c), RMSE (r) (default: r)
 	 * </pre>
-	 * 
-	 * </p>
 	 * 
 	 * @param args the command line arguments.
 	 * @throws Exception
