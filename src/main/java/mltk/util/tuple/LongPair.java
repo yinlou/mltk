@@ -1,7 +1,7 @@
 package mltk.util.tuple;
 
 /**
- * Class for <long, long> pairs.
+ * Class for &lt;long, long&gt; pairs.
  * 
  * @author Yin Lou
  * 

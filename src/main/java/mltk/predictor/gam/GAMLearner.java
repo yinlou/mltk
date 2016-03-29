@@ -60,7 +60,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	}
 
 	/**
-	 * <p>
+	 * Trains a GAM.
 	 * 
 	 * <pre>
 	 * Usage: mltk.predictor.gam.GAMLearner
@@ -76,8 +76,6 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	 * [-s]	seed of the random number generator (default: 0)
 	 * [-l]	learning rate (default: 0.01)
 	 * </pre>
-	 * 
-	 * </p>
 	 * 
 	 * @param args the command line arguments.
 	 * @throws Exception

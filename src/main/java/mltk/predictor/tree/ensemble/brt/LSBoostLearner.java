@@ -48,7 +48,7 @@ public class LSBoostLearner extends Learner {
 	}
 
 	/**
-	 * <p>
+	 * Trains a boosted tree ensemble using least square as the objective function.
 	 *
 	 * <pre>
 	 * Usage: mltk.predictor.tree.ensemble.brt.LSBoostLearner
@@ -62,8 +62,6 @@ public class LSBoostLearner extends Learner {
 	 * [-s]	seed of the random number generator (default: 0)
 	 * [-l]	learning rate (default: 0.01)
 	 * </pre>
-	 *
-	 * </p>
 	 *
 	 * @param args the command line arguments.
 	 * @throws Exception

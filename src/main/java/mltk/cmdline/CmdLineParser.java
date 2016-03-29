@@ -23,6 +23,7 @@ public class CmdLineParser {
 	/**
 	 * Constructor.
 	 * 
+	 * @param clazz the class object.
 	 * @param obj the object.
 	 */
 	public CmdLineParser(Class<?> clazz, Object obj) {

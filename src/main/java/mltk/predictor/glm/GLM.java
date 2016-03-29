@@ -10,6 +10,7 @@ import mltk.predictor.LinkFunction;
 import mltk.predictor.ProbabilisticClassifier;
 import mltk.predictor.Regressor;
 import mltk.util.ArrayUtils;
+import mltk.util.MathUtils;
 import mltk.util.StatUtils;
 
 /**
@@ -126,17 +127,10 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 		return intercept[k];
 	}
 
-	/**
-	 * Please note that this is an internal method - to read a GLM please
-	 * use PredictorReader.read().
-	 * 
-	 * @param in The BufferedReader to read from
-	 * @throws Exception
-	 */
 	@Override
 	public void read(BufferedReader in) throws Exception {
 		link = LinkFunction.get(in.readLine().split(": ")[1]);
-        	in.readLine();
+		in.readLine();
 		intercept = ArrayUtils.parseDoubleArray(in.readLine());
 		int p = Integer.parseInt(in.readLine().split(": ")[1]);
 		w = new double[intercept.length][p];
@@ -191,7 +185,7 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 		if (w.length == 1) {
 			double[] prob = new double[2];
 			double pred = regress(intercept[0], w[0], instance);
-			prob[0] = 1 / (1 + Math.exp(-pred));
+			prob[0] = MathUtils.sigmoid(pred);
 			prob[1] = 1 - prob[0];
 			return prob;
 		} else {
@@ -200,7 +194,7 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 			double sum = 0;
 			for (int i = 0; i < w.length; i++) {
 				pred[i] = regress(intercept[i], w[i], instance);
-				prob[i] = 1 / (1 + Math.exp(-pred[i]));
+				prob[i] = MathUtils.sigmoid(pred[i]);
 				sum += prob[i];
 			}
 			for (int i = 0; i < prob.length; i++) {

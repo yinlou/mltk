@@ -3,7 +3,7 @@ package mltk.util.tuple;
 import java.util.Comparator;
 
 /**
- * Class for comparing <long, double> pairs. By default long is used as key, and in ascending order.
+ * Class for comparing &lt;long, double&gt; pairs. By default long is used as key, and in ascending order.
  * 
  * @author Yin Lou
  * 

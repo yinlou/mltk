@@ -43,6 +43,7 @@ public class StatUtils {
 	/**
 	 * Returns the index of maximum element.
 	 * 
+	 * @param a the array.
 	 * @return the index of maximum element.
 	 */
 	public static int indexOfMax(int[] a) {
@@ -60,6 +61,7 @@ public class StatUtils {
 	/**
 	 * Returns the index of maximum element.
 	 * 
+	 * @param a the array.
 	 * @return the index of maximum element.
 	 */
 	public static int indexOfMax(double[] a) {
@@ -109,6 +111,7 @@ public class StatUtils {
 	/**
 	 * Returns the index of minimum element.
 	 * 
+	 * @param a the array.
 	 * @return the index of minimum element.
 	 */
 	public static int indexOfMin(int[] a) {
@@ -126,6 +129,7 @@ public class StatUtils {
 	/**
 	 * Returns the index of minimum element.
 	 * 
+	 * @param a the array.
 	 * @return the index of minimum element.
 	 */
 	public static int indexOfMin(double[] a) {

@@ -85,6 +85,8 @@ public abstract class GLMLearner extends Learner {
 	
 	/**
 	 * Returns the response distribution family.
+	 * 
+	 * @return the response distribution family.
 	 */
 	public Family getFamily() {
 		return family;

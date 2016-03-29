@@ -1,7 +1,7 @@
 package mltk.util.tuple;
 
 /**
- * Class for <int, int> pairs.
+ * Class for &lt;int, int&gt; pairs.
  * 
  * @author Yin Lou
  * 

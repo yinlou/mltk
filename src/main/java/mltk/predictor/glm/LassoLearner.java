@@ -42,7 +42,7 @@ public class LassoLearner extends GLMLearner {
 	}
 
 	/**
-	 * <p>
+	 * Trains L1-regularized GLMs.
 	 * 
 	 * <pre>
 	 * Usage: mltk.predictor.glm.LassoLearner
@@ -55,8 +55,7 @@ public class LassoLearner extends GLMLearner {
 	 * [-l]	lambda (default: 0)
 	 * </pre>
 	 * 
-	 * </p>
-	 * @param args
+	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
@@ -1074,6 +1073,7 @@ public class LassoLearner extends GLMLearner {
 	 * @param attrs the attribute list.
 	 * @param indices the indices.
 	 * @param values the values.
+	 * @param y the targets.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param numLambdas the number of lambdas.
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.

@@ -137,7 +137,7 @@ public class InstancesSplitter {
 	}
 
 	/**
-	 * <p>
+	 * Splits a dataset.
 	 * 
 	 * <pre>
 	 * Usage: mltk.core.processor.InstancesSplitter
@@ -148,9 +148,7 @@ public class InstancesSplitter {
 	 * [-s]	seed of the random number generator (default: 0)
 	 * </pre>
 	 * 
-	 * </p>
-	 * 
-	 * @param args
+	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {

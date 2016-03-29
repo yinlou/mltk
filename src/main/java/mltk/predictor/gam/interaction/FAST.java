@@ -91,7 +91,7 @@ public class FAST {
 	}
 
 	/**
-	 * <p>
+	 * Ranks pairwise interactions using FAST.
 	 * 
 	 * <pre>
 	 * Usage: mltk.predictor.gam.interaction.FAST
@@ -102,8 +102,6 @@ public class FAST {
 	 * [-b]	number of bins (default: 256)
 	 * [-p]	number of threads (default: 1)
 	 * </pre>
-	 * 
-	 * </p>
 	 * 
 	 * @param args the command line arguments
 	 * @throws Exception

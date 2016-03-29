@@ -32,7 +32,7 @@ public class ScorecardModelLearner extends Learner {
 	}
 
 	/**
-	 * <p>
+	 * Trains a scorecard model.
 	 * 
 	 * <pre>
 	 * Usage: mltk.predictor.gam.ScorecardModelLearner
@@ -44,8 +44,6 @@ public class ScorecardModelLearner extends Learner {
 	 * [-V]	verbose (default: true)
 	 * [-l]	lambda (default: 0)
 	 * </pre>
-	 * 
-	 * </p>
 	 * 
 	 * @param args the command line arguments.
 	 * @throws Exception
