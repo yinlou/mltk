@@ -111,7 +111,7 @@ public class ArrayUtils {
 	 */
 	public static boolean isConstant(double[] a, int begin, int end, double c) {
 		for (int i = begin; i < end; i++) {
-			if (a[i] != c) {
+			if (!MathUtils.equals(a[i], c)) {
 				return false;
 			}
 		}
