@@ -25,13 +25,7 @@ public class Element<T> implements Comparable<Element<T>> {
 
 	@Override
 	public int compareTo(Element<T> e) {
-		if (this.weight < e.weight) {
-			return -1;
-		} else if (this.weight > e.weight) {
-			return 1;
-		} else {
-			return 0;
-		}
+		return Double.compare(this.weight, e.weight);
 	}
 
 }
