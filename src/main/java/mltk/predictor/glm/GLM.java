@@ -236,5 +236,3 @@ public class GLM implements ProbabilisticClassifier, Regressor {
 	}
 
 }
-
-
