@@ -13,7 +13,17 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
-
+  <profiles>
+  <profile>
+	<id>doclint-java8-disable</id>
+	<activation>
+		<jdk>[1.8,)</jdk>
+	</activation>
+	<properties>
+		<javadoc.opts>-Xdoclint:none</javadoc.opts>
+	</properties>
+	</profile>
+  </profiles>
   <build>
     <plugins>
       <plugin>
@@ -32,7 +42,7 @@
         <configuration>
           <doctitle>Machine Learning Tool Kit ${project.version} API</doctitle>
           <windowtitle>Machine Learning Tool Kit ${project.version} API</windowtitle>
-          <additionalparam>-Xdoclint:none</additionalparam>
+          <additionalparam>${javadoc.opts}</additionalparam>        
         </configuration>
         <executions>
           <execution>
