@@ -116,7 +116,7 @@ public class Evaluator {
 	 * Evaluates a predictor.
 	 * 
 	 * <pre>
-	 * Usage: Evaluator
+	 * Usage: mltk.predictor.evaluation.Evaluator
 	 * -d	data set path
 	 * -m	model path
 	 * [-r]	attribute file path
