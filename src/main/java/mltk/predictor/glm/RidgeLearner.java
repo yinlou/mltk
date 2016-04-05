@@ -81,20 +81,13 @@ public class RidgeLearner extends GLMLearner {
 		}
 	}
 
-	private boolean fitIntercept;
-	private int maxNumIters;
-	private double epsilon;
-	private double lambda;
-	private Task task;
+	protected double lambda;
+	protected Task task;
 
 	/**
 	 * Constructor.
 	 */
 	public RidgeLearner() {
-		verbose = false;
-		fitIntercept = true;
-		maxNumIters = -1;
-		epsilon = MathUtils.EPSILON;
 		lambda = 0; // no regularization
 		task = Task.REGRESSION;
 	}

@@ -15,7 +15,6 @@ import mltk.predictor.Family;
 import mltk.predictor.LinkFunction;
 import mltk.predictor.glm.GLM;
 import mltk.util.ArrayUtils;
-import mltk.util.MathUtils;
 import mltk.util.OptimUtils;
 import mltk.util.StatUtils;
 import mltk.util.VectorUtils;
@@ -91,25 +90,18 @@ public class GroupLassoLearner extends GLMLearner {
 		}
 	}
 
-	private boolean fitIntercept;
-	private boolean refit;
-	private int maxNumIters;
-	private int numLambdas;
-	private double lambda;
-	private double epsilon;
-	private Task task;
-	private List<int[]> groups;
+	protected boolean refit;
+	protected int numLambdas;
+	protected double lambda;
+	protected Task task;
+	protected List<int[]> groups;
 	
 	/**
 	 * Constructor.
 	 */
 	public GroupLassoLearner() {
-		verbose = false;
-		fitIntercept = true;
 		refit = false;
-		maxNumIters = -1;
 		lambda = 0.0;
-		epsilon = MathUtils.EPSILON;
 		task = Task.REGRESSION;
 		groups = null;
 	}
@@ -1636,6 +1628,24 @@ public class GroupLassoLearner extends GLMLearner {
 	 */
 	public void setTask(Task task) {
 		this.task = task;
+	}
+	
+	/**
+	 * Returns the groups.
+	 * 
+	 * @return the groups.
+	 */
+	public List<int[]> getGroups() {
+		return groups;
+	}
+	
+	/**
+	 * Sets the groups.
+	 * 
+	 * @param groups the groups.
+	 */
+	public void setGroups(List<int[]> groups) {
+		this.groups = groups;
 	}
 	
 	protected void computeGradient(double[][] block, double[] rTrain, double[] gradient) {

@@ -119,23 +119,16 @@ public class LassoLearner extends GLMLearner {
 
 	}
 
-	private boolean fitIntercept;
-	private boolean refit;
-	private int maxNumIters;
-	private int numLambdas;
-	private double epsilon;
-	private double lambda;
-	private Task task;
+	protected boolean refit;
+	protected int numLambdas;
+	protected double lambda;
+	protected Task task;
 
 	/**
 	 * Constructor.
 	 */
 	public LassoLearner() {
-		verbose = false;
-		fitIntercept = true;
 		refit = false;
-		maxNumIters = -1;
-		epsilon = MathUtils.EPSILON;
 		lambda = 0; // no regularization
 		numLambdas = -1; // no regularization path
 		task = Task.REGRESSION;

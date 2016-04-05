@@ -89,21 +89,14 @@ public class ElasticNetLearner extends GLMLearner {
 		}
 	}
 
-	private boolean fitIntercept;
-	private int maxNumIters;
-	private double epsilon;
-	private double lambda;
-	private double l1Ratio;
-	private Task task;
+	protected double lambda;
+	protected double l1Ratio;
+	protected Task task;
 
 	/**
 	 * Constructor.
 	 */
 	public ElasticNetLearner() {
-		verbose = false;
-		fitIntercept = true;
-		maxNumIters = -1;
-		epsilon = MathUtils.EPSILON;
 		lambda = 0; // no regularization
 		l1Ratio = 0; // 0: ridge, 1: lasso, (0, 1): elastic net
 		task = Task.REGRESSION;
