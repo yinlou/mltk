@@ -41,7 +41,7 @@ public class ElasticNetLearner extends GLMLearner {
 	}
 
 	/**
-	 * <p>
+	 * Trains elastic-net-regularized GLMs.
 	 * 
 	 * <pre>
 	 * Usage: mltk.predictor.glm.ElasticNetLearner
@@ -55,8 +55,7 @@ public class ElasticNetLearner extends GLMLearner {
 	 * [-a]	L1 ratio (default: 0)
 	 * </pre>
 	 * 
-	 * </p>
-	 * @param args
+	 * @param args the command line arguments.
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
