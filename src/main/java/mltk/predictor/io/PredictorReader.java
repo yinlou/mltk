@@ -60,5 +60,19 @@ public class PredictorReader {
 		predictor.read(in);
 		return predictor;
 	}
+	
+	/**
+	 * Reads a predictor from an input reader. The caller is responsible for providing the correct predictor type.
+	 * 
+	 * @param in the input reader.
+	 * @param clazz the class of the predictor.
+	 * @param <T> the type of the predictor class.
+	 * @return the parsed predictor.
+	 * @throws Exception
+	 */
+	public static <T extends Predictor> T read(BufferedReader in, Class<T> clazz) throws Exception {
+		Predictor predictor = read(in);
+		return clazz.cast(predictor);
+	}
 
 }
