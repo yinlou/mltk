@@ -1,5 +1,6 @@
 package mltk.predictor.tree.ensemble.brt;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -8,15 +9,10 @@ import mltk.cmdline.CmdLineParser;
 import mltk.cmdline.options.LearnerOptions;
 import mltk.core.Attribute;
 import mltk.core.Instances;
-import mltk.core.Sampling;
 import mltk.core.io.InstancesReader;
-import mltk.predictor.BaggedEnsemble;
-import mltk.predictor.BaggedEnsembleLearner;
-import mltk.predictor.BoostedEnsemble;
-import mltk.predictor.Learner;
-import mltk.predictor.Predictor;
+import mltk.predictor.evaluation.Metric;
 import mltk.predictor.io.PredictorWriter;
-import mltk.predictor.tree.RegressionTree;
+import mltk.predictor.tree.RTree;
 import mltk.predictor.tree.RegressionTreeLearner;
 import mltk.predictor.tree.RegressionTreeLearner.Mode;
 import mltk.util.Permutation;
@@ -29,9 +25,9 @@ import mltk.util.StatUtils;
  * @author Yin Lou
  *
  */
-public class LSBoostLearner extends Learner {
+public class LSBoostLearner extends BRTLearner {
 	
-	class Options extends LearnerOptions {
+	static class Options extends LearnerOptions {
 
 		@Argument(name = "-c", description = "max number of leaves (default: 100)")
 		int maxNumLeaves = 100;
@@ -54,10 +50,9 @@ public class LSBoostLearner extends Learner {
 	 * Usage: mltk.predictor.tree.ensemble.brt.LSBoostLearner
 	 * -t	train set path
 	 * -m	maximum number of iterations
-	 * [-v]	valid set path
-	 * [-e]	evaluation metric (default: default metric of task)
 	 * [-r]	attribute file path
 	 * [-o]	output model path
+	 * [-V]	verbose (default: true)
 	 * [-c]	max number of leaves (default: 100)
 	 * [-s]	seed of the random number generator (default: 0)
 	 * [-l]	learning rate (default: 0.01)
@@ -67,8 +62,7 @@ public class LSBoostLearner extends Learner {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		LSBoostLearner learner = new LSBoostLearner();
-		Options opts = learner.new Options();
+		Options opts = new Options();
 		CmdLineParser parser = new CmdLineParser(LSBoostLearner.class, opts);
 		try {
 			parser.parse(args);
@@ -80,11 +74,16 @@ public class LSBoostLearner extends Learner {
 		Random.getInstance().setSeed(opts.seed);
 
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
+		
+		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
+		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
+		rtLearner.setMaxNumLeaves(opts.maxNumLeaves);
 
+		LSBoostLearner learner = new LSBoostLearner();
 		learner.setLearningRate(opts.learningRate);
 		learner.setMaxNumIters(opts.maxNumIters);
-		learner.setMaxNumLeaves(opts.maxNumLeaves);
 		learner.setVerbose(opts.verbose);
+		learner.setTreeLearner(rtLearner);
 
 		long start = System.currentTimeMillis();
 		BRT brt = learner.build(trainSet);
@@ -96,85 +95,32 @@ public class LSBoostLearner extends Learner {
 		}
 	}
 
-	private int maxNumIters;
-	private int maxNumLeaves;
-	private double learningRate;
-	private double alpha;
-
 	/**
 	 * Constructor.
 	 */
 	public LSBoostLearner() {
 		verbose = false;
 		maxNumIters = 3500;
-		maxNumLeaves = 100;
 		learningRate = 1;
 		alpha = 1;
+		
+		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
+		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
+		rtLearner.setMaxNumLeaves(100);
+		
+		treeLearner = rtLearner;
 	}
-
-	/**
-	 * Returns the maximum number of iterations.
-	 *
-	 * @return the maximum number of iterations.
-	 */
-	public int getMaxNumIters() {
-		return maxNumIters;
-	}
-
-	/**
-	 * Sets the maximum number of iterations.
-	 *
-	 * @param maxNumIters the maximum number of iterations.
-	 */
-	public void setMaxNumIters(int maxNumIters) {
-		this.maxNumIters = maxNumIters;
-	}
-
-	/**
-	 * Returns the learning rate.
-	 *
-	 * @return the learning rate.
-	 */
-	public double getLearningRate() {
-		return learningRate;
-	}
-
-	/**
-	 * Sets the learning rate.
-	 *
-	 * @param learningRate the learning rate.
-	 */
-	public void setLearningRate(double learningRate) {
-		this.learningRate = learningRate;
-	}
-
-	/**
-	 * Returns the maximum number of leaves.
-	 *
-	 * @return the maximum number of leaves.
-	 */
-	public int getMaxNumLeaves() {
-		return maxNumLeaves;
-	}
-
-	/**
-	 * Sets the maximum number of leaves.
-	 *
-	 * @param maxNumLeaves the maximum number of leaves.
-	 */
-	public void setMaxNumLeaves(int maxNumLeaves) {
-		this.maxNumLeaves = maxNumLeaves;
-	}
-
+	
 	/**
 	 * Builds a regressor.
 	 *
 	 * @param trainSet the training set.
+	 * @param validSet the validation set.
 	 * @param maxNumIters the maximum number of iterations.
-	 * @param maxNumLeaves the maximum number of leaves.
+	 * @param metric the metric to optimize for on the validation set.
 	 * @return a regressor.
 	 */
-	public BRT buildRegressor(Instances trainSet, int maxNumIters, int maxNumLeaves) {
+	public BRT buildRegressor(Instances trainSet, Instances validSet, int maxNumIters, Metric metric) {
 		BRT brt = new BRT(1);
 
 		List<Attribute> attributes = trainSet.getAttributes();
@@ -189,16 +135,98 @@ public class LSBoostLearner extends Learner {
 			target[i] = trainSet.get(i).getTarget();
 		}
 
-		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
-		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
-		rtLearner.setMaxNumLeaves(maxNumLeaves);
+		double[] rTrain = new double[trainSet.size()];
+		for (int i = 0; i < rTrain.length; i++) {
+			rTrain[i] = target[i];
+		}
+		double[] pValid = new double[validSet.size()];
+
+		List<Double> measureList = new ArrayList<>(maxNumIters);
+		for (int iter = 0; iter < maxNumIters; iter++) {
+			// Prepare training set
+			if (alpha < 1) {
+				int[] a = perm.getPermutation();
+				for (int i = 0; i < indices.length; i++) {
+					indices[i] = a[i];
+				}
+				Arrays.sort(indices);
+				List<Attribute> attList = trainSet.getAttributes(indices);
+				trainSet.setAttributes(attList);
+			}
+			// Prepare training set
+			for (int i = 0; i < rTrain.length; i++) {
+				trainSet.get(i).setTarget(rTrain[i]);
+			}
+
+			RTree rt = (RTree) treeLearner.build(trainSet);
+			if (learningRate != 1) {
+				rt.multiply(learningRate);
+			}
+			brt.trees[0].add(rt);
+
+			if (alpha < 1) {
+				// Restore attributes
+				trainSet.setAttributes(attributes);
+			}
+
+			// Update predictions and residuals
+			for (int i = 0; i < rTrain.length; i++) {
+				double pred = rt.regress(trainSet.get(i));
+				rTrain[i] -= pred;
+			}
+			for (int i = 0; i < pValid.length; i++) {
+				double pred = rt.regress(validSet.get(i));
+				pValid[i] += pred;
+			}
+
+			double measure = metric.eval(pValid, validSet);
+			measureList.add(measure);
+			if (verbose) {
+				System.out.println("Iteration " + iter + ": " + measure);
+			}
+		}
+		
+		// Search the best model on validation set
+		int idx = metric.searchBestMetricValueIndex(measureList);
+		for (int i = brt.trees[0].size() - 1; i > idx; i--) {
+			brt.trees[0].removeLast();
+		}
+
+		// Restore targets
+		for (int i = 0; i < target.length; i++) {
+			trainSet.get(i).setTarget(target[i]);
+		}
+
+		return brt;
+	}
+
+	/**
+	 * Builds a regressor.
+	 *
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @return a regressor.
+	 */
+	public BRT buildRegressor(Instances trainSet, int maxNumIters) {
+		BRT brt = new BRT(1);
+
+		List<Attribute> attributes = trainSet.getAttributes();
+		int limit = (int) (attributes.size() * alpha);
+		int[] indices = new int[limit];
+		Permutation perm = new Permutation(attributes.size());
+		perm.permute();
+
+		// Backup targets
+		double[] target = new double[trainSet.size()];
+		for (int i = 0; i < target.length; i++) {
+			target[i] = trainSet.get(i).getTarget();
+		}
 
 		double[] rTrain = new double[trainSet.size()];
 		for (int i = 0; i < rTrain.length; i++) {
 			rTrain[i] = target[i];
 		}
 
-		// Gradient boosting
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			// Prepare training set
 			if (alpha < 1) {
@@ -214,7 +242,7 @@ public class LSBoostLearner extends Learner {
 				trainSet.get(i).setTarget(rTrain[i]);
 			}
 
-			RegressionTree rt = rtLearner.build(trainSet);
+			RTree rt = (RTree) treeLearner.build(trainSet);
 			if (learningRate != 1) {
 				rt.multiply(learningRate);
 			}
@@ -245,92 +273,9 @@ public class LSBoostLearner extends Learner {
 		return brt;
 	}
 
-	/**
-	 * Builds a regressor.
-	 *
-	 * @param trainSet the training set.
-	 * @param maxNumIters the maximum number of iterations.
-	 * @param maxNumLeaves the maximum number of leaves.
-	 * @param baggingIters the bagging iterations.
-	 * @return a regressor.
-	 */
-	public BoostedEnsemble buildRegressor(Instances trainSet, int maxNumIters, int maxNumLeaves, int baggingIters) {
-		BoostedEnsemble brt = new BoostedEnsemble();
-
-		List<Attribute> attributes = trainSet.getAttributes();
-		int limit = (int) (attributes.size() * alpha);
-		int[] indices = new int[limit];
-		Permutation perm = new Permutation(attributes.size());
-		perm.permute();
-
-		// Backup targets
-		double[] target = new double[trainSet.size()];
-		for (int i = 0; i < target.length; i++) {
-			target[i] = trainSet.get(i).getTarget();
-		}
-
-		// Create bags
-		Instances[] bags = Sampling.createBags(trainSet, baggingIters);
-
-		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
-		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
-		rtLearner.setMaxNumLeaves(maxNumLeaves);
-		BaggedEnsembleLearner btLearner = new BaggedEnsembleLearner(baggingIters, rtLearner);
-
-		double[] residualTrain = new double[trainSet.size()];
-		for (int i = 0; i < residualTrain.length; i++) {
-			residualTrain[i] = target[i];
-		}
-
-		// Gradient boosting
-		for (int iter = 0; iter < maxNumIters; iter++) {
-			// Prepare training set
-			int[] a = perm.getPermutation();
-			for (int i = 0; i < indices.length; i++) {
-				indices[i] = a[i];
-			}
-			Arrays.sort(indices);
-			List<Attribute> attList = trainSet.getAttributes(indices);
-			trainSet.setAttributes(attList);
-			for (int i = 0; i < residualTrain.length; i++) {
-				trainSet.get(i).setTarget(residualTrain[i]);
-			}
-
-			BaggedEnsemble bt = btLearner.build(bags);
-			if (learningRate != 1) {
-				for (Predictor predictor : bt.getPredictors()) {
-					RegressionTree rt = (RegressionTree) predictor;
-					rt.multiply(learningRate);
-				}
-			}
-			brt.add(bt);
-
-			// Restore attributes
-			trainSet.setAttributes(attributes);
-
-			// Update residuals
-			for (int i = 0; i < residualTrain.length; i++) {
-				double pred = bt.regress(trainSet.get(i));
-				residualTrain[i] -= pred;
-			}
-
-			if (verbose) {
-				double rmse = StatUtils.rms(residualTrain);
-				System.out.println("Iteration " + iter + ": " + rmse);
-			}
-		}
-
-		// Restore targets
-		for (int i = 0; i < target.length; i++) {
-			trainSet.get(i).setTarget(target[i]);
-		}
-
-		return brt;
-	}
-
 	@Override
 	public BRT build(Instances instances) {
-		return buildRegressor(instances, maxNumIters, maxNumLeaves);
+		return buildRegressor(instances, maxNumIters);
 	}
 
 }

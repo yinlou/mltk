@@ -15,10 +15,8 @@ import mltk.core.io.InstancesReader;
 import mltk.predictor.evaluation.Metric;
 import mltk.predictor.io.PredictorWriter;
 import mltk.predictor.tree.RTree;
-import mltk.predictor.tree.RegressionTreeLearner;
 import mltk.predictor.tree.TreeLearner;
 import mltk.predictor.tree.RegressionTreeLearner.Mode;
-import mltk.predictor.tree.ensemble.TreeEnsembleLearner;
 import mltk.util.MathUtils;
 import mltk.util.OptimUtils;
 import mltk.util.Permutation;
@@ -36,7 +34,7 @@ import mltk.util.Random;
  * @author Yin Lou
  * 
  */
-public class LogitBoostLearner extends TreeEnsembleLearner {
+public class LogitBoostLearner extends BRTLearner {
 	
 	static class Options extends LearnerOptions {
 
@@ -85,15 +83,15 @@ public class LogitBoostLearner extends TreeEnsembleLearner {
 		Random.getInstance().setSeed(opts.seed);
 
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
+		
+		RobustRegressionTreeLearner rtLearner = new RobustRegressionTreeLearner();
+		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
+		rtLearner.setMaxNumLeaves(opts.maxNumLeaves);
 
 		LogitBoostLearner learner = new LogitBoostLearner();
 		learner.setLearningRate(opts.learningRate);
 		learner.setMaxNumIters(opts.maxNumIters);
-		learner.setVerbose(true);
-		
-		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
-		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
-		rtLearner.setMaxNumLeaves(opts.maxNumLeaves);
+		learner.setVerbose(opts.verbose);
 		learner.setTreeLearner(rtLearner);
 
 		long start = System.currentTimeMillis();
@@ -106,10 +104,6 @@ public class LogitBoostLearner extends TreeEnsembleLearner {
 		}
 	}
 
-	protected int maxNumIters;
-	protected double learningRate;
-	protected double alpha;
-
 	/**
 	 * Constructor.
 	 */
@@ -118,44 +112,19 @@ public class LogitBoostLearner extends TreeEnsembleLearner {
 		maxNumIters = 3500;
 		learningRate = 0.01;
 		alpha = 1;
-	}
-
-	/**
-	 * Returns the maximum number of iterations.
-	 * 
-	 * @return the maximum number of iterations.
-	 */
-	public int getMaxNumIters() {
-		return maxNumIters;
-	}
-
-	/**
-	 * Sets the maximum number of iterations.
-	 * 
-	 * @param maxNumIters the maximum number of iterations.
-	 */
-	public void setMaxNumIters(int maxNumIters) {
-		this.maxNumIters = maxNumIters;
-	}
-
-	/**
-	 * Returns the learning rate.
-	 * 
-	 * @return the learning rate.
-	 */
-	public double getLearningRate() {
-		return learningRate;
-	}
-
-	/**
-	 * Sets the learning rate.
-	 * 
-	 * @param learningRate the learning rate.
-	 */
-	public void setLearningRate(double learningRate) {
-		this.learningRate = learningRate;
+		
+		RobustRegressionTreeLearner rtLearner = new RobustRegressionTreeLearner();
+		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
+		rtLearner.setMaxNumLeaves(100);
+		
+		treeLearner = rtLearner;
 	}
 	
+	@Override
+	public BRT build(Instances instances) {
+		return buildClassifier(instances, maxNumIters);
+	}
+
 	/**
 	 * Builds a classifier.
 	 * 
@@ -527,7 +496,21 @@ public class LogitBoostLearner extends TreeEnsembleLearner {
 
 		return brt;
 	}
+	
+	@Override
+	public void setTreeLearner(TreeLearner treeLearner) {
+		if (!(treeLearner instanceof RobustRegressionTreeLearner)) {
+			throw new IllegalArgumentException("Only robust regression tree learners are accepted");
+		}
+		this.treeLearner = treeLearner;
+	}
 
+	protected void computeProbabilities(double[] pred, double[] prob) {
+		for (int i = 0; i < pred.length; i++) {
+			prob[i] = MathUtils.sigmoid(pred[i]);
+		}
+	}
+	
 	protected void computeProbabilities(double[][] pred, double[][] prob) {
 		for (int i = 0; i < pred[0].length; i++) {
 			double max = Double.NEGATIVE_INFINITY;
@@ -546,25 +529,6 @@ public class LogitBoostLearner extends TreeEnsembleLearner {
 				prob[k][i] /= sum;
 			}
 		}
-	}
-	
-	protected void computeProbabilities(double[] pred, double[] prob) {
-		for (int i = 0; i < pred.length; i++) {
-			prob[i] = MathUtils.sigmoid(pred[i]);
-		}
-	}
-
-	@Override
-	public BRT build(Instances instances) {
-		return buildClassifier(instances, maxNumIters);
-	}
-	
-	@Override
-	public void setTreeLearner(TreeLearner treeLearner) {
-		if (!(treeLearner instanceof RobustRegressionTreeLearner)) {
-			throw new IllegalArgumentException("Only robust regression tree learners are accepted");
-		}
-		this.treeLearner = treeLearner;
 	}
 
 }

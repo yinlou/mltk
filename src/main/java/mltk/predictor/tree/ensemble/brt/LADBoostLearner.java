@@ -12,7 +12,7 @@ import mltk.cmdline.options.LearnerOptions;
 import mltk.core.Attribute;
 import mltk.core.Instances;
 import mltk.core.io.InstancesReader;
-import mltk.predictor.Learner;
+import mltk.predictor.evaluation.Metric;
 import mltk.predictor.io.PredictorWriter;
 import mltk.predictor.tree.RegressionTree;
 import mltk.predictor.tree.RegressionTreeLeaf;
@@ -30,7 +30,7 @@ import mltk.util.VectorUtils;
  * @author Yin Lou
  * 
  */
-public class LADBoostLearner extends Learner {
+public class LADBoostLearner extends BRTLearner {
 	
 	static class Options extends LearnerOptions {
 
@@ -78,15 +78,19 @@ public class LADBoostLearner extends Learner {
 		Random.getInstance().setSeed(opts.seed);
 
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
+		
+		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
+		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
+		rtLearner.setMaxNumLeaves(opts.maxNumLeaves);
 
-		LADBoostLearner ladBoostLearner = new LADBoostLearner();
-		ladBoostLearner.setLearningRate(opts.learningRate);
-		ladBoostLearner.setMaxNumIters(opts.maxNumIters);
-		ladBoostLearner.setMaxNumLeaves(opts.maxNumLeaves);
-		ladBoostLearner.setVerbose(opts.verbose);
+		LADBoostLearner learner = new LADBoostLearner();
+		learner.setLearningRate(opts.learningRate);
+		learner.setMaxNumIters(opts.maxNumIters);
+		learner.setVerbose(opts.verbose);
+		learner.setTreeLearner(rtLearner);
 
 		long start = System.currentTimeMillis();
-		BRT brt = ladBoostLearner.build(trainSet);
+		BRT brt = learner.build(trainSet);
 		long end = System.currentTimeMillis();
 		System.out.println("Time: " + (end - start) / 1000.0);
 
@@ -95,85 +99,37 @@ public class LADBoostLearner extends Learner {
 		}
 	}
 
-	private int maxNumIters;
-	private int maxNumLeaves;
-	private double alpha;
-	private double learningRate;
-
 	/**
 	 * Constructor.
 	 */
 	public LADBoostLearner() {
 		verbose = false;
 		maxNumIters = 3500;
-		maxNumLeaves = 100;
 		alpha = 1;
 		learningRate = 1;
+		
+		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
+		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
+		rtLearner.setMaxNumLeaves(100);
+		
+		treeLearner = rtLearner;
 	}
 
-	/**
-	 * Returns the maximum number of iterations.
-	 * 
-	 * @return the maximum number of iterations.
-	 */
-	public int getMaxNumIters() {
-		return maxNumIters;
-	}
-
-	/**
-	 * Sets the maximum number of iterations.
-	 * 
-	 * @param maxNumIters the maximum number of iterations.
-	 */
-	public void setMaxNumIters(int maxNumIters) {
-		this.maxNumIters = maxNumIters;
-	}
-
-	/**
-	 * Returns the maximum number of leaves.
-	 * 
-	 * @return the maximum number of leaves.
-	 */
-	public int getMaxNumLeaves() {
-		return maxNumLeaves;
-	}
-
-	/**
-	 * Sets the maximum number of leaves.
-	 * 
-	 * @param maxNumLeaves the maximum number of leaves.
-	 */
-	public void setMaxNumLeaves(int maxNumLeaves) {
-		this.maxNumLeaves = maxNumLeaves;
-	}
-
-	/**
-	 * Returns the learning rate.
-	 * 
-	 * @return the learning rate.
-	 */
-	public double getLearningRate() {
-		return learningRate;
-	}
-
-	/**
-	 * Sets the learning rate.
-	 * 
-	 * @param learningRate the learning rate.
-	 */
-	public void setLearningRate(double learningRate) {
-		this.learningRate = learningRate;
+	@Override
+	public BRT build(Instances instances) {
+		return buildRegressor(instances, maxNumIters);
 	}
 
 	/**
 	 * Builds a regressor.
 	 * 
 	 * @param trainSet the training set.
+	 * @param validSet the validation set.
 	 * @param maxNumIters the maximum number of iterations.
-	 * @param maxNumLeaves the maximum number of leaves.
+	 * @param metric the metric to optimize for on the validation set.
 	 * @return a regressor.
 	 */
-	public BRT build(Instances trainSet, int maxNumIters, int maxNumLeaves) {
+	public BRT buildRegressor(Instances trainSet, Instances validSet, int maxNumIters, Metric metric) {
 		BRT brt = new BRT(1);
 
 		List<Attribute> attributes = trainSet.getAttributes();
@@ -191,38 +147,41 @@ public class LADBoostLearner extends Learner {
 		RegressionTree initialTree = new RegressionTree(new RegressionTreeLeaf(intercept));
 		brt.trees[0].add(initialTree);
 
-		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
-		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
-		rtLearner.setMaxNumLeaves(maxNumLeaves);
-
-		double[] residualTrain = new double[trainSet.size()];
-		for (int i = 0; i < residualTrain.length; i++) {
-			residualTrain[i] = target[i] - intercept;
+		double[] rTrain = new double[trainSet.size()];
+		for (int i = 0; i < rTrain.length; i++) {
+			rTrain[i] = target[i] - intercept;
 		}
+		double[] pValid = new double[validSet.size()];
+		Arrays.fill(pValid, intercept);
 
-		// Gradient boosting
+		List<Double> measureList = new ArrayList<>(maxNumIters);
 		for (int iter = 0; iter < maxNumIters; iter++) {
-			// Prepare training set
-			int[] a = perm.getPermutation();
-			for (int i = 0; i < indices.length; i++) {
-				indices[i] = a[i];
+			// Prepare attributes
+			if (alpha < 1) {
+				int[] a = perm.getPermutation();
+				for (int i = 0; i < indices.length; i++) {
+					indices[i] = a[i];
+				}
+				Arrays.sort(indices);
+				List<Attribute> attList = trainSet.getAttributes(indices);
+				trainSet.setAttributes(attList);
 			}
-			Arrays.sort(indices);
-			List<Attribute> attList = trainSet.getAttributes(indices);
-			trainSet.setAttributes(attList);
-			for (int i = 0; i < residualTrain.length; i++) {
-				trainSet.get(i).setTarget(MathUtils.sign(residualTrain[i]));
+			// Prepare training set
+			for (int i = 0; i < rTrain.length; i++) {
+				trainSet.get(i).setTarget(MathUtils.sign(rTrain[i]));
 			}
 
-			RegressionTree rt = rtLearner.build(trainSet);
+			RegressionTree rt = (RegressionTree) treeLearner.build(trainSet);
 			brt.trees[0].add(rt);
 
-			// Restore attributes
-			trainSet.setAttributes(attributes);
+			if (alpha < 1) {
+				// Restore attributes
+				trainSet.setAttributes(attributes);
+			}
 
 			// Replace the leaf value by median
 			Map<RegressionTreeLeaf, List<Integer>> map = new HashMap<>();
-			for (int i = 0; i < residualTrain.length; i++) {
+			for (int i = 0; i < rTrain.length; i++) {
 				RegressionTreeLeaf leaf = rt.getLeafNode(trainSet.get(i));
 				if (!map.containsKey(leaf)) {
 					map.put(leaf, new ArrayList<Integer>());
@@ -234,22 +193,33 @@ public class LADBoostLearner extends Learner {
 				List<Integer> list = entry.getValue();
 				double[] values = new double[list.size()];
 				for (int i = 0; i < values.length; i++) {
-					values[i] = residualTrain[list.get(i)];
+					values[i] = rTrain[list.get(i)];
 				}
 				double pred = ArrayUtils.getMedian(values) * learningRate;
 				leaf.setPrediction(pred);
 			}
 
-			// Update residuals
-			for (int i = 0; i < residualTrain.length; i++) {
+			// Update predictions and residuals
+			for (int i = 0; i < rTrain.length; i++) {
 				double pred = rt.regress(trainSet.get(i));
-				residualTrain[i] -= pred;
+				rTrain[i] -= pred;
+			}
+			for (int i = 0; i < pValid.length; i++) {
+				double pred = rt.regress(validSet.get(i));
+				pValid[i] += pred;
 			}
 
+			double measure = metric.eval(pValid, validSet);
+			measureList.add(measure);
 			if (verbose) {
-				double lad = VectorUtils.l1norm(residualTrain) / residualTrain.length;
-				System.out.println("Iteration " + iter + ": " + lad);
+				System.out.println("Iteration " + iter + ": " + measure);
 			}
+		}
+		
+		// Search the best model on validation set
+		int idx = metric.searchBestMetricValueIndex(measureList);
+		for (int i = brt.trees[0].size() - 1; i > idx; i--) {
+			brt.trees[0].removeLast();
 		}
 
 		// Restore targets
@@ -260,9 +230,98 @@ public class LADBoostLearner extends Learner {
 		return brt;
 	}
 
-	@Override
-	public BRT build(Instances instances) {
-		return build(instances, maxNumIters, maxNumLeaves);
+	/**
+	 * Builds a regressor.
+	 * 
+	 * @param trainSet the training set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @return a regressor.
+	 */
+	public BRT buildRegressor(Instances trainSet, int maxNumIters) {
+		BRT brt = new BRT(1);
+
+		List<Attribute> attributes = trainSet.getAttributes();
+		int limit = (int) (attributes.size() * alpha);
+		int[] indices = new int[limit];
+		Permutation perm = new Permutation(attributes.size());
+		perm.permute();
+
+		// Backup targets
+		double[] target = new double[trainSet.size()];
+		for (int i = 0; i < target.length; i++) {
+			target[i] = trainSet.get(i).getTarget();
+		}
+		double intercept = ArrayUtils.getMedian(target);
+		RegressionTree initialTree = new RegressionTree(new RegressionTreeLeaf(intercept));
+		brt.trees[0].add(initialTree);
+
+		double[] rTrain = new double[trainSet.size()];
+		for (int i = 0; i < rTrain.length; i++) {
+			rTrain[i] = target[i] - intercept;
+		}
+
+		for (int iter = 0; iter < maxNumIters; iter++) {
+			// Prepare attributes
+			if (alpha < 1) {
+				int[] a = perm.getPermutation();
+				for (int i = 0; i < indices.length; i++) {
+					indices[i] = a[i];
+				}
+				Arrays.sort(indices);
+				List<Attribute> attList = trainSet.getAttributes(indices);
+				trainSet.setAttributes(attList);
+			}
+			// Prepare training set
+			for (int i = 0; i < rTrain.length; i++) {
+				trainSet.get(i).setTarget(MathUtils.sign(rTrain[i]));
+			}
+
+			RegressionTree rt = (RegressionTree) treeLearner.build(trainSet);
+			brt.trees[0].add(rt);
+
+			if (alpha < 1) {
+				// Restore attributes
+				trainSet.setAttributes(attributes);
+			}
+
+			// Replace the leaf value by median
+			Map<RegressionTreeLeaf, List<Integer>> map = new HashMap<>();
+			for (int i = 0; i < rTrain.length; i++) {
+				RegressionTreeLeaf leaf = rt.getLeafNode(trainSet.get(i));
+				if (!map.containsKey(leaf)) {
+					map.put(leaf, new ArrayList<Integer>());
+				}
+				map.get(leaf).add(i);
+			}
+			for (Map.Entry<RegressionTreeLeaf, List<Integer>> entry : map.entrySet()) {
+				RegressionTreeLeaf leaf = entry.getKey();
+				List<Integer> list = entry.getValue();
+				double[] values = new double[list.size()];
+				for (int i = 0; i < values.length; i++) {
+					values[i] = rTrain[list.get(i)];
+				}
+				double pred = ArrayUtils.getMedian(values) * learningRate;
+				leaf.setPrediction(pred);
+			}
+
+			// Update residuals
+			for (int i = 0; i < rTrain.length; i++) {
+				double pred = rt.regress(trainSet.get(i));
+				rTrain[i] -= pred;
+			}
+
+			if (verbose) {
+				double lad = VectorUtils.l1norm(rTrain) / rTrain.length;
+				System.out.println("Iteration " + iter + ": " + lad);
+			}
+		}
+
+		// Restore targets
+		for (int i = 0; i < target.length; i++) {
+			trainSet.get(i).setTarget(target[i]);
+		}
+
+		return brt;
 	}
 
 }
