@@ -3,17 +3,17 @@ package mltk.predictor.evaluation;
 import mltk.core.Instances;
 
 /**
- * Class for evaluating least absolute errors (LAE).
+ * Class for evaluating mean absolute error (MAE).
  * 
  * @author Yin Lou
  *
  */
-public class LAE extends SimpleMetric {
+public class MAE extends SimpleMetric {
 
 	/**
 	 * Constructor.
 	 */
-	public LAE() {
+	public MAE() {
 		super(false);
 	}
 
