@@ -134,24 +134,24 @@ public class InstancesReader {
 	 * Reads a set of dense instances from data file. Default delimiter is whitespace.
 	 * 
 	 * @param file the data file.
-	 * @param classIndex the index of the class attribute, -1 if no class attribute.
+	 * @param targetIndex the index of the target attribute, -1 if no target attribute.
 	 * @return a set of dense instances.
 	 * @throws IOException
 	 */
-	public static Instances read(String file, int classIndex) throws IOException {
-		return read(file, classIndex, "\\s+");
+	public static Instances read(String file, int targetIndex) throws IOException {
+		return read(file, targetIndex, "\\s+");
 	}
 
 	/**
 	 * Reads a set of dense instances from data file.
 	 * 
 	 * @param file the data file.
-	 * @param classIndex the index of the class attribute, -1 if no class attribute.
+	 * @param targetIndex the index of the target attribute, -1 if no target attribute.
 	 * @param delimiter the delimiter.
 	 * @return a set of dense instances.
 	 * @throws IOException
 	 */
-	public static Instances read(String file, int classIndex, String delimiter) throws IOException {
+	public static Instances read(String file, int targetIndex, String delimiter) throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(file), 65535);
 		List<Attribute> attributes = new ArrayList<>();
 		Instances instances = new Instances(attributes);
@@ -161,7 +161,7 @@ public class InstancesReader {
 				break;
 			}
 			String[] data = line.split(delimiter);
-			Instance instance = parseDenseInstance(data, classIndex);
+			Instance instance = parseDenseInstance(data, targetIndex);
 			instances.add(instance);
 		}
 		br.close();
@@ -173,7 +173,7 @@ public class InstancesReader {
 			attributes.add(att);
 		}
 
-		if (classIndex >= 0) {
+		if (targetIndex >= 0) {
 			assignTargetAttribute(instances);
 		}
 
