@@ -265,9 +265,9 @@ public class Instance implements Copyable<Instance> {
 	}
 
 	/**
-	 * Sets the class value.
+	 * Sets the target value.
 	 * 
-	 * @param target the new class value.
+	 * @param target the new target value.
 	 */
 	public void setTarget(double target) {
 		this.target[0] = target;

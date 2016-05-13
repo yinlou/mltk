@@ -220,7 +220,7 @@ public class InstancesReader {
 	 * @return a sparse instance from strings.
 	 */
 	private static Instance parseSparseInstance(String[] data, TreeSet<Integer> attrSet) {
-		double classValue = Double.parseDouble(data[0]);
+		double targetValue = Double.parseDouble(data[0]);
 		int[] indices = new int[data.length - 1];
 		double[] values = new double[data.length - 1];
 		for (int i = 0; i < indices.length; i++) {
@@ -229,7 +229,7 @@ public class InstancesReader {
 			values[i] = Double.parseDouble(pair[1]);
 			attrSet.add(indices[i]);
 		}
-		return new Instance(indices, values, classValue);
+		return new Instance(indices, values, targetValue);
 	}
 
 	/**

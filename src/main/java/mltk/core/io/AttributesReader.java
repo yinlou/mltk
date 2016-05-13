@@ -24,13 +24,27 @@ public class AttributesReader {
 	 * Reads attributes and class attribute from attribute file.
 	 * 
 	 * @param attFile the attribute file.
-	 * @return a pair of attributes and class attribute (null if no class attribute).
+	 * @return a pair of attributes and target attribute (null if no target attribute).
 	 * @throws IOException
 	 */
 	public static Pair<List<Attribute>, Attribute> read(String attFile) throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(attFile), 65535);
+		Pair<List<Attribute>, Attribute> pair = read(br);
+		br.close();
+
+		return pair;
+	}
+	
+	/**
+	 * Reads attributes and class attribute from attribute file.
+	 * 
+	 * @param br the reader.
+	 * @return a pair of attributes and target attribute (null if no target attribute).
+	 * @throws IOException
+	 */
+	public static Pair<List<Attribute>, Attribute> read(BufferedReader br) throws IOException {
 		List<Attribute> attributes = new ArrayList<Attribute>();
-		Attribute clsAttr = null;
+		Attribute targetAtt = null;
 		for (int i = 0;; i++) {
 			String line = br.readLine();
 			if (line == null) {
@@ -45,16 +59,15 @@ public class AttributesReader {
 				att = NumericalAttribute.parse(line);
 			}
 			att.setIndex(i);
-			if (line.indexOf("(class)") != -1) {
-				clsAttr = att;
+			if (line.indexOf("(target)") != -1) {
+				targetAtt = att;
 				i--;
 			} else {
 				attributes.add(att);
 			}
 		}
-		br.close();
 
-		return new Pair<List<Attribute>, Attribute>(attributes, clsAttr);
+		return new Pair<List<Attribute>, Attribute>(attributes, targetAtt);
 	}
 
 }

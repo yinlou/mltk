@@ -30,7 +30,7 @@ public class InstancesWriter {
 		for (Attribute attribute : attributes) {
 			out.println(attribute);
 		}
-		out.println(instances.getTargetAttribute() + " (class)");
+		out.println(instances.getTargetAttribute() + " (target)");
 		out.flush();
 		out.close();
 
