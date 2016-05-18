@@ -24,6 +24,7 @@ import mltk.util.tuple.IntDoublePairComparator;
 public abstract class TreeLearner extends Learner {
 	
 	protected static final Double ZERO = new Double(0.0);
+	protected static final IntDoublePairComparator COMP = new IntDoublePairComparator(false);
 
 	protected static class Dataset {
 
@@ -62,9 +63,8 @@ public abstract class TreeLearner extends Learner {
 					}
 				}
 			}
-			IntDoublePairComparator comp = new IntDoublePairComparator(false);
 			for (List<IntDoublePair> sortedList : dataset.sortedLists) {
-				Collections.sort(sortedList, comp);
+				Collections.sort(sortedList, COMP);
 			}
 			return dataset;
 		}
@@ -149,10 +149,12 @@ public abstract class TreeLearner extends Learner {
 					int leftIdx = leftHash[pair.v1];
 					int rightIdx = rightHash[pair.v1];
 					if (leftIdx != -1) {
-						left.sortedLists.get(i).add(new IntDoublePair(leftIdx, pair.v2));
+						pair.v1 = leftIdx;
+						left.sortedLists.get(i).add(pair);
 					}
 					if (rightIdx != -1) {
-						right.sortedLists.get(i).add(new IntDoublePair(rightIdx, pair.v2));
+						pair.v1 = rightIdx;
+						right.sortedLists.get(i).add(pair);
 					}
 				}
 			}
