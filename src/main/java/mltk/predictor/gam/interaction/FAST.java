@@ -20,7 +20,6 @@ import mltk.core.processor.Discretizer;
 import mltk.predictor.function.CHistogram;
 import mltk.predictor.function.Histogram2D;
 import mltk.util.Element;
-import mltk.util.tuple.DoublePair;
 import mltk.util.tuple.IntPair;
 
 /**
@@ -207,7 +206,7 @@ public class FAST {
 				}
 			}
 		}
-		DoublePair d = computeCHistograms(instances, used, cHist);
+		double ySq = computeCHistograms(instances, used, cHist);
 		for (Element<IntPair> pair : pairs) {
 			final int f1 = pair.element.v1;
 			final int f2 = pair.element.v2;
@@ -215,13 +214,12 @@ public class FAST {
 			final int size2 = cHist[f2].size();
 			Histogram2D hist2d = new Histogram2D(size1, size2);
 			computeHistogram2D(instances, f1, f2, hist2d);
-			computeWeight(pair, cHist, hist2d, d.v1, d.v2);
+			computeWeight(pair, cHist, hist2d, ySq);
 		}
 	}
 
-	protected static DoublePair computeCHistograms(Instances instances, boolean[] used, CHistogram[] cHist) {
+	protected static double computeCHistograms(Instances instances, boolean[] used, CHistogram[] cHist) {
 		double ySq = 0;
-		double totalWeight = 0;
 		// compute histogram
 		for (Instance instance : instances) {
 			double resp = instance.getTarget();
@@ -233,7 +231,6 @@ public class FAST {
 				}
 			}
 			ySq += resp * resp * instance.getWeight();
-			totalWeight += instance.getWeight();
 		}
 		// compute cumulative histogram
 		for (int j = 0; j < cHist.length; j++) {
@@ -244,7 +241,7 @@ public class FAST {
 				}
 			}
 		}
-		return new DoublePair(ySq, totalWeight);
+		return ySq;
 	}
 
 	protected static void computeHistogram2D(Instances instances, int f1, int f2, Histogram2D hist2d) {
@@ -290,8 +287,7 @@ public class FAST {
 		count[3] = cHist1.count[cHist1.size() - 1] - cHist1.count[i] - count[2];
 	}
 
-	protected static void computeWeight(Element<IntPair> pair, CHistogram[] cHist, Histogram2D hist2d, double ySq,
-			double totalWeight) {
+	protected static void computeWeight(Element<IntPair> pair, CHistogram[] cHist, Histogram2D hist2d, double ySq) {
 		final int f1 = pair.element.v1;
 		final int f2 = pair.element.v2;
 		final int size1 = cHist[f1].size();
