@@ -1,5 +1,7 @@
 package mltk.core;
 
+import mltk.util.MathUtils;
+
 /**
  * Class for instances.
  * 
@@ -284,19 +286,30 @@ public class Instance implements Copyable<Instance> {
 			int[] indices = sv.getIndices();
 			double[] values = sv.getValues();
 			for (int i = 0; i < indices.length; i++) {
-				sb.append(" ").append(indices[i]).append(":").append(values[i]);
+				sb.append(" ").append(indices[i]).append(":");
+				print(sb, values[i]);
 			}
 		} else {
 			double[] values = getValues();
-			sb.append(values[0]);
+			print(sb, values[0]);
 			for (int i = 1; i < values.length; i++) {
-				sb.append("\t").append(values[i]);
+				sb.append("\t");
+				print(sb, values[i]);
 			}
 			if (!Double.isNaN(getTarget())) {
-				sb.append("\t").append(getTarget());
+				sb.append("\t");
+				print(sb, getTarget());
 			}
 		}
 		return sb.toString();
+	}
+	
+	protected void print(StringBuilder sb, double v) {
+		if (MathUtils.isInteger(v)) {
+			sb.append((int) v);
+		} else {
+			sb.append(v);
+		}
 	}
 
 }
