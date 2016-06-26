@@ -128,7 +128,7 @@ public class InstancesSplitter {
 					InstancesWriter.write(datasets[0], opts.outputDirPath + File.separator + prefix + ".attr",
 							opts.outputDirPath + File.separator + prefix + ".train");
 					InstancesWriter.write(datasets[1], opts.outputDirPath + File.separator + prefix + ".valid");
-				} if (data.length == 3) {
+				} else if (data.length == 3) {
 					double[] ratios = new double[data.length - 1];
 					for (int i = 0; i < ratios.length; i++) {
 						ratios[i] = Double.parseDouble(data[i + 1]);
