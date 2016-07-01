@@ -47,7 +47,7 @@ public class AdditiveGrovesLearner extends Learner {
 		String outputModelPath = null;
 
 		@Argument(name = "-e", description = "AUC (a), RMSE (r) (default: r)")
-		String metric = null;
+		String metric = "rmse";
 
 		@Argument(name = "-b", description = "bagging iterations (default: 60)")
 		int baggingIters = 60;

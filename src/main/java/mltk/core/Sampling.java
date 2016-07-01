@@ -25,10 +25,7 @@ public class Sampling {
 		Map<Integer, Integer> map = new HashMap<>();
 		for (int i = 0; i < instances.size(); i++) {
 			int idx = rand.nextInt(instances.size());
-			if (!map.containsKey(idx)) {
-				map.put(idx, 0);
-			}
-			map.put(idx, map.get(idx) + 1);
+			map.put(idx, map.getOrDefault(idx, 0) + 1);
 		}
 		Instances bag = new Instances(instances.getAttributes(), instances.getTargetAttribute(), map.size());
 		for (Integer idx : map.keySet()) {
@@ -55,10 +52,7 @@ public class Sampling {
 			oobIndices.clear();
 			for (int i = 0; i < instances.size(); i++) {
 				int idx = rand.nextInt(instances.size());
-				if (!bagIndices.containsKey(idx)) {
-					bagIndices.put(idx, 0);
-				}
-				bagIndices.put(idx, bagIndices.get(idx) + 1);
+				bagIndices.put(idx, bagIndices.getOrDefault(idx, 0) + 1);
 			}
 			for (int i = 0; i < instances.size(); i++) {
 				if (!bagIndices.containsKey(i)) {

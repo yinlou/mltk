@@ -830,10 +830,10 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 	@Override
 	public GAM build(Instances instances) {
 		if (pairs == null) {
-			int n = instances.dimension();
+			int p = instances.dimension();
 			pairs = new ArrayList<IntPair>();
-			for (int i = 0; i < n; i++) {
-				for (int j = i + 1; j < n; j++) {
+			for (int i = 0; i < p; i++) {
+				for (int j = i + 1; j < p; j++) {
 					pairs.add(new IntPair(i, j));
 				}
 			}
