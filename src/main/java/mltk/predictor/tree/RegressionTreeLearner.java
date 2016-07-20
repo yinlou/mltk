@@ -276,7 +276,7 @@ public class RegressionTreeLearner extends RTreeLearner {
 				Dataset right = new Dataset(data.instances);
 				split(data, interiorNode, left, right);
 
-				if (depth >= maxDepth) {
+				if (depth >= maxDepth - 1) {
 					getStats(left.instances, stats);
 					interiorNode.left = new RegressionTreeLeaf(stats[2]);
 					getStats(right.instances, stats);
