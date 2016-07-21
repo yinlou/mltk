@@ -6,13 +6,16 @@ import java.util.List;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
-import mltk.cmdline.options.LearnerOptions;
+import mltk.cmdline.options.HoldoutValidatedLearnerOptions;
 import mltk.core.Attribute;
 import mltk.core.Instance;
 import mltk.core.Instances;
 import mltk.core.NominalAttribute;
 import mltk.core.io.InstancesReader;
+import mltk.predictor.evaluation.Error;
 import mltk.predictor.evaluation.Metric;
+import mltk.predictor.evaluation.MetricFactory;
+import mltk.predictor.evaluation.SimpleMetric;
 import mltk.predictor.io.PredictorWriter;
 import mltk.predictor.tree.RTree;
 import mltk.predictor.tree.TreeLearner;
@@ -36,7 +39,7 @@ import mltk.util.Random;
  */
 public class LogitBoostLearner extends BRTLearner {
 	
-	static class Options extends LearnerOptions {
+	static class Options extends HoldoutValidatedLearnerOptions {
 
 		@Argument(name = "-c", description = "max number of leaves (default: 100)")
 		int maxNumLeaves = 100;
@@ -59,6 +62,8 @@ public class LogitBoostLearner extends BRTLearner {
 	 * Usage: mltk.predictor.tree.ensemble.brt.LogitBoostLearner
 	 * -t	train set path
 	 * -m	maximum number of iterations
+	 * [-v]	valid set path
+	 * [-e]	evaluation metric (default: default metric of task)
 	 * [-r]	attribute file path
 	 * [-o]	output model path
 	 * [-V]	verbose (default: true)
@@ -73,8 +78,14 @@ public class LogitBoostLearner extends BRTLearner {
 	public static void main(String[] args) throws Exception {
 		Options opts = new Options();
 		CmdLineParser parser = new CmdLineParser(LogitBoostLearner.class, opts);
+		Metric metric = null;
 		try {
 			parser.parse(args);
+			if (opts.metric == null) {
+				metric = new Error();
+			} else {
+				metric = MetricFactory.getMetric(opts.metric);
+			}
 		} catch (IllegalArgumentException e) {
 			parser.printUsage();
 			System.exit(1);
@@ -92,7 +103,13 @@ public class LogitBoostLearner extends BRTLearner {
 		learner.setLearningRate(opts.learningRate);
 		learner.setMaxNumIters(opts.maxNumIters);
 		learner.setVerbose(opts.verbose);
+		learner.setMetric(metric);
 		learner.setTreeLearner(rtLearner);
+		
+		if (opts.validPath != null) {
+			Instances validSet = InstancesReader.read(opts.attPath, opts.validPath);
+			learner.setValidSet(validSet);
+		}
 
 		long start = System.currentTimeMillis();
 		BRT brt = learner.build(trainSet);
@@ -122,7 +139,14 @@ public class LogitBoostLearner extends BRTLearner {
 	
 	@Override
 	public BRT build(Instances instances) {
-		return buildClassifier(instances, maxNumIters);
+		if (metric == null) {
+			metric = new Error();
+		}
+		if (validSet != null) {
+			return buildClassifier(instances, validSet, maxNumIters);
+		} else {
+			return buildClassifier(instances, maxNumIters);
+		}
 	}
 
 	/**
@@ -131,10 +155,9 @@ public class LogitBoostLearner extends BRTLearner {
 	 * @param trainSet the training set.
 	 * @param validSet the validation set.
 	 * @param maxNumIters the maximum number of iterations.
-	 * @param metric the metric to optimize for on the validation set.
 	 * @return a classifier.
 	 */
-	public BRT buildBinaryClassifier(Instances trainSet, Instances validSet, int maxNumIters, Metric metric) {
+	public BRT buildBinaryClassifier(Instances trainSet, Instances validSet, int maxNumIters) {
 		Attribute classAttribute = trainSet.getTargetAttribute();
 		if (classAttribute.getType() != Attribute.Type.NOMINAL) {
 			throw new IllegalArgumentException("Class attribute must be nominal.");
@@ -239,25 +262,26 @@ public class LogitBoostLearner extends BRTLearner {
 
 		return brt;
 	}
-
+	
 	/**
 	 * Builds a classifier.
 	 * 
 	 * @param trainSet the training set.
-	 * @param validSet the validation set.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @return a classifier.
 	 */
-	public BRT buildClassifier(Instances trainSet, Instances validSet, int maxNumIters) {
+	public BRT buildBinaryClassifier(Instances trainSet, int maxNumIters) {
 		Attribute classAttribute = trainSet.getTargetAttribute();
 		if (classAttribute.getType() != Attribute.Type.NOMINAL) {
 			throw new IllegalArgumentException("Class attribute must be nominal.");
 		}
 		NominalAttribute clazz = (NominalAttribute) classAttribute;
-		final int numClasses = clazz.getStates().length;
-		final double l = learningRate * (numClasses - 1.0) / numClasses;
+		if (clazz.getCardinality() != 2) {
+			throw new IllegalArgumentException("Only binary classification is accepted.");
+		}
+		SimpleMetric simpleMetric = (SimpleMetric) metric;
 
-		BRT brt = new BRT(numClasses);
+		BRT brt = new BRT(1);
 
 		List<Attribute> attributes = trainSet.getAttributes();
 		int limit = (int) (attributes.size() * alpha);
@@ -275,25 +299,15 @@ public class LogitBoostLearner extends BRTLearner {
 			targetTrain[i] = instance.getTarget();
 			weightTrain[i] = instance.getWeight();
 		}
-		double[] targetValid = new double[validSet.size()];
-		for (int i = 0; i < targetValid.length; i++) {
-			targetValid[i] = validSet.get(i).getTarget();
-		}
 
 		// Initialization
-		double[][] predTrain = new double[numClasses][targetTrain.length];
-		double[][] probTrain = new double[numClasses][targetTrain.length];
-		int[][] rTrain = new int[numClasses][targetTrain.length];
-		for (int k = 0; k < numClasses; k++) {
-			int[] rkTrain = rTrain[k];
-			double[] probkTrain = probTrain[k];
-			for (int i = 0; i < rkTrain.length; i++) {
-				rkTrain[i] = MathUtils.indicator(targetTrain[i] == k);
-				probkTrain[i] = 1.0 / numClasses;
-			}
-		}
-		double[][] predValid = new double[numClasses][validSet.size()];
+		double[] predTrain = new double[targetTrain.length];
+		double[] probTrain = new double[targetTrain.length];
+		computeProbabilities(predTrain, probTrain);
+		double[] rTrain = new double[targetTrain.length];
+		OptimUtils.computePseudoResidual(predTrain, targetTrain, rTrain);
 
+		List<Double> measureList = new ArrayList<>(maxNumIters);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			// Prepare attributes
 			if (alpha < 1) {
@@ -305,35 +319,25 @@ public class LogitBoostLearner extends BRTLearner {
 				List<Attribute> attList = trainSet.getAttributes(indices);
 				trainSet.setAttributes(attList);
 			}
-
-			for (int k = 0; k < numClasses; k++) {
-				// Prepare training set
-				int[] rkTrain = rTrain[k];
-				double[] probkTrain = probTrain[k];
-				for (int i = 0; i < targetTrain.length; i++) {
-					Instance instance = trainSet.get(i);
-					double pk = probkTrain[i];
-					double t = rkTrain[i] - pk;
-					double w = pk * (1 - pk);
-					instance.setTarget(t * weightTrain[i]);
-					instance.setWeight(w * weightTrain[i]);
-				}
-
-				RTree rt = (RTree) treeLearner.build(trainSet);
-				rt.multiply(l);
-				brt.trees[k].add(rt);
-
-				double[] predkTrain = predTrain[k];
-				for (int i = 0; i < predkTrain.length; i++) {
-					double p = rt.regress(trainSet.get(i));
-					predkTrain[i] += p;
-				}
-
-				double[] predkValid = predValid[k];
-				for (int i = 0; i < predkValid.length; i++) {
-					double p = rt.regress(validSet.get(i));
-					predkValid[i] += p;
-				}
+			
+			// Prepare training set
+			for (int i = 0; i < targetTrain.length; i++) {
+				Instance instance = trainSet.get(i);
+				double prob = probTrain[i];
+				double w = prob * (1 - prob);
+				instance.setTarget(rTrain[i] * weightTrain[i]);
+				instance.setWeight(w * weightTrain[i]);
+			}
+			
+			RTree rt = (RTree) treeLearner.build(trainSet);
+			if (learningRate != 1) {
+				rt.multiply(learningRate);
+			}
+			brt.trees[0].add(rt);
+			
+			for (int i = 0; i < predTrain.length; i++) {
+				double pred = rt.regress(trainSet.get(i));
+				predTrain[i] += pred;
 			}
 
 			if (alpha < 1) {
@@ -341,27 +345,21 @@ public class LogitBoostLearner extends BRTLearner {
 				trainSet.setAttributes(attributes);
 			}
 
-			// Update probabilities
+			// Update residuals and probabilities
+			OptimUtils.computePseudoResidual(predTrain, targetTrain, rTrain);
 			computeProbabilities(predTrain, probTrain);
-
+			
+			double measure = simpleMetric.eval(predTrain, targetTrain);
+			measureList.add(measure);
 			if (verbose) {
-				double error = 0;
-				for (int i = 0; i < targetValid.length; i++) {
-					double p = 0;
-					double max = Double.NEGATIVE_INFINITY;
-					for (int k = 0; k < numClasses; k++) {
-						if (predValid[k][i] > max) {
-							max = predValid[k][i];
-							p = k;
-						}
-					}
-					if (p != targetValid[i]) {
-						error++;
-					}
-				}
-				error /= targetValid.length;
-				System.out.println("Iteration " + iter + ": " + error);
+				System.out.println("Iteration " + iter + ": " + measure);
 			}
+		}
+		
+		// Search the best model on validation set
+		int idx = metric.searchBestMetricValueIndex(measureList);
+		for (int i = brt.trees[0].size() - 1; i > idx; i--) {
+			brt.trees[0].removeLast();
 		}
 
 		// Restore targets and weights
@@ -378,6 +376,145 @@ public class LogitBoostLearner extends BRTLearner {
 	 * Builds a classifier.
 	 * 
 	 * @param trainSet the training set.
+	 * @param validSet the validation set.
+	 * @param maxNumIters the maximum number of iterations.
+	 * @return a classifier.
+	 */
+	public BRT buildClassifier(Instances trainSet, Instances validSet, int maxNumIters) {
+		Attribute classAttribute = trainSet.getTargetAttribute();
+		if (classAttribute.getType() != Attribute.Type.NOMINAL) {
+			throw new IllegalArgumentException("Class attribute must be nominal.");
+		}
+		NominalAttribute clazz = (NominalAttribute) classAttribute;
+		final int numClasses = clazz.getCardinality();
+		if (numClasses == 2) {
+			return buildBinaryClassifier(trainSet, validSet, maxNumIters);
+		} else {
+			System.err.println("Multiclass LogitBoost, only use mis-classification rate as metric now");
+			final double l = learningRate * (numClasses - 1.0) / numClasses;
+
+			BRT brt = new BRT(numClasses);
+
+			List<Attribute> attributes = trainSet.getAttributes();
+			int limit = (int) (attributes.size() * alpha);
+			int[] indices = new int[limit];
+			Permutation perm = new Permutation(attributes.size());
+			if (alpha < 1) {
+				perm.permute();
+			}
+
+			// Backup targets and weights
+			double[] targetTrain = new double[trainSet.size()];
+			double[] weightTrain = new double[targetTrain.length];
+			for (int i = 0; i < targetTrain.length; i++) {
+				Instance instance = trainSet.get(i);
+				targetTrain[i] = instance.getTarget();
+				weightTrain[i] = instance.getWeight();
+			}
+			double[] targetValid = new double[validSet.size()];
+			for (int i = 0; i < targetValid.length; i++) {
+				targetValid[i] = validSet.get(i).getTarget();
+			}
+
+			// Initialization
+			double[][] predTrain = new double[numClasses][targetTrain.length];
+			double[][] probTrain = new double[numClasses][targetTrain.length];
+			int[][] rTrain = new int[numClasses][targetTrain.length];
+			for (int k = 0; k < numClasses; k++) {
+				int[] rkTrain = rTrain[k];
+				double[] probkTrain = probTrain[k];
+				for (int i = 0; i < rkTrain.length; i++) {
+					rkTrain[i] = MathUtils.indicator(targetTrain[i] == k);
+					probkTrain[i] = 1.0 / numClasses;
+				}
+			}
+			double[][] predValid = new double[numClasses][validSet.size()];
+
+			for (int iter = 0; iter < maxNumIters; iter++) {
+				// Prepare attributes
+				if (alpha < 1) {
+					int[] a = perm.getPermutation();
+					for (int i = 0; i < indices.length; i++) {
+						indices[i] = a[i];
+					}
+					Arrays.sort(indices);
+					List<Attribute> attList = trainSet.getAttributes(indices);
+					trainSet.setAttributes(attList);
+				}
+
+				for (int k = 0; k < numClasses; k++) {
+					// Prepare training set
+					int[] rkTrain = rTrain[k];
+					double[] probkTrain = probTrain[k];
+					for (int i = 0; i < targetTrain.length; i++) {
+						Instance instance = trainSet.get(i);
+						double pk = probkTrain[i];
+						double t = rkTrain[i] - pk;
+						double w = pk * (1 - pk);
+						instance.setTarget(t * weightTrain[i]);
+						instance.setWeight(w * weightTrain[i]);
+					}
+
+					RTree rt = (RTree) treeLearner.build(trainSet);
+					rt.multiply(l);
+					brt.trees[k].add(rt);
+
+					double[] predkTrain = predTrain[k];
+					for (int i = 0; i < predkTrain.length; i++) {
+						double p = rt.regress(trainSet.get(i));
+						predkTrain[i] += p;
+					}
+
+					double[] predkValid = predValid[k];
+					for (int i = 0; i < predkValid.length; i++) {
+						double p = rt.regress(validSet.get(i));
+						predkValid[i] += p;
+					}
+				}
+
+				if (alpha < 1) {
+					// Restore attributes
+					trainSet.setAttributes(attributes);
+				}
+
+				// Update probabilities
+				computeProbabilities(predTrain, probTrain);
+
+				if (verbose) {
+					double error = 0;
+					for (int i = 0; i < targetValid.length; i++) {
+						double p = 0;
+						double max = Double.NEGATIVE_INFINITY;
+						for (int k = 0; k < numClasses; k++) {
+							if (predValid[k][i] > max) {
+								max = predValid[k][i];
+								p = k;
+							}
+						}
+						if (p != targetValid[i]) {
+							error++;
+						}
+					}
+					error /= targetValid.length;
+					System.out.println("Iteration " + iter + ": " + error);
+				}
+			}
+
+			// Restore targets and weights
+			for (int i = 0; i < targetTrain.length; i++) {
+				Instance instance = trainSet.get(i);
+				instance.setTarget(targetTrain[i]);
+				instance.setWeight(weightTrain[i]);
+			}
+
+			return brt;
+		}
+	}
+
+	/**
+	 * Builds a classifier.
+	 * 
+	 * @param trainSet the training set.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @return a classifier.
 	 */
@@ -387,114 +524,118 @@ public class LogitBoostLearner extends BRTLearner {
 			throw new IllegalArgumentException("Class attribute must be nominal.");
 		}
 		NominalAttribute clazz = (NominalAttribute) classAttribute;
-		final int numClasses = clazz.getStates().length;
-		final int n = trainSet.size();
-		final double l = learningRate * (numClasses - 1.0) / numClasses;
+		final int numClasses = clazz.getCardinality();
+		if (numClasses == 2) {
+			return buildBinaryClassifier(trainSet, maxNumIters);
+		} else {
+			final int n = trainSet.size();
+			final double l = learningRate * (numClasses - 1.0) / numClasses;
 
-		BRT brt = new BRT(numClasses);
+			BRT brt = new BRT(numClasses);
 
-		List<Attribute> attributes = trainSet.getAttributes();
-		int limit = (int) (attributes.size() * alpha);
-		int[] indices = new int[limit];
-		Permutation perm = new Permutation(attributes.size());
-		if (alpha < 1) {
-			perm.permute();
-		}
-
-		// Backup targets and weights
-		double[] target = new double[n];
-		double[] weight = new double[n];
-		for (int i = 0; i < n; i++) {
-			Instance instance = trainSet.get(i);
-			target[i] = instance.getTarget();
-			weight[i] = instance.getWeight();
-		}
-
-		// Initialization
-		double[][] predTrain = new double[numClasses][n];
-		double[][] probTrain = new double[numClasses][n];
-		int[][] rTrain = new int[numClasses][n];
-		for (int k = 0; k < numClasses; k++) {
-			int[] rkTrain = rTrain[k];
-			double[] probkTrain = probTrain[k];
-			for (int i = 0; i < n; i++) {
-				rkTrain[i] = MathUtils.indicator(target[i] == k);
-				probkTrain[i] = 1.0 / numClasses;
-			}
-		}
-
-		for (int iter = 0; iter < maxNumIters; iter++) {
-			// Prepare attributes
+			List<Attribute> attributes = trainSet.getAttributes();
+			int limit = (int) (attributes.size() * alpha);
+			int[] indices = new int[limit];
+			Permutation perm = new Permutation(attributes.size());
 			if (alpha < 1) {
-				int[] a = perm.getPermutation();
-				for (int i = 0; i < indices.length; i++) {
-					indices[i] = a[i];
-				}
-				Arrays.sort(indices);
-				List<Attribute> attList = trainSet.getAttributes(indices);
-				trainSet.setAttributes(attList);
+				perm.permute();
 			}
 
+			// Backup targets and weights
+			double[] target = new double[n];
+			double[] weight = new double[n];
+			for (int i = 0; i < n; i++) {
+				Instance instance = trainSet.get(i);
+				target[i] = instance.getTarget();
+				weight[i] = instance.getWeight();
+			}
+
+			// Initialization
+			double[][] predTrain = new double[numClasses][n];
+			double[][] probTrain = new double[numClasses][n];
+			int[][] rTrain = new int[numClasses][n];
 			for (int k = 0; k < numClasses; k++) {
-				// Prepare training set
 				int[] rkTrain = rTrain[k];
 				double[] probkTrain = probTrain[k];
 				for (int i = 0; i < n; i++) {
-					Instance instance = trainSet.get(i);
-					double pk = probkTrain[i];
-					double t = rkTrain[i] - pk;
-					double w = pk * (1 - pk);
-					instance.setTarget(t * weight[i]);
-					instance.setWeight(w * weight[i]);
-				}
-
-				RTree rt = (RTree) treeLearner.build(trainSet);
-				rt.multiply(l);
-				brt.trees[k].add(rt);
-
-				double[] predkTrain = predTrain[k];
-				for (int i = 0; i < n; i++) {
-					double p = rt.regress(trainSet.get(i));
-					predkTrain[i] += p;
+					rkTrain[i] = MathUtils.indicator(target[i] == k);
+					probkTrain[i] = 1.0 / numClasses;
 				}
 			}
 
-			if (alpha < 1) {
-				// Restore attributes
-				trainSet.setAttributes(attributes);
-			}
+			for (int iter = 0; iter < maxNumIters; iter++) {
+				// Prepare attributes
+				if (alpha < 1) {
+					int[] a = perm.getPermutation();
+					for (int i = 0; i < indices.length; i++) {
+						indices[i] = a[i];
+					}
+					Arrays.sort(indices);
+					List<Attribute> attList = trainSet.getAttributes(indices);
+					trainSet.setAttributes(attList);
+				}
 
-			// Update probabilities
-			computeProbabilities(predTrain, probTrain);
+				for (int k = 0; k < numClasses; k++) {
+					// Prepare training set
+					int[] rkTrain = rTrain[k];
+					double[] probkTrain = probTrain[k];
+					for (int i = 0; i < n; i++) {
+						Instance instance = trainSet.get(i);
+						double pk = probkTrain[i];
+						double t = rkTrain[i] - pk;
+						double w = pk * (1 - pk);
+						instance.setTarget(t * weight[i]);
+						instance.setWeight(w * weight[i]);
+					}
 
-			if (verbose) {
-				double error = 0;
-				for (int i = 0; i < n; i++) {
-					double p = 0;
-					double maxProb = -1;
-					for (int k = 0; k < numClasses; k++) {
-						if (probTrain[k][i] > maxProb) {
-							maxProb = probTrain[k][i];
-							p = k;
+					RTree rt = (RTree) treeLearner.build(trainSet);
+					rt.multiply(l);
+					brt.trees[k].add(rt);
+
+					double[] predkTrain = predTrain[k];
+					for (int i = 0; i < n; i++) {
+						double p = rt.regress(trainSet.get(i));
+						predkTrain[i] += p;
+					}
+				}
+
+				if (alpha < 1) {
+					// Restore attributes
+					trainSet.setAttributes(attributes);
+				}
+
+				// Update probabilities
+				computeProbabilities(predTrain, probTrain);
+
+				if (verbose) {
+					double error = 0;
+					for (int i = 0; i < n; i++) {
+						double p = 0;
+						double maxProb = -1;
+						for (int k = 0; k < numClasses; k++) {
+							if (probTrain[k][i] > maxProb) {
+								maxProb = probTrain[k][i];
+								p = k;
+							}
+						}
+						if (p != target[i]) {
+							error++;
 						}
 					}
-					if (p != target[i]) {
-						error++;
-					}
+					error /= n;
+					System.out.println("Iteration " + iter + ": " + error);
 				}
-				error /= n;
-				System.out.println("Iteration " + iter + ": " + error);
 			}
-		}
 
-		// Restore targets and weights
-		for (int i = 0; i < n; i++) {
-			Instance instance = trainSet.get(i);
-			instance.setTarget(target[i]);
-			instance.setWeight(weight[i]);
-		}
+			// Restore targets and weights
+			for (int i = 0; i < n; i++) {
+				Instance instance = trainSet.get(i);
+				instance.setTarget(target[i]);
+				instance.setWeight(weight[i]);
+			}
 
-		return brt;
+			return brt;
+		}
 	}
 	
 	@Override

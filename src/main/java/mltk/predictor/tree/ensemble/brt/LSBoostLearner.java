@@ -6,18 +6,20 @@ import java.util.List;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
-import mltk.cmdline.options.LearnerOptions;
+import mltk.cmdline.options.HoldoutValidatedLearnerOptions;
 import mltk.core.Attribute;
 import mltk.core.Instances;
 import mltk.core.io.InstancesReader;
 import mltk.predictor.evaluation.Metric;
+import mltk.predictor.evaluation.MetricFactory;
+import mltk.predictor.evaluation.RMSE;
+import mltk.predictor.evaluation.SimpleMetric;
 import mltk.predictor.io.PredictorWriter;
 import mltk.predictor.tree.RTree;
 import mltk.predictor.tree.RegressionTreeLearner;
 import mltk.predictor.tree.RegressionTreeLearner.Mode;
 import mltk.util.Permutation;
 import mltk.util.Random;
-import mltk.util.StatUtils;
 
 /**
  * Class for least-squares boost learner.
@@ -27,7 +29,7 @@ import mltk.util.StatUtils;
  */
 public class LSBoostLearner extends BRTLearner {
 	
-	static class Options extends LearnerOptions {
+	static class Options extends HoldoutValidatedLearnerOptions {
 
 		@Argument(name = "-c", description = "max number of leaves (default: 100)")
 		int maxNumLeaves = 100;
@@ -64,8 +66,14 @@ public class LSBoostLearner extends BRTLearner {
 	public static void main(String[] args) throws Exception {
 		Options opts = new Options();
 		CmdLineParser parser = new CmdLineParser(LSBoostLearner.class, opts);
+		Metric metric = null;
 		try {
 			parser.parse(args);
+			if (opts.metric == null) {
+				metric = new RMSE();
+			} else {
+				metric = MetricFactory.getMetric(opts.metric);
+			}
 		} catch (IllegalArgumentException e) {
 			parser.printUsage();
 			System.exit(1);
@@ -83,7 +91,13 @@ public class LSBoostLearner extends BRTLearner {
 		learner.setLearningRate(opts.learningRate);
 		learner.setMaxNumIters(opts.maxNumIters);
 		learner.setVerbose(opts.verbose);
+		learner.setMetric(metric);
 		learner.setTreeLearner(rtLearner);
+		
+		if (opts.validPath != null) {
+			Instances validSet = InstancesReader.read(opts.attPath, opts.validPath);
+			learner.setValidSet(validSet);
+		}
 
 		long start = System.currentTimeMillis();
 		BRT brt = learner.build(trainSet);
@@ -111,16 +125,27 @@ public class LSBoostLearner extends BRTLearner {
 		treeLearner = rtLearner;
 	}
 	
+	@Override
+	public BRT build(Instances instances) {
+		if (metric == null) {
+			metric = new RMSE();
+		}
+		if (validSet != null) {
+			return buildRegressor(instances, validSet, maxNumIters);
+		} else {
+			return buildRegressor(instances, maxNumIters);
+		}
+	}
+
 	/**
 	 * Builds a regressor.
 	 *
 	 * @param trainSet the training set.
 	 * @param validSet the validation set.
 	 * @param maxNumIters the maximum number of iterations.
-	 * @param metric the metric to optimize for on the validation set.
 	 * @return a regressor.
 	 */
-	public BRT buildRegressor(Instances trainSet, Instances validSet, int maxNumIters, Metric metric) {
+	public BRT buildRegressor(Instances trainSet, Instances validSet, int maxNumIters) {
 		BRT brt = new BRT(1);
 
 		List<Attribute> attributes = trainSet.getAttributes();
@@ -209,6 +234,7 @@ public class LSBoostLearner extends BRTLearner {
 	 */
 	public BRT buildRegressor(Instances trainSet, int maxNumIters) {
 		BRT brt = new BRT(1);
+		SimpleMetric simpleMetric = (SimpleMetric) metric;
 
 		List<Attribute> attributes = trainSet.getAttributes();
 		int limit = (int) (attributes.size() * alpha);
@@ -222,6 +248,7 @@ public class LSBoostLearner extends BRTLearner {
 			target[i] = trainSet.get(i).getTarget();
 		}
 
+		double[] pTrain = new double[trainSet.size()];
 		double[] rTrain = new double[trainSet.size()];
 		for (int i = 0; i < rTrain.length; i++) {
 			rTrain[i] = target[i];
@@ -256,12 +283,13 @@ public class LSBoostLearner extends BRTLearner {
 			// Update residuals
 			for (int i = 0; i < rTrain.length; i++) {
 				double pred = rt.regress(trainSet.get(i));
+				pTrain[i] += pred;
 				rTrain[i] -= pred;
 			}
 
 			if (verbose) {
-				double rmse = StatUtils.rms(rTrain);
-				System.out.println("Iteration " + iter + ": " + rmse);
+				double measure = simpleMetric.eval(pTrain, target);
+				System.out.println("Iteration " + iter + ": " + measure);
 			}
 		}
 
@@ -271,11 +299,6 @@ public class LSBoostLearner extends BRTLearner {
 		}
 
 		return brt;
-	}
-
-	@Override
-	public BRT build(Instances instances) {
-		return buildRegressor(instances, maxNumIters);
 	}
 
 }

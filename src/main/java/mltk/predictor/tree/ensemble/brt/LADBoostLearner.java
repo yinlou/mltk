@@ -8,11 +8,14 @@ import java.util.Map;
 
 import mltk.cmdline.Argument;
 import mltk.cmdline.CmdLineParser;
-import mltk.cmdline.options.LearnerOptions;
+import mltk.cmdline.options.HoldoutValidatedLearnerOptions;
 import mltk.core.Attribute;
 import mltk.core.Instances;
 import mltk.core.io.InstancesReader;
+import mltk.predictor.evaluation.MAE;
 import mltk.predictor.evaluation.Metric;
+import mltk.predictor.evaluation.MetricFactory;
+import mltk.predictor.evaluation.SimpleMetric;
 import mltk.predictor.io.PredictorWriter;
 import mltk.predictor.tree.RegressionTree;
 import mltk.predictor.tree.RegressionTreeLeaf;
@@ -22,7 +25,6 @@ import mltk.util.ArrayUtils;
 import mltk.util.MathUtils;
 import mltk.util.Permutation;
 import mltk.util.Random;
-import mltk.util.VectorUtils;
 
 /**
  * Class for least-absolute-deviation boost learner.
@@ -32,7 +34,7 @@ import mltk.util.VectorUtils;
  */
 public class LADBoostLearner extends BRTLearner {
 	
-	static class Options extends LearnerOptions {
+	static class Options extends HoldoutValidatedLearnerOptions {
 
 		@Argument(name = "-c", description = "max number of leaves (default: 100)")
 		int maxNumLeaves = 100;
@@ -55,8 +57,11 @@ public class LADBoostLearner extends BRTLearner {
 	 * Usage: mltk.predictor.tree.ensemble.brt.LADBoostLearner
 	 * -t	train set path
 	 * -m	maximum number of iterations
+	 * [-v]	valid set path
+	 * [-e]	evaluation metric (default: default metric of task)
 	 * [-r]	attribute file path
 	 * [-o]	output model path
+	 * [-V]	verbose (default: true)
 	 * [-c]	max number of leaves (default: 100)
 	 * [-s]	seed of the random number generator (default: 0)
 	 * [-l]	learning rate (default: 0.01)
@@ -68,8 +73,14 @@ public class LADBoostLearner extends BRTLearner {
 	public static void main(String[] args) throws Exception {
 		Options opts = new Options();
 		CmdLineParser parser = new CmdLineParser(LADBoostLearner.class, opts);
+		Metric metric = null;
 		try {
 			parser.parse(args);
+			if (opts.metric == null) {
+				metric = new MAE();
+			} else {
+				metric = MetricFactory.getMetric(opts.metric);
+			}
 		} catch (IllegalArgumentException e) {
 			parser.printUsage();
 			System.exit(1);
@@ -87,7 +98,13 @@ public class LADBoostLearner extends BRTLearner {
 		learner.setLearningRate(opts.learningRate);
 		learner.setMaxNumIters(opts.maxNumIters);
 		learner.setVerbose(opts.verbose);
+		learner.setMetric(metric);
 		learner.setTreeLearner(rtLearner);
+		
+		if (opts.validPath != null) {
+			Instances validSet = InstancesReader.read(opts.attPath, opts.validPath);
+			learner.setValidSet(validSet);
+		}
 
 		long start = System.currentTimeMillis();
 		BRT brt = learner.build(trainSet);
@@ -117,7 +134,14 @@ public class LADBoostLearner extends BRTLearner {
 
 	@Override
 	public BRT build(Instances instances) {
-		return buildRegressor(instances, maxNumIters);
+		if (metric == null) {
+			metric = new MAE();
+		}
+		if (validSet != null) {
+			return buildRegressor(instances, validSet, maxNumIters);
+		} else {
+			return buildRegressor(instances, maxNumIters);
+		}
 	}
 
 	/**
@@ -126,10 +150,9 @@ public class LADBoostLearner extends BRTLearner {
 	 * @param trainSet the training set.
 	 * @param validSet the validation set.
 	 * @param maxNumIters the maximum number of iterations.
-	 * @param metric the metric to optimize for on the validation set.
 	 * @return a regressor.
 	 */
-	public BRT buildRegressor(Instances trainSet, Instances validSet, int maxNumIters, Metric metric) {
+	public BRT buildRegressor(Instances trainSet, Instances validSet, int maxNumIters) {
 		BRT brt = new BRT(1);
 
 		List<Attribute> attributes = trainSet.getAttributes();
@@ -239,6 +262,7 @@ public class LADBoostLearner extends BRTLearner {
 	 */
 	public BRT buildRegressor(Instances trainSet, int maxNumIters) {
 		BRT brt = new BRT(1);
+		SimpleMetric simpleMetric = (SimpleMetric) metric;
 
 		List<Attribute> attributes = trainSet.getAttributes();
 		int limit = (int) (attributes.size() * alpha);
@@ -255,8 +279,10 @@ public class LADBoostLearner extends BRTLearner {
 		RegressionTree initialTree = new RegressionTree(new RegressionTreeLeaf(intercept));
 		brt.trees[0].add(initialTree);
 
+		double[] pTrain = new double[trainSet.size()];
 		double[] rTrain = new double[trainSet.size()];
 		for (int i = 0; i < rTrain.length; i++) {
+			pTrain[i] = intercept;
 			rTrain[i] = target[i] - intercept;
 		}
 
@@ -307,12 +333,13 @@ public class LADBoostLearner extends BRTLearner {
 			// Update residuals
 			for (int i = 0; i < rTrain.length; i++) {
 				double pred = rt.regress(trainSet.get(i));
+				pTrain[i] += pred;
 				rTrain[i] -= pred;
 			}
 
 			if (verbose) {
-				double lad = VectorUtils.l1norm(rTrain) / rTrain.length;
-				System.out.println("Iteration " + iter + ": " + lad);
+				double measure = simpleMetric.eval(pTrain, target);
+				System.out.println("Iteration " + iter + ": " + measure);
 			}
 		}
 
