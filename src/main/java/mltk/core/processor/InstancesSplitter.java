@@ -87,7 +87,7 @@ public class InstancesSplitter {
 
 		File dir = new File(opts.outputDirPath);
 		if (!dir.exists()) {
-			dir.mkdir();
+			dir.mkdirs();
 		}
 
 		switch (data[0]) {
