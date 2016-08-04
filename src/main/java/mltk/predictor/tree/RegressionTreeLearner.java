@@ -60,29 +60,7 @@ public class RegressionTreeLearner extends RTreeLearner {
 		RegressionTreeLearner learner = new RegressionTreeLearner();
 		try {
 			parser.parse(args);
-			String[] data = opts.mode.split(":");
-			if (data.length != 2) {
-				throw new IllegalArgumentException();
-			}
-			switch (data[0]) {
-				case "a":
-					learner.setConstructionMode(Mode.ALPHA_LIMITED);
-					learner.setAlpha(Double.parseDouble(data[1]));
-					break;
-				case "d":
-					learner.setConstructionMode(Mode.DEPTH_LIMITED);
-					learner.setMaxDepth(Integer.parseInt(data[1]));
-					break;
-				case "l":
-					learner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
-					learner.setMaxNumLeaves(Integer.parseInt(data[1]));
-					break;
-				case "s":
-					learner.setConstructionMode(Mode.MIN_LEAF_SIZE_LIMITED);
-					learner.setMinLeafSize(Integer.parseInt(data[1]));
-				default:
-					throw new IllegalArgumentException();
-			}
+			learner.setParameters(opts.mode);
 		} catch (IllegalArgumentException e) {
 			parser.printUsage();
 			System.exit(1);
@@ -146,6 +124,34 @@ public class RegressionTreeLearner extends RTreeLearner {
 				break;
 		}
 		return rt;
+	}
+	
+	@Override
+	public void setParameters(String mode) {
+		String[] data = mode.split(":");
+		if (data.length != 2) {
+			throw new IllegalArgumentException();
+		}
+		switch (data[0]) {
+			case "a":
+				this.setConstructionMode(Mode.ALPHA_LIMITED);
+				this.setAlpha(Double.parseDouble(data[1]));
+				break;
+			case "d":
+				this.setConstructionMode(Mode.DEPTH_LIMITED);
+				this.setMaxDepth(Integer.parseInt(data[1]));
+				break;
+			case "l":
+				this.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
+				this.setMaxNumLeaves(Integer.parseInt(data[1]));
+				break;
+			case "s":
+				this.setConstructionMode(Mode.MIN_LEAF_SIZE_LIMITED);
+				this.setMinLeafSize(Integer.parseInt(data[1]));
+				break;
+			default:
+				throw new IllegalArgumentException();
+		}
 	}
 
 	/**

@@ -20,6 +20,7 @@ import mltk.predictor.io.PredictorWriter;
 import mltk.predictor.tree.RegressionTree;
 import mltk.predictor.tree.RegressionTreeLeaf;
 import mltk.predictor.tree.RegressionTreeLearner;
+import mltk.predictor.tree.TreeLearner;
 import mltk.predictor.tree.RegressionTreeLearner.Mode;
 import mltk.util.ArrayUtils;
 import mltk.util.MathUtils;
@@ -36,8 +37,8 @@ public class LADBoostLearner extends BRTLearner {
 	
 	static class Options extends HoldoutValidatedLearnerOptions {
 
-		@Argument(name = "-c", description = "max number of leaves (default: 100)")
-		int maxNumLeaves = 100;
+		@Argument(name = "-b", description = "base learner (tree:mode:parameter) (default: rt:l:100)")
+		String baseLearner = "rt:l:100";
 
 		@Argument(name = "-m", description = "maximum number of iterations", required = true)
 		int maxNumIters = -1;
@@ -62,7 +63,7 @@ public class LADBoostLearner extends BRTLearner {
 	 * [-r]	attribute file path
 	 * [-o]	output model path
 	 * [-V]	verbose (default: true)
-	 * [-c]	max number of leaves (default: 100)
+	 * [-b]	base learner (tree:mode:parameter) (default: rt:l:100)
 	 * [-s]	seed of the random number generator (default: 0)
 	 * [-l]	learning rate (default: 0.01)
 	 * </pre>
@@ -74,6 +75,7 @@ public class LADBoostLearner extends BRTLearner {
 		Options opts = new Options();
 		CmdLineParser parser = new CmdLineParser(LADBoostLearner.class, opts);
 		Metric metric = null;
+		TreeLearner rtLearner = null;
 		try {
 			parser.parse(args);
 			if (opts.metric == null) {
@@ -81,6 +83,7 @@ public class LADBoostLearner extends BRTLearner {
 			} else {
 				metric = MetricFactory.getMetric(opts.metric);
 			}
+			rtLearner = BRTUtils.parseTreeLearner(opts.baseLearner);
 		} catch (IllegalArgumentException e) {
 			parser.printUsage();
 			System.exit(1);
@@ -89,10 +92,6 @@ public class LADBoostLearner extends BRTLearner {
 		Random.getInstance().setSeed(opts.seed);
 
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-		
-		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
-		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
-		rtLearner.setMaxNumLeaves(opts.maxNumLeaves);
 
 		LADBoostLearner learner = new LADBoostLearner();
 		learner.setLearningRate(opts.learningRate);

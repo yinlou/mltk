@@ -87,6 +87,8 @@ public class LogitBoostLearner extends BRTLearner {
 			} else {
 				metric = MetricFactory.getMetric(opts.metric);
 			}
+			// Using robust version of the base tree learner
+			opts.baseLearner = "r" + opts.baseLearner;
 			rtLearner = BRTUtils.parseTreeLearner(opts.baseLearner);
 		} catch (IllegalArgumentException e) {
 			parser.printUsage();

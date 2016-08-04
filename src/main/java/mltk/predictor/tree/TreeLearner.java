@@ -25,6 +25,13 @@ public abstract class TreeLearner extends Learner {
 	
 	protected static final Double ZERO = new Double(0.0);
 	protected static final IntDoublePairComparator COMP = new IntDoublePairComparator(false);
+	
+	/**
+	 * Sets the parameters for this tree learner.
+	 * 
+	 * @param mode the parameters.
+	 */
+	public abstract void setParameters(String mode);
 
 	protected static class Dataset {
 
