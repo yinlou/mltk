@@ -53,7 +53,8 @@ public class InstancesReader {
 				classIndex = pair.v2.getIndex();
 				pair.v2.setIndex(-1);
 			}
-			Instances instances = new Instances(pair.v1, pair.v2);
+			List<Attribute> attributes = pair.v1;
+			Instances instances = new Instances(attributes, pair.v2);
 			int totalLength = instances.dimension();
 			if (classIndex != -1) {
 				totalLength++;
@@ -72,12 +73,22 @@ public class InstancesReader {
 				} else if (data.length == totalLength) {
 					// Dense instance
 					instance = parseDenseInstance(data, classIndex);
+				} else {
+					System.err.println("Processed as dense vector but the number of attributes provided in the attribute file does not match with the number of columns in this row");
 				}
 				if (instance != null) {
 					instances.add(instance);
 				}
 			}
 			br.close();
+			
+			// Process skipped features
+			for (int i = attributes.size() - 1; i >= 0; i--) {
+				if (attributes.get(i).getIndex() < 0) {
+					attributes.remove(i);
+				}
+			}
+			
 			return instances;
 		} else {
 			List<Attribute> attributes = new ArrayList<>();

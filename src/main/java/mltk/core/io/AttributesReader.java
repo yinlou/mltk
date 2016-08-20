@@ -65,6 +65,9 @@ public class AttributesReader {
 			} else {
 				attributes.add(att);
 			}
+			if (line.indexOf("(x)") != -1) {
+				att.setIndex(-1);
+			}
 		}
 
 		return new Pair<List<Attribute>, Attribute>(attributes, targetAtt);
