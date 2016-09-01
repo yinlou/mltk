@@ -20,12 +20,12 @@ public class MetricFactory {
 			metric = new AUC();
 		} else if (name.startsWith("c")) {
 			metric = new Error();
-		} else if (name.startsWith("r")) {
-			metric = new RMSE();
 		} else if (name.startsWith("l")) {
 			metric = new LogisticLoss();
 		} else if (name.startsWith("m")) {
 			metric = new MAE();
+		} else if (name.startsWith("r")) {
+			metric = new RMSE();
 		}
 		return metric;
 	}
