@@ -22,6 +22,10 @@ public class MetricFactory {
 			metric = new Error();
 		} else if (name.startsWith("r")) {
 			metric = new RMSE();
+		} else if (name.startsWith("l")) {
+			metric = new LogisticLoss();
+		} else if (name.startsWith("m")) {
+			metric = new MAE();
 		}
 		return metric;
 	}
