@@ -88,6 +88,63 @@ public class OptimUtils {
 		}
 		return loss / y.length;
 	}
+	
+	/**
+	 * Computes the log loss (cross entropy) for binary classification problems.
+	 * 
+	 * @param prob the probability.
+	 * @param y the class label.
+	 * @return the log loss.
+	 */
+	public static double computeLogLoss(double prob, double y) {
+		return computeLogLoss(prob, y, false);
+	}
+	
+	/**
+	 * Computes the log loss (cross entropy) for binary classification problems.
+	 * 
+	 * @param p the input.
+	 * @param y the class label.
+	 * @param isRawScore <code>true</code> if the input is raw score.
+	 * @return the log loss.
+	 */
+	public static double computeLogLoss(double p, double y, boolean isRawScore) {
+		if (isRawScore) {
+			p = MathUtils.sigmoid(p);
+		}
+		if (y == 1) {
+			return -Math.log(p);
+		} else {
+			return -Math.log(1 - p);
+		}
+	}
+	
+	/**
+	 * Computes the log loss (cross entropy) for binary classification problems.
+	 * 
+	 * @param prob the probabilities.
+	 * @param y the class label array.
+	 * @return the log loss.
+	 */
+	public static double computeLogLoss(double[] prob, double[] y) {
+		return computeLogLoss(prob, y, false);
+	}
+	
+	/**
+	 * Computes the log loss (cross entropy) for binary classification problems.
+	 * 
+	 * @param p the input.
+	 * @param y the targets
+	 * @param isRawScore <code>true</code> if the input is raw score.
+	 * @return the log loss.
+	 */
+	public static double computeLogLoss(double[] p, double[] y, boolean isRawScore) {
+		double logLoss = 0;
+		for (int i = 0; i < p.length; i++) {
+			logLoss += computeLogLoss(p[i], y[i], isRawScore);
+		}
+		return logLoss;
+	}
 
 	/**
 	 * Computes the quadratic loss for regression problems.

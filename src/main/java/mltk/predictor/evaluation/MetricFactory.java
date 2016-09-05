@@ -1,5 +1,8 @@
 package mltk.predictor.evaluation;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Factory class for creating metrics.
  *  
@@ -7,27 +10,47 @@ package mltk.predictor.evaluation;
  *
  */
 public class MetricFactory {
+	
+	private static Map<String, Metric> map;
+	
+	static {
+		map = new HashMap<>();
+		map.put("auc", new AUC());
+		map.put("error", new Error());
+		map.put("logisticloss", new LogisticLoss());
+		map.put("logloss", new LogLoss(false));
+		map.put("logloss_t", new LogLoss(true));
+		map.put("mae", new MAE());
+		map.put("rmse", new RMSE());
+	}
 
 	/**
 	 * Returns the metric.
 	 * 
-	 * @param name the metric name.
+	 * @param str the metric string.
 	 * @return the metric.
 	 */
-	public static Metric getMetric(String name) {
-		Metric metric = null;
-		if (name.startsWith("a")) {
-			metric = new AUC();
-		} else if (name.startsWith("c")) {
-			metric = new Error();
-		} else if (name.startsWith("l")) {
-			metric = new LogisticLoss();
-		} else if (name.startsWith("m")) {
-			metric = new MAE();
-		} else if (name.startsWith("r")) {
-			metric = new RMSE();
+	public static Metric getMetric(String str) {
+		String[] data = str.toLowerCase().split(":");
+		String name = data[0];
+		if (data.length == 1) {
+			if (!map.containsKey(name)) {
+				throw new IllegalArgumentException("Unrecognized metric name: " + name);
+			} else {
+				return map.get(name);
+			}
+		} else {
+			if (name.equals("logloss")) {
+				if (data[1].startsWith("t")) {
+					return map.get("logloss_t");
+				} else {
+					return map.get(name);
+				}
+			} else if (map.containsKey(name)) {
+				return map.get(name);
+			}
 		}
-		return metric;
+		return null;
 	}
 	
 }
