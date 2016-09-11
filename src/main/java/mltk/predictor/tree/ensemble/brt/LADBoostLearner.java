@@ -153,6 +153,7 @@ public class LADBoostLearner extends BRTLearner {
 	 */
 	public BRT buildRegressor(Instances trainSet, Instances validSet, int maxNumIters) {
 		BRT brt = new BRT(1);
+		treeLearner.cache(trainSet);
 
 		List<Attribute> attributes = trainSet.getAttributes();
 		int limit = (int) (attributes.size() * alpha);
@@ -249,6 +250,7 @@ public class LADBoostLearner extends BRTLearner {
 			trainSet.get(i).setTarget(target[i]);
 		}
 
+		treeLearner.evictCache();
 		return brt;
 	}
 
@@ -261,6 +263,7 @@ public class LADBoostLearner extends BRTLearner {
 	 */
 	public BRT buildRegressor(Instances trainSet, int maxNumIters) {
 		BRT brt = new BRT(1);
+		treeLearner.cache(trainSet);
 		SimpleMetric simpleMetric = (SimpleMetric) metric;
 
 		List<Attribute> attributes = trainSet.getAttributes();
@@ -347,6 +350,7 @@ public class LADBoostLearner extends BRTLearner {
 			trainSet.get(i).setTarget(target[i]);
 		}
 
+		treeLearner.evictCache();
 		return brt;
 	}
 

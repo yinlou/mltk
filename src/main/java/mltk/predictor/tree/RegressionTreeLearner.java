@@ -264,7 +264,12 @@ public class RegressionTreeLearner extends RTreeLearner {
 		}
 		Map<TreeNode, Dataset> datasets = new HashMap<>();
 		Map<TreeNode, Integer> depths = new HashMap<>();
-		Dataset dataset = Dataset.create(instances);
+		Dataset dataset = null;
+		if (this.cache != null) {
+			dataset = Dataset.create(this.cache, instances);
+		} else {
+			dataset = Dataset.get(instances);
+		}
 		tree.root = createNode(dataset, limit, stats);
 		PriorityQueue<Element<TreeNode>> q = new PriorityQueue<>();
 		q.add(new Element<TreeNode>(tree.root, stats[2]));
@@ -314,7 +319,12 @@ public class RegressionTreeLearner extends RTreeLearner {
 		// stats[2]: weightedMean
 		// stats[3]: splitEval
 		double[] stats = new double[4];
-		Dataset dataset = Dataset.create(instances);
+		Dataset dataset = null;
+		if (this.cache != null) {
+			dataset = Dataset.create(this.cache, instances);
+		} else {
+			dataset = Dataset.get(instances);
+		}
 		Stack<TreeNode> nodes = new Stack<>();
 		Stack<Dataset> datasets = new Stack<>();
 		tree.root = createNode(dataset, limit, stats);
@@ -349,7 +359,12 @@ public class RegressionTreeLearner extends RTreeLearner {
 		double[] stats = new double[4];
 		Map<TreeNode, Double> nodePred = new HashMap<>();
 		Map<TreeNode, Dataset> datasets = new HashMap<>();
-		Dataset dataset = Dataset.create(instances);
+		Dataset dataset = null;
+		if (this.cache != null) {
+			dataset = Dataset.create(this.cache, instances);
+		} else {
+			dataset = Dataset.get(instances);
+		}
 		PriorityQueue<Element<TreeNode>> q = new PriorityQueue<>();
 		tree.root = createNode(dataset, limit, stats);
 		q.add(new Element<TreeNode>(tree.root, stats[2]));

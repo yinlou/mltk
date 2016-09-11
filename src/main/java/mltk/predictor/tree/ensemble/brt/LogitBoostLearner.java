@@ -168,6 +168,7 @@ public class LogitBoostLearner extends BRTLearner {
 		}
 
 		BRT brt = new BRT(1);
+		treeLearner.cache(trainSet);
 
 		List<Attribute> attributes = trainSet.getAttributes();
 		int limit = (int) (attributes.size() * alpha);
@@ -260,6 +261,7 @@ public class LogitBoostLearner extends BRTLearner {
 			instance.setWeight(weightTrain[i]);
 		}
 
+		treeLearner.evictCache();
 		return brt;
 	}
 	
@@ -282,6 +284,7 @@ public class LogitBoostLearner extends BRTLearner {
 		SimpleMetric simpleMetric = (SimpleMetric) metric;
 
 		BRT brt = new BRT(1);
+		treeLearner.cache(trainSet);
 
 		List<Attribute> attributes = trainSet.getAttributes();
 		int limit = (int) (attributes.size() * alpha);
@@ -368,7 +371,8 @@ public class LogitBoostLearner extends BRTLearner {
 			instance.setTarget(targetTrain[i]);
 			instance.setWeight(weightTrain[i]);
 		}
-
+		
+		treeLearner.evictCache();
 		return brt;
 	}
 
@@ -394,6 +398,7 @@ public class LogitBoostLearner extends BRTLearner {
 			final double l = learningRate * (numClasses - 1.0) / numClasses;
 
 			BRT brt = new BRT(numClasses);
+			treeLearner.cache(trainSet);
 
 			List<Attribute> attributes = trainSet.getAttributes();
 			int limit = (int) (attributes.size() * alpha);
@@ -507,6 +512,7 @@ public class LogitBoostLearner extends BRTLearner {
 				instance.setWeight(weightTrain[i]);
 			}
 
+			treeLearner.evictCache();
 			return brt;
 		}
 	}
@@ -532,6 +538,7 @@ public class LogitBoostLearner extends BRTLearner {
 			final double l = learningRate * (numClasses - 1.0) / numClasses;
 
 			BRT brt = new BRT(numClasses);
+			treeLearner.cache(trainSet);
 
 			List<Attribute> attributes = trainSet.getAttributes();
 			int limit = (int) (attributes.size() * alpha);
@@ -634,6 +641,7 @@ public class LogitBoostLearner extends BRTLearner {
 				instance.setWeight(weight[i]);
 			}
 
+			treeLearner.evictCache();
 			return brt;
 		}
 	}
