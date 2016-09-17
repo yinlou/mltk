@@ -55,7 +55,7 @@ public class StatUtilsTest {
 	
 	@Test
 	public void testStd() {
-		Assert.assertEquals(Math.sqrt(19.686666667), StatUtils.std(b), MathUtils.EPSILON);
+		Assert.assertEquals(Math.sqrt(19.686666667), StatUtils.sd(b), MathUtils.EPSILON);
 	}
 	
 	@Test

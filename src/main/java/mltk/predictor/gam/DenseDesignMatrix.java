@@ -56,8 +56,8 @@ class DenseDesignMatrix {
 				}
 				t[2] = x3;
 
-				std[j][1] = StatUtils.std(x2) / factor;
-				std[j][2] = StatUtils.std(x3) / factor;
+				std[j][1] = StatUtils.sd(x2) / factor;
+				std[j][2] = StatUtils.sd(x3) / factor;
 
 				double max = StatUtils.max(x1);
 				double min = StatUtils.min(x1);
@@ -68,7 +68,7 @@ class DenseDesignMatrix {
 					for (int i = 0; i < n; i++) {
 						basis[i] = CubicSpline.h(x1[i], knots[j][k]);
 					}
-					std[j][k + 3] = StatUtils.std(basis) / factor;
+					std[j][k + 3] = StatUtils.sd(basis) / factor;
 					t[k + 3] = basis;
 				}
 			}

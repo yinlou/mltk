@@ -242,8 +242,8 @@ public class StatUtils {
 	 * @param a the array.
 	 * @return the standard variance.
 	 */
-	public static double std(double[] a) {
-		return std(a, a.length);
+	public static double sd(double[] a) {
+		return sd(a, a.length);
 	}
 
 	/**
@@ -253,7 +253,7 @@ public class StatUtils {
 	 * @param n the total number of elements.
 	 * @return the standard variance.
 	 */
-	public static double std(double[] a, int n) {
+	public static double sd(double[] a, int n) {
 		return Math.sqrt(variance(a, n));
 	}
 

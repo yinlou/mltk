@@ -130,7 +130,7 @@ public class BackwardElimination {
 			rmse[i] = Evaluator.evalRMSE(regressor, validSet);
 		}
 		double mean = StatUtils.mean(rmse);
-		double std = StatUtils.std(rmse);
+		double std = StatUtils.sd(rmse);
 		return new DoublePair(mean, std);
 	}
 
@@ -144,7 +144,7 @@ public class BackwardElimination {
 			System.out.println("\tEvaluating model " + (i + 1) + " / " + numIters + "\t" + rmse[i]);
 		}
 		double mean = StatUtils.mean(rmse);
-		double std = StatUtils.std(rmse);
+		double std = StatUtils.sd(rmse);
 		return new DoublePair(mean, std);
 	}
 

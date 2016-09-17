@@ -190,7 +190,7 @@ public abstract class Learner {
 				indices[i] = pair.v1;
 				values[i] = pair.v2;
 			}
-			double std = StatUtils.std(values, n);
+			double std = StatUtils.sd(values, n);
 			if (std > MathUtils.EPSILON) {
 				attrsList.add(attr);
 				indicesList.add(indices);
@@ -263,7 +263,7 @@ public abstract class Learner {
 			for (int i = 0; i < n; i++) {
 				x[i] = instances.get(i).getValue(attIndex);
 			}
-			double std = StatUtils.std(x);
+			double std = StatUtils.sd(x);
 			if (std > MathUtils.EPSILON) {
 				attrsList.add(attIndex);
 				xList.add(x);

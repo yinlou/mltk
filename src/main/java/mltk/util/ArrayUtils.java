@@ -1,6 +1,7 @@
 package mltk.util;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Class for utility functions for arrays.
@@ -9,6 +10,34 @@ import java.util.Arrays;
  * 
  */
 public class ArrayUtils {
+	
+	/**
+	 * Converts an integer list to int array.
+	 * 
+	 * @param list the list.
+	 * @return an int array.
+	 */
+	public static int[] toIntArray(List<Integer> list) {
+		int[] a = new int[list.size()];
+		for (int i = 0; i < list.size(); i++) {
+			a[i] = list.get(i);
+		}
+		return a;
+	}
+	
+	/**
+	 * Converts a double list to double array.
+	 * 
+	 * @param list the list.
+	 * @return a double array.
+	 */
+	public static double[] toDoubleArray(List<Double> list) {
+		double[] a = new double[list.size()];
+		for (int i = 0; i < list.size(); i++) {
+			a[i] = list.get(i);
+		}
+		return a;
+	}
 	
 	/**
 	 * Converts a double array to an int array.
@@ -96,6 +125,35 @@ public class ArrayUtils {
 		int[] a = new int[data.length];
 		for (int i = 0; i < a.length; i++) {
 			a[i] = Integer.parseInt(data[i].trim());
+		}
+		return a;
+	}
+	
+	/**
+	 * Parses a long array from a string (default delimiter: ",").
+	 * 
+	 * @param str the string representation of a long array.
+	 * @return an long array.
+	 */
+	public static long[] parseLongArray(String str) {
+		return parseLongArray(str, ",");
+	}
+	
+	/**
+	 * Parses a long array from a string.
+	 * 
+	 * @param str the string representation of a long array.
+	 * @param delimiter the delimiter.
+	 * @return a long array.
+	 */
+	public static long[] parseLongArray(String str, String delimiter) {
+		if (str == null || str.equalsIgnoreCase("null")) {
+			return null;
+		}
+		String[] data = str.substring(1, str.length() - 1).split(delimiter);
+		long[] a = new long[data.length];
+		for (int i = 0; i < a.length; i++) {
+			a[i] = Long.parseLong(data[i].trim());
 		}
 		return a;
 	}
