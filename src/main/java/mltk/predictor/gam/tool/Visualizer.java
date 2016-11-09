@@ -89,10 +89,17 @@ public class Visualizer {
 	public static void generateGnuplotScripts(GAM gam, Instances instances, String dirPath, Terminal outputTerminal)
 			throws IOException {
 		List<Attribute> attributes = instances.getAttributes();
+		int p = -1;
 		Map<Integer, Attribute> attMap = new HashMap<>(attributes.size());
 		for (Attribute attribute : attributes) {
-			attMap.put(attribute.getIndex(), attribute);
+			int attIndex = attribute.getIndex();
+			attMap.put(attIndex, attribute);
+			if (attIndex > p) {
+				p = attIndex;
+			}
 		}
+		p++;
+		
 		List<int[]> terms = gam.getTerms();
 		List<Regressor> regressors = gam.getRegressors();
 
@@ -101,7 +108,7 @@ public class Visualizer {
 			dir.mkdirs();
 		}
 
-		double[] value = new double[attributes.size()];
+		double[] value = new double[p];
 		Instance point = new Instance(value);
 
 		String terminal = outputTerminal.toString();
