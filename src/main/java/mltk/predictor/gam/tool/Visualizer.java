@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import mltk.cmdline.Argument;
@@ -87,6 +89,10 @@ public class Visualizer {
 	public static void generateGnuplotScripts(GAM gam, Instances instances, String dirPath, Terminal outputTerminal)
 			throws IOException {
 		List<Attribute> attributes = instances.getAttributes();
+		Map<Integer, Attribute> attMap = new HashMap<>(attributes.size());
+		for (Attribute attribute : attributes) {
+			attMap.put(attribute.getIndex(), attribute);
+		}
 		List<int[]> terms = gam.getTerms();
 		List<Regressor> regressors = gam.getRegressors();
 
@@ -103,7 +109,7 @@ public class Visualizer {
 			int[] term = terms.get(i);
 			Regressor regressor = regressors.get(i);
 			if (term.length == 1) {
-				Attribute f = attributes.get(term[0]);
+				Attribute f = attMap.get(term[0]);
 				switch (f.getType()) {
 					case BINNED:
 						int numBins = ((BinnedAttribute) f).getNumBins();
@@ -203,8 +209,8 @@ public class Visualizer {
 				out.flush();
 				out.close();
 			} else if (term.length == 2) {
-				Attribute f1 = attributes.get(term[0]);
-				Attribute f2 = attributes.get(term[1]);
+				Attribute f1 = attMap.get(term[0]);
+				Attribute f2 = attMap.get(term[1]);
 				PrintWriter out = new PrintWriter(dir.getAbsolutePath() 
 						+ File.separator + f1.getName() + "_" + f2.getName() 
 						+ ".plt");
