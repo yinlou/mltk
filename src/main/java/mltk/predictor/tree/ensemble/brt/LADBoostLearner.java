@@ -122,7 +122,7 @@ public class LADBoostLearner extends BRTLearner {
 		verbose = false;
 		maxNumIters = 3500;
 		alpha = 1;
-		learningRate = 1;
+		learningRate = 0.01;
 		
 		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
 		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);

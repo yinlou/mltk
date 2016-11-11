@@ -114,7 +114,7 @@ public class LSBoostLearner extends BRTLearner {
 	public LSBoostLearner() {
 		verbose = false;
 		maxNumIters = 3500;
-		learningRate = 1;
+		learningRate = 0.01;
 		alpha = 1;
 		
 		RegressionTreeLearner rtLearner = new RegressionTreeLearner();

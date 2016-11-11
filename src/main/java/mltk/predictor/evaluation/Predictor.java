@@ -23,52 +23,7 @@ import mltk.util.OptimUtils;
  * 
  */
 public class Predictor {
-
-	/**
-	 * Makes predictions for a dataset.
-	 * 
-	 * @param regressor the model.
-	 * @param instances the dataset.
-	 * @param path the output path.
-	 * @param residual <code>true</code> if residuals are the output.
-	 * @throws IOException
-	 */
-	public static void predict(Regressor regressor, Instances instances, String path, boolean residual)
-			throws IOException {
-		PrintWriter out = new PrintWriter(path);
-		if (residual) {
-			for (Instance instance : instances) {
-				double pred = regressor.regress(instance);
-				out.println(instance.getTarget() - pred);
-			}
-		} else {
-			for (Instance instance : instances) {
-				double pred = regressor.regress(instance);
-				out.println(pred);
-			}
-		}
-		out.flush();
-		out.close();
-	}
-
-	/**
-	 * Makes predictions for a dataset.
-	 * 
-	 * @param classifier the model.
-	 * @param instances the dataset.
-	 * @param path the output path.
-	 * @throws IOException
-	 */
-	public static void predict(Classifier classifier, Instances instances, String path) throws IOException {
-		PrintWriter out = new PrintWriter(path);
-		for (Instance instance : instances) {
-			int pred = classifier.classify(instance);
-			out.println(pred);
-		}
-		out.flush();
-		out.close();
-	}
-
+	
 	static class Options {
 
 		@Argument(name = "-r", description = "attribute file path")
@@ -199,6 +154,51 @@ public class Predictor {
 			default:
 				break;
 		}
+	}
+
+	/**
+	 * Makes predictions for a dataset.
+	 * 
+	 * @param regressor the model.
+	 * @param instances the dataset.
+	 * @param path the output path.
+	 * @param residual <code>true</code> if residuals are the output.
+	 * @throws IOException
+	 */
+	public static void predict(Regressor regressor, Instances instances, String path, boolean residual)
+			throws IOException {
+		PrintWriter out = new PrintWriter(path);
+		if (residual) {
+			for (Instance instance : instances) {
+				double pred = regressor.regress(instance);
+				out.println(instance.getTarget() - pred);
+			}
+		} else {
+			for (Instance instance : instances) {
+				double pred = regressor.regress(instance);
+				out.println(pred);
+			}
+		}
+		out.flush();
+		out.close();
+	}
+
+	/**
+	 * Makes predictions for a dataset.
+	 * 
+	 * @param classifier the model.
+	 * @param instances the dataset.
+	 * @param path the output path.
+	 * @throws IOException
+	 */
+	public static void predict(Classifier classifier, Instances instances, String path) throws IOException {
+		PrintWriter out = new PrintWriter(path);
+		for (Instance instance : instances) {
+			int pred = classifier.classify(instance);
+			out.println(pred);
+		}
+		out.flush();
+		out.close();
 	}
 
 }
