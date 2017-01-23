@@ -129,10 +129,25 @@ public class InstancesSplitter {
 							opts.outputDirPath + File.separator + prefix + ".train");
 					InstancesWriter.write(datasets[1], opts.outputDirPath + File.separator + prefix + ".valid");
 				} else if (data.length == 3) {
-					double[] ratios = new double[data.length - 1];
-					for (int i = 0; i < ratios.length; i++) {
-						ratios[i] = Double.parseDouble(data[i + 1]);
-					}
+					double ratioTrain = Double.parseDouble(data[1]);
+					double ratioValid = Double.parseDouble(data[2]);
+					double[] ratios = new double[] {
+							ratioTrain,
+							ratioValid
+					};
+					Instances[] datasets = InstancesSplitter.split(instances, opts.attToStrafity, ratios);
+					InstancesWriter.write(datasets[0], opts.outputDirPath + File.separator + prefix + ".attr",
+							opts.outputDirPath + File.separator + prefix + ".train");
+					InstancesWriter.write(datasets[1], opts.outputDirPath + File.separator + prefix + ".valid");
+				} else if (data.length == 4) {
+					double ratioTrain = Double.parseDouble(data[1]);
+					double ratioValid = Double.parseDouble(data[2]);
+					double ratioTest = Double.parseDouble(data[3]);
+					double[] ratios = new double[] {
+							ratioTrain,
+							ratioValid,
+							ratioTest
+					};
 					Instances[] datasets = InstancesSplitter.split(instances, opts.attToStrafity, ratios);
 					InstancesWriter.write(datasets[0], opts.outputDirPath + File.separator + prefix + ".attr",
 							opts.outputDirPath + File.separator + prefix + ".train");
