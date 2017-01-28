@@ -268,7 +268,7 @@ public class RegressionTreeLearner extends RTreeLearner {
 		if (this.cache != null) {
 			dataset = Dataset.create(this.cache, instances);
 		} else {
-			dataset = Dataset.get(instances);
+			dataset = Dataset.create(instances);
 		}
 		tree.root = createNode(dataset, limit, stats);
 		PriorityQueue<Element<TreeNode>> q = new PriorityQueue<>();
@@ -323,7 +323,7 @@ public class RegressionTreeLearner extends RTreeLearner {
 		if (this.cache != null) {
 			dataset = Dataset.create(this.cache, instances);
 		} else {
-			dataset = Dataset.get(instances);
+			dataset = Dataset.create(instances);
 		}
 		Stack<TreeNode> nodes = new Stack<>();
 		Stack<Dataset> datasets = new Stack<>();
@@ -363,7 +363,7 @@ public class RegressionTreeLearner extends RTreeLearner {
 		if (this.cache != null) {
 			dataset = Dataset.create(this.cache, instances);
 		} else {
-			dataset = Dataset.get(instances);
+			dataset = Dataset.create(instances);
 		}
 		PriorityQueue<Element<TreeNode>> q = new PriorityQueue<>();
 		tree.root = createNode(dataset, limit, stats);
@@ -442,7 +442,8 @@ public class RegressionTreeLearner extends RTreeLearner {
 		List<Attribute> attributes = dataset.instances.getAttributes();
 		for (int j = 0; j < attributes.size(); j++) {
 			int attIndex = attributes.get(j).getIndex();
-			List<IntDoublePair> sortedList = dataset.sortedLists.get(j);
+			String attName = attributes.get(j).getName();
+			List<IntDoublePair> sortedList = dataset.sortedLists.get(attName);
 			List<Double> uniqueValues = new ArrayList<>(sortedList.size());
 			List<DoublePair> histogram = new ArrayList<>(sortedList.size());
 			getHistogram(dataset.instances, sortedList, uniqueValues, totalWeights, sum, histogram);

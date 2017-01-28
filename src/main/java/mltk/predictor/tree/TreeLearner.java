@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import mltk.core.Attribute;
 import mltk.core.Instance;
@@ -56,17 +54,17 @@ public abstract class TreeLearner extends Learner {
 
 	protected static class Dataset {
 		
-		static Dataset get(Instances instances) {
+		static Dataset create(Instances instances) {
 			Dataset dataset = new Dataset(instances);
 			List<Attribute> attributes = instances.getAttributes();
-			// Feature selection may be applied
-			Map<Integer, Integer> attMap = new HashMap<>();
+			// From attIndex to attName
+			Map<Integer, String> attMap = new HashMap<>();
 			for (int j = 0; j < attributes.size(); j++) {
 				Attribute attribute = attributes.get(j);
-				attMap.put(attribute.getIndex(), j);
+				attMap.put(attribute.getIndex(), attribute.getName());
 			}
-			for (int j = 0; j < instances.dimension(); j++) {
-				dataset.sortedLists.add(new ArrayList<IntDoublePair>());
+			for (Attribute attribute : attributes) {
+				dataset.sortedLists.put(attribute.getName(), new ArrayList<IntDoublePair>());
 			}
 			for (int i = 0; i < instances.size(); i++) {
 				Instance instance = instances.get(i);
@@ -77,73 +75,22 @@ public abstract class TreeLearner extends Learner {
 					double[] values = sv.getValues();
 					for (int k = 0; k < indices.length; k++) {
 						if (attMap.containsKey(indices[k])) {
-							int idx = attMap.get(indices[k]);
-							dataset.sortedLists.get(idx).add(new IntDoublePair(i, values[k]));
+							String attName = attMap.get(indices[k]);
+							dataset.sortedLists.get(attName).add(new IntDoublePair(i, values[k]));
 						}
 					}
 				} else {
 					double[] values = instance.getValues();
 					for (int j = 0; j < values.length; j++) {
 						if (attMap.containsKey(j) && values[j] != 0.0) {
-							int idx = attMap.get(j);
-							dataset.sortedLists.get(idx).add(new IntDoublePair(i, values[j]));
+							String attName = attMap.get(j);
+							dataset.sortedLists.get(attName).add(new IntDoublePair(i, values[j]));
 						}
 					}
 				}
 			}
-			for (List<IntDoublePair> sortedList : dataset.sortedLists) {
+			for (List<IntDoublePair> sortedList : dataset.sortedLists.values()) {
 				Collections.sort(sortedList, COMP);
-			}
-			return dataset;
-		}
-
-		static Dataset create(Instances instances) {
-			Dataset dataset = new Dataset(instances);
-			List<Attribute> attributes = instances.getAttributes();
-			// Feature selection may be applied
-			Set<Integer> features = new HashSet<>();
-			int p = 0;
-			for (int j = 0; j < attributes.size(); j++) {
-				Attribute attribute = attributes.get(j);
-				p = Math.max(p, attribute.getIndex() + 1);
-				features.add(attribute.getIndex());
-			}
-			for (int j = 0; j < p; j++) {
-				if (features.contains(j)) {
-					dataset.sortedLists.add(new ArrayList<IntDoublePair>());
-				} else {
-					dataset.sortedLists.add(null);
-				}
-			}
-			for (int i = 0; i < instances.size(); i++) {
-				Instance instance = instances.get(i);
-				dataset.instances.add(instance);
-				if (instance.isSparse()) {
-					SparseVector sv = (SparseVector) instance.getVector();
-					int[] indices = sv.getIndices();
-					double[] values = sv.getValues();
-					for (int k = 0; k < indices.length; k++) {
-						List<IntDoublePair> sortedList = dataset.sortedLists.get(indices[k]);
-						if (sortedList != null) {
-							sortedList.add(new IntDoublePair(i, values[k]));
-						}
-					}
-				} else {
-					double[] values = instance.getValues();
-					for (int j = 0; j < values.length; j++) {
-						if (j < dataset.sortedLists.size()) {
-							List<IntDoublePair> sortedList = dataset.sortedLists.get(j);
-							if (sortedList != null && values[j] != 0.0) {
-								sortedList.add(new IntDoublePair(i, values[j]));
-							}
-						}
-					}
-				}
-			}
-			for (List<IntDoublePair> sortedList : dataset.sortedLists) {
-				if (sortedList != null) {
-					Collections.sort(sortedList, COMP);
-				}
 			}
 			return dataset;
 		}
@@ -151,11 +98,11 @@ public abstract class TreeLearner extends Learner {
 		static Dataset create(Dataset dataset, Instances instances) {
 			Dataset copy = new Dataset();
 			copy.instances = instances;
-			copy.sortedLists = new ArrayList<>(instances.dimension());
+			copy.sortedLists = new HashMap<>(instances.dimension());
 			List<Attribute> attributes = instances.getAttributes();
 			for (Attribute attribute : attributes) {
-				int attIndex = attribute.getIndex();
-				List<IntDoublePair> sortedList = dataset.sortedLists.get(attIndex);
+				String attName = attribute.getName();
+				List<IntDoublePair> sortedList = dataset.sortedLists.get(attName);
 				if (sortedList == null) {
 					// This should not happen very often
 					sortedList = new ArrayList<>();
@@ -167,19 +114,19 @@ public abstract class TreeLearner extends Learner {
 						}
 					}
 					Collections.sort(sortedList, COMP);
-					dataset.sortedLists.set(attIndex, sortedList);
+					dataset.sortedLists.put(attName, sortedList);
 				}
 				List<IntDoublePair> copySortedList = new ArrayList<>(sortedList.size());
 				for (IntDoublePair pair : sortedList) {
 					copySortedList.add(new IntDoublePair(pair.v1, pair.v2));
 				}
-				copy.sortedLists.add(copySortedList);
+				copy.sortedLists.put(attName, copySortedList);
 			}
 			return copy;
 		}
 
 		public Instances instances;
-		public List<List<IntDoublePair>> sortedLists;
+		public Map<String, List<IntDoublePair>> sortedLists;
 		
 		Dataset() {
 			
@@ -187,7 +134,7 @@ public abstract class TreeLearner extends Learner {
 
 		Dataset(Instances instances) {
 			this.instances = new Instances(instances.getAttributes(), instances.getTargetAttribute());
-			sortedLists = new ArrayList<>(instances.dimension());
+			sortedLists = new HashMap<>(instances.dimension());
 		}
 		
 		static Dataset merge(Dataset left, Dataset right) {
@@ -199,9 +146,9 @@ public abstract class TreeLearner extends Learner {
 			for (Instance instance : right.instances) {
 				data.instances.add(instance);
 			}
-			for (int k = 0; k < left.sortedLists.size(); k++) {
-				List<IntDoublePair> lSortedList = left.sortedLists.get(k);
-				List<IntDoublePair> rSortedList = right.sortedLists.get(k);
+			for (String attName : left.sortedLists.keySet()) {
+				List<IntDoublePair> lSortedList = left.sortedLists.get(attName);
+				List<IntDoublePair> rSortedList = right.sortedLists.get(attName);
 				List<IntDoublePair> sortedList = new ArrayList<>(data.instances.size());
 				int i = 0;
 				int j = 0;
@@ -234,7 +181,7 @@ public abstract class TreeLearner extends Learner {
 					sortedList.add(r);
 					j++;
 				}
-				data.sortedLists.add(sortedList);
+				data.sortedLists.put(attName, sortedList);
 			}
 			
 			return data;
@@ -256,21 +203,21 @@ public abstract class TreeLearner extends Learner {
 				}
 			}
 
-			for (int i = 0; i < sortedLists.size(); i++) {
-				left.sortedLists.add(new ArrayList<IntDoublePair>(left.instances.size()));
-				right.sortedLists.add(new ArrayList<IntDoublePair>(right.instances.size()));
+			for (String attName : sortedLists.keySet()) {
+				left.sortedLists.put(attName, new ArrayList<IntDoublePair>(left.instances.size()));
+				right.sortedLists.put(attName, new ArrayList<IntDoublePair>(right.instances.size()));
 
-				List<IntDoublePair> sortedList = sortedLists.get(i);
+				List<IntDoublePair> sortedList = sortedLists.get(attName);
 				for (IntDoublePair pair : sortedList) {
 					int leftIdx = leftHash[pair.v1];
 					int rightIdx = rightHash[pair.v1];
 					if (leftIdx != -1) {
 						pair.v1 = leftIdx;
-						left.sortedLists.get(i).add(pair);
+						left.sortedLists.get(attName).add(pair);
 					}
 					if (rightIdx != -1) {
 						pair.v1 = rightIdx;
-						right.sortedLists.get(i).add(pair);
+						right.sortedLists.get(attName).add(pair);
 					}
 				}
 			}

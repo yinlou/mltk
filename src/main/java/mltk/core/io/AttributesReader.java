@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import mltk.core.Attribute;
 import mltk.core.BinnedAttribute;
@@ -45,6 +47,7 @@ public class AttributesReader {
 	public static Pair<List<Attribute>, Attribute> read(BufferedReader br) throws IOException {
 		List<Attribute> attributes = new ArrayList<Attribute>();
 		Attribute targetAtt = null;
+		Set<String> usedNames = new HashSet<>();
 		for (int i = 0;; i++) {
 			String line = br.readLine();
 			if (line == null) {
@@ -59,13 +62,17 @@ public class AttributesReader {
 				att = NumericalAttribute.parse(line);
 			}
 			att.setIndex(i);
-			if (line.indexOf("(target)") != -1) {
+			if (line.indexOf(" (target)") != -1) {
 				targetAtt = att;
 				i--;
 			} else {
+				if (usedNames.contains(att.getName())) {
+					throw new RuntimeException("Duplicate attribute name: " + att.getName());
+				}
+				usedNames.add(att.getName());
 				attributes.add(att);
 			}
-			if (line.indexOf("(x)") != -1) {
+			if (line.indexOf(" (x)") != -1) {
 				att.setIndex(-1);
 			}
 		}
