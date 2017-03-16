@@ -12,3 +12,20 @@
 
 # Maven
 target
+
+build/
+**/build/
+classes
+
+#intellij
+.idea/
+*.iml
+*.ipr
+*.iws
+**/*.iml
+out/
+**/.classpath
+**/.project
+.settings/
+**/.settings/
+
