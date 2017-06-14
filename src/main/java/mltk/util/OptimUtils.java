@@ -11,6 +11,22 @@ import java.util.List;
 public class OptimUtils {
 	
 	/**
+	 * Returns the gain for variance reduction. This method is mostly used
+	 * in tree learners.
+	 * 
+	 * @param sum the sum of responses.
+	 * @param weight the total weight.
+	 * @return the gain for variance reduction.
+	 */
+	public static double getGain(double sum, double weight) {
+		if (weight < MathUtils.EPSILON) {
+			return 0;
+		} else {
+			return sum / weight * sum;
+		}
+	}
+	
+	/**
 	 * Returns the probability of being in positive class.
 	 * 
 	 * @param pred the prediction.
@@ -39,11 +55,7 @@ public class OptimUtils {
 	 * @return the pseudo residual.
 	 */
 	public static double getPseudoResidual(double pred, double cls) {
-		if (cls == 1) {
-			return 1 / (1 + Math.exp(pred));
-		} else {
-			return -1 / (1 + Math.exp(-pred));
-		}
+		return cls - getProbability(pred);
 	}
 	
 	/**

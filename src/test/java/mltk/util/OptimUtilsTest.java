@@ -18,7 +18,7 @@ public class OptimUtilsTest {
 	@Test
 	public void testGetPseudoResidual() {
 		Assert.assertEquals(0.5, OptimUtils.getPseudoResidual(0, 1), MathUtils.EPSILON);
-		Assert.assertEquals(-0.5, OptimUtils.getPseudoResidual(0, -1), MathUtils.EPSILON);
+		Assert.assertEquals(-0.5, OptimUtils.getPseudoResidual(0, 0), MathUtils.EPSILON);
 	}
 	
 	@Test

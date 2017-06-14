@@ -13,6 +13,7 @@ import mltk.core.NominalAttribute;
 import mltk.predictor.Learner;
 import mltk.util.Random;
 import mltk.util.Element;
+import mltk.util.OptimUtils;
 import mltk.util.tuple.DoublePair;
 
 /**
@@ -273,7 +274,7 @@ public class LineCutter extends Learner {
 			double sum1 = stats.get(start).v2;
 			double sum2 = sum - sum1;
 
-			double bestEval = -sum1 * sum1 / weight1 - sum2 * sum2 / weight2;
+			double bestEval = -(OptimUtils.getGain(sum1, weight1) + OptimUtils.getGain(sum2, weight2));
 			List<double[]> splits = new ArrayList<>();
 			splits.add(new double[] { (uniqueValues.get(start) + uniqueValues.get(start + 1)) / 2, start, weight1,
 					sum1, weight2, sum2 });
@@ -284,7 +285,9 @@ public class LineCutter extends Learner {
 				weight2 -= w;
 				sum1 += s;
 				sum2 -= s;
-				double eval = -sum1 * sum1 / weight1 - sum2 * sum2 / weight2;
+				double eval1 = OptimUtils.getGain(sum1, weight1);
+				double eval2 = OptimUtils.getGain(sum2, weight2);
+				double eval = -(eval1 + eval2);
 				if (eval <= bestEval) {
 					double split = (uniqueValues.get(i) + uniqueValues.get(i + 1)) / 2;
 					if (eval < bestEval) {

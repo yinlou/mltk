@@ -9,6 +9,7 @@ import mltk.core.Instances;
 import mltk.core.NominalAttribute;
 import mltk.predictor.Learner;
 import mltk.util.MathUtils;
+import mltk.util.OptimUtils;
 import mltk.util.tuple.IntDoublePair;
 import mltk.util.tuple.Pair;
 
@@ -210,7 +211,9 @@ public class SquareCutter extends Learner {
 			double sum2 = table.resp[v1][i][1];
 			double weight1 = table.count[v1][i][0];
 			double weight2 = table.count[v1][i][1];
-			double eval = -sum1 * sum1 / weight1 - sum2 * sum2 / weight2;
+			double eval1 = OptimUtils.getGain(sum1, weight1);
+			double eval2 = OptimUtils.getGain(sum2, weight2);
+			double eval = -(eval1 + eval2);
 			if (eval < bestEval) {
 				bestEval = eval;
 				v2[0] = i;
@@ -224,7 +227,9 @@ public class SquareCutter extends Learner {
 			double sum2 = table.resp[v1][i][3];
 			double weight1 = table.count[v1][i][2];
 			double weight2 = table.count[v1][i][3];
-			double eval = -sum1 * sum1 / weight1 - sum2 * sum2 / weight2;
+			double eval1 = OptimUtils.getGain(sum1, weight1);
+			double eval2 = OptimUtils.getGain(sum2, weight2);
+			double eval = -(eval1 + eval2);
 			if (eval < bestEval) {
 				bestEval = eval;
 				v2[1] = i;
@@ -240,7 +245,9 @@ public class SquareCutter extends Learner {
 			double sum2 = table.resp[i][v2][2];
 			double weight1 = table.count[i][v2][0];
 			double weight2 = table.count[i][v2][2];
-			double eval = -sum1 * sum1 / weight1 - sum2 * sum2 / weight2;
+			double eval1 = OptimUtils.getGain(sum1, weight1);
+			double eval2 = OptimUtils.getGain(sum2, weight2);
+			double eval = -(eval1 + eval2);
 			if (eval < bestEval) {
 				bestEval = eval;
 				v1[0] = i;
@@ -254,7 +261,9 @@ public class SquareCutter extends Learner {
 			double sum2 = table.resp[i][v2][3];
 			double weight1 = table.count[i][v2][1];
 			double weight2 = table.count[i][v2][3];
-			double eval = -sum1 * sum1 / weight1 - sum2 * sum2 / weight2;
+			double eval1 = OptimUtils.getGain(sum1, weight1);
+			double eval2 = OptimUtils.getGain(sum2, weight2);
+			double eval = -(eval1 + eval2);
 			if (eval < bestEval) {
 				bestEval = eval;
 				v1[1] = i;
@@ -269,7 +278,9 @@ public class SquareCutter extends Learner {
 			double sum2 = cHist.sum[cHist.size() - 1] - sum1;
 			double weight1 = cHist.count[i];
 			double weight2 = cHist.count[cHist.size() - 1] - weight1;
-			double eval = -sum1 * sum1 * weight1 - sum2 * sum2 * weight2;
+			double eval1 = OptimUtils.getGain(sum1, weight1);
+			double eval2 = OptimUtils.getGain(sum2, weight2);
+			double eval = -(eval1 + eval2);
 			if (eval < cut.v2) {
 				cut.v2 = eval;
 				cut.v1 = i;
