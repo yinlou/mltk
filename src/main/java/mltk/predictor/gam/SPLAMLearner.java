@@ -984,6 +984,210 @@ public class SPLAMLearner extends Learner {
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
 	}
+	
+	public double findMaxLambda(Instances trainSet, Task task, int numKnots, double alpha) {
+		DenseDataset dd = getDenseDataset(trainSet, false);
+		DenseDesignMatrix dm = DenseDesignMatrix.createCubicSplineDesignMatrix(dd.x, dd.stdList, numKnots);
+		double[] y = dd.y;
+		double[][][] x = dm.x;
+		int[] attrs = dd.attrs;
+		
+		double[][] w = new double[attrs.length][];
+		int m = 0;
+		for (int j = 0; j < attrs.length; j++) {
+			w[j] = new double[x[j].length];
+			if (w[j].length > m) {
+				m = w[j].length;
+			}
+		}
+		double[] tl1 = new double[attrs.length];
+		double[] tl2 = new double[attrs.length];
+		
+		double[] g = new double[m];
+		double[] gradient = new double[m];
+		double[] gamma1 = new double[m];
+		double[] gamma2 = new double[m - 1];
+
+		if (task == Task.REGRESSION) {
+			return findMaxLambda(x, y, alpha, tl1, tl2, w, g, gradient, gamma1, gamma2);
+		} else {
+			double[] pTrain = new double[y.length];
+			double[] rTrain = new double[y.length];
+			OptimUtils.computePseudoResidual(pTrain, y, rTrain);
+			return findMaxLambda(x, y, pTrain, rTrain, alpha, tl1, tl2, w, g, gradient, gamma1, gamma2);
+		}
+	}
+	
+	protected double findMaxLambda(double[][][] x, double[] rTrain, double alpha, double[] tl1, double[] tl2,
+			double[][] w, double[] g, double[] gradient, double[] gamma1, double[] gamma2) {
+		double mean = 0;
+		if (fitIntercept) {
+			mean = OptimUtils.fitIntercept(rTrain);
+		}
+
+		double lHigh = 0;
+		for (double[][] block : x) {
+			computeGradient(block, rTrain, gradient);
+			double t = Math.sqrt(StatUtils.sumSq(gradient, 0, block.length)) / Math.sqrt(block.length);
+			if (t > lHigh) {
+				lHigh = t;
+			}
+		}
+		lHigh /= alpha;
+		double lLow = 0;
+		while (lHigh - lLow > MathUtils.EPSILON) {
+			double lambda = (lHigh + lLow) / 2;
+			for (int j = 0; j < x.length; j++) {
+				tl1[j] = lambda * alpha * Math.sqrt(w[j].length);
+				tl2[j] = lambda * (1 - alpha) * Math.sqrt(w[j].length - 1);
+			}
+			boolean isZeroPoint = testZeroPoint(x, rTrain, tl1, tl2, w, g, gradient, gamma1, gamma2);
+			if (isZeroPoint) {
+				lHigh = lambda;
+			} else {
+				lLow = lambda;
+			}
+		}
+
+		if (fitIntercept) {
+			VectorUtils.add(rTrain, mean);
+		}
+
+		return lHigh;
+	}
+
+	protected double findMaxLambda(double[][][] x, double[] y, double[] pTrain, double[] rTrain, double alpha, double[] tl1,
+			double[] tl2, double[][] coefficients, double[] g, double[] gradient, double[] gamma1, double[] gamma2) {
+		if (fitIntercept) {
+			OptimUtils.fitIntercept(pTrain, rTrain, y);
+		}
+
+		double lHigh = 0;
+		for (double[][] block : x) {
+			computeGradient(block, rTrain, gradient);
+			double t = Math.sqrt(StatUtils.sumSq(gradient, 0, block.length)) / Math.sqrt(block.length);
+			if (t > lHigh) {
+				lHigh = t;
+			}
+		}
+		lHigh /= alpha;
+		double lLow = 0;
+		while (lHigh - lLow > MathUtils.EPSILON) {
+			double lambda = (lHigh + lLow) / 2;
+			for (int j = 0; j < x.length; j++) {
+				tl1[j] = lambda * alpha * Math.sqrt(coefficients[j].length);
+				tl2[j] = lambda * (1 - alpha) * Math.sqrt(coefficients[j].length - 1);
+			}
+			boolean isZeroPoint = testZeroPoint(x, y, pTrain, rTrain, tl1, tl2, coefficients, g, gradient, gamma1, gamma2);
+			if (isZeroPoint) {
+				lHigh = lambda;
+			} else {
+				lLow = lambda;
+			}
+		}
+
+		if (fitIntercept) {
+			Arrays.fill(pTrain, 0);
+		}
+
+		return lHigh;
+	}
+	
+	protected boolean testZeroPoint(double[][][] x, double[] y, double[] tl1, double[] tl2, double[][] w,
+			double[] g, double[] gradient, double[] gamma1, double[] gamma2) {
+		for (int k = 0; k < x.length; k++) {
+
+			double[][] block = x[k];
+			final double lambda1 = tl1[k];
+			final double lambda2 = tl2[k];
+
+			// Proximal gradient method
+			computeGradient(block, y, gradient);
+
+			double[] beta = w[k];
+			for (int i = 0; i < beta.length; i++) {
+				g[i] = gradient[i];
+			}
+
+			// Dual method
+			if (beta.length > 1) {
+				for (int i = 1; i < beta.length; i++) {
+					gamma2[i - 1] = g[i];
+				}
+				double norm2 = VectorUtils.l2norm(gamma2);
+				double t2 = lambda2;
+				if (norm2 > t2) {
+					VectorUtils.multiply(gamma2, t2 / norm2);
+				}
+			}
+			gamma1[0] = g[0];
+			for (int i = 1; i < beta.length; i++) {
+				gamma1[i] = g[i] - gamma2[i - 1];
+			}
+			double norm1 = Math.sqrt(StatUtils.sumSq(gamma1, 0, beta.length));
+			double t1 = lambda1;
+			if (norm1 > t1) {
+				VectorUtils.multiply(gamma1, t1 / norm1);
+			}
+			g[0] -= gamma1[0];
+			for (int i = 1; i < beta.length; i++) {
+				g[i] -= (gamma1[i] + gamma2[i - 1]);
+			}
+			if (!ArrayUtils.isConstant(g, 0, beta.length, 0)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	protected boolean testZeroPoint(double[][][] x, double[] y, double[] pTrain, double[] rTrain, double[] tl1, 
+			double[] tl2, double[][] coefficients, double[] g, double[] gradient, double[] gamma1, double[] gamma2) {
+		for (int k = 0; k < x.length; k++) {
+
+			double[][] block = x[k];
+			final double lambda1 = tl1[k];
+			final double lambda2 = tl2[k];
+
+			// Proximal gradient method
+			computeGradient(block, rTrain, gradient);
+
+			double[] beta = coefficients[k];
+			for (int i = 0; i < beta.length; i++) {
+				g[i] = gradient[i];
+			}
+
+			// Dual method
+			if (beta.length > 1) {
+				for (int i = 1; i < beta.length; i++) {
+					gamma2[i - 1] = g[i];
+				}
+				double norm2 = VectorUtils.l2norm(gamma2);
+				double t2 = lambda2;
+				if (norm2 > t2) {
+					VectorUtils.multiply(gamma2, t2 / norm2);
+				}
+			}
+			gamma1[0] = g[0];
+			for (int i = 1; i < beta.length; i++) {
+				gamma1[i] = g[i] - gamma2[i - 1];
+			}
+			double norm1 = Math.sqrt(StatUtils.sumSq(gamma1, 0, beta.length));
+			double t1 = lambda1;
+			if (norm1 > t1) {
+				VectorUtils.multiply(gamma1, t1 / norm1);
+			}
+			g[0] -= gamma1[0];
+			for (int i = 1; i < beta.length; i++) {
+				g[i] -= (gamma1[i] + gamma2[i - 1]);
+			}
+			if (!ArrayUtils.isConstant(g, 0, beta.length, 0)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 
 	protected void computeGradient(double[][] block, double[] rTrain, double[] gradient) {
 		for (int i = 0; i < block.length; i++) {
