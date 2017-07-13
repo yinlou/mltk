@@ -45,6 +45,9 @@ public class SPLAMLearner extends Learner {
 		
 		@Argument(name = "-a", description = "alpha (default: 1, i.e., SPAM model)")
 		double alpha = 1;
+		
+		@Argument(name = "-L", description = "whether to compute lambda max for a given a")
+		boolean lambdaMax = false;
 
 	}
 	
@@ -91,6 +94,11 @@ public class SPLAMLearner extends Learner {
 		learner.setAlpha(opts.alpha);
 		learner.setTask(task);
 		learner.setVerbose(opts.verbose);
+		
+		if (opts.lambdaMax) {
+			System.out.println(learner.findMaxLambda(trainSet, task, opts.numKnots, opts.alpha));
+			System.exit(0);
+		}
 
 		long start = System.currentTimeMillis();
 		GAM gam = learner.build(trainSet);
