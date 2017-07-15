@@ -29,6 +29,13 @@ public abstract class TreeLearner extends Learner {
 	protected Dataset cache;
 	
 	/**
+	 * Returns <code>true</code> if this tree learner can be used in {@link mltk.predictor.tree.ensemble.brt.LogitBoostLearner}.
+	 * 
+	 * @return <code>true</code> if this tree learner can be used in {@link mltk.predictor.tree.ensemble.brt.LogitBoostLearner}.
+	 */
+	public abstract boolean isRobust();
+	
+	/**
 	 * Caches the auxiliary data structures. This method is used in ensemble method
 	 * so that same data structures can be shared across iterations.
 	 * 

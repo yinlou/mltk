@@ -10,13 +10,17 @@ import mltk.util.tuple.DoublePair;
 import mltk.util.tuple.IntDoublePair;
 
 /**
- * Class for learning regression trees in logit boost algorithms. The splitting criteria ignores the weights when
+ * Class for learning regression trees in LogitBoost algorithm. The splitting criteria ignores the weights when
  * calculating sum of responses.
  * 
  * @author Yin Lou
  *
  */
 public class RobustRegressionTreeLearner extends RegressionTreeLearner {
+	
+	public boolean isRobust() {
+		return true;
+	}
 
 	protected boolean getStats(Instances instances, double[] stats) {
 		stats[0] = stats[1] = stats[2] = 0;

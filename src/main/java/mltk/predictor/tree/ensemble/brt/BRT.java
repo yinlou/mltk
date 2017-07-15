@@ -62,18 +62,10 @@ public class BRT implements ProbabilisticClassifier, Regressor {
 		int k = Integer.parseInt(in.readLine().split(": ")[1]);
 		trees = new BoostedRTrees[k];
 		for (int i = 0; i < trees.length; i++) {
-			int n = Integer.parseInt(in.readLine().split(": ")[1]);
+			in.readLine();
 			trees[i] = new BoostedRTrees();
-			for (int j = 0; j < n; j++) {
-				String line = in.readLine();
-				String predictorName = line.substring(1, line.length() - 1).split(": ")[1];
-				Class<?> clazz = Class.forName(predictorName);
-				RTree rt = (RTree) clazz.newInstance();
-				rt.read(in);
-				trees[i].add(rt);
-
-				in.readLine();
-			}
+			trees[i].read(in);
+			
 			in.readLine();
 		}
 	}
@@ -83,11 +75,7 @@ public class BRT implements ProbabilisticClassifier, Regressor {
 		out.printf("[Predictor: %s]\n", this.getClass().getCanonicalName());
 		out.println("K: " + trees.length);
 		for (BoostedRTrees rtList : trees) {
-			out.println("Length: " + rtList.size());
-			for (RTree rt : rtList) {
-				rt.write(out);
-				out.println();
-			}
+			rtList.write(out);
 			out.println();
 		}
 	}

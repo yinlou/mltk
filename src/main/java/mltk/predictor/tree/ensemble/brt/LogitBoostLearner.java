@@ -648,8 +648,8 @@ public class LogitBoostLearner extends BRTLearner {
 	
 	@Override
 	public void setTreeLearner(TreeLearner treeLearner) {
-		if (!(treeLearner instanceof RobustRegressionTreeLearner)) {
-			throw new IllegalArgumentException("Only robust regression tree learners are accepted");
+		if (!treeLearner.isRobust()) {
+			throw new IllegalArgumentException("Only robust tree learners are accepted");
 		}
 		this.treeLearner = treeLearner;
 	}

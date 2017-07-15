@@ -39,13 +39,7 @@ public class Histogram2D {
 			for (int j = 0; j < r.length; j++) {
 				cHist1.sum[i] += r[j];
 				cHist1.count[i] += c[j];
-			}
-		}
-
-		for (int i = 0; i < resp.length; i++) {
-			double[] r = resp[i];
-			double[] c = count[i];
-			for (int j = 0; j < r.length; j++) {
+				
 				cHist2.sum[j] += r[j];
 				cHist2.count[j] += c[j];
 			}

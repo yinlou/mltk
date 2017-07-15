@@ -17,6 +17,7 @@ import mltk.predictor.io.PredictorWriter;
 import mltk.util.Random;
 import mltk.util.Stack;
 import mltk.util.Element;
+import mltk.util.OptimUtils;
 import mltk.util.tuple.DoublePair;
 import mltk.util.tuple.IntDoublePair;
 
@@ -152,6 +153,11 @@ public class RegressionTreeLearner extends RTreeLearner {
 			default:
 				throw new IllegalArgumentException();
 		}
+	}
+	
+	@Override
+	public boolean isRobust() {
+		return false;
 	}
 
 	/**
@@ -483,7 +489,7 @@ public class RegressionTreeLearner extends RTreeLearner {
 		double sum1 = hist.get(0).v2;
 		double sum2 = sum - sum1;
 
-		double bestEval = -sum1 * sum1 / weight1 - sum2 * sum2 / weight2;
+		double bestEval = -(OptimUtils.getGain(sum1, weight1) + OptimUtils.getGain(sum2, weight2));
 		List<Double> splits = new ArrayList<>();
 		splits.add((uniqueValues.get(0) + uniqueValues.get(0 + 1)) / 2);
 		for (int i = 1; i < uniqueValues.size() - 1; i++) {
@@ -493,7 +499,9 @@ public class RegressionTreeLearner extends RTreeLearner {
 			weight2 -= w;
 			sum1 += s;
 			sum2 -= s;
-			double eval = -sum1 * sum1 / weight1 - sum2 * sum2 / weight2;
+			double eval1 = OptimUtils.getGain(sum1, weight1);
+			double eval2 = OptimUtils.getGain(sum2, weight2);
+			double eval = -(eval1 + eval2);
 			if (eval <= bestEval) {
 				double split = (uniqueValues.get(i) + uniqueValues.get(i + 1)) / 2;
 				if (eval < bestEval) {
