@@ -26,6 +26,23 @@ import mltk.util.VectorUtils;
 public class BDT implements ProbabilisticClassifier, Regressor {
 
 	protected BoostedDTables[] tables;
+	
+	/**
+	 * Constructs a BDT from a BRT object.
+	 * 
+	 * @param brt the BRT object.
+	 * @return a BDT object.
+	 */
+	public static BDT constructBDT(BRT brt) {
+		int k = brt.trees.length;
+		BDT bdt = new BDT();
+		bdt.tables = new BoostedDTables[k];
+		for (int i = 0; i < bdt.tables.length; i++) {
+			bdt.tables[i] = new BoostedDTables(brt.trees[i]);
+		}
+		
+		return bdt;
+	}
 
 	/**
 	 * Constructor.
