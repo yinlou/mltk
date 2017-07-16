@@ -1,6 +1,7 @@
 package mltk.predictor.tree.ensemble.brt;
 
 import mltk.predictor.tree.TreeLearner;
+import mltk.predictor.tree.DecisionTableLearner;
 import mltk.predictor.tree.RegressionTreeLearner;
 
 class BRTUtils {
@@ -17,6 +18,12 @@ class BRTUtils {
 				break;
 			case "rrt":
 				rtLearner = new RobustRegressionTreeLearner();
+				break;
+			case "dt":
+				rtLearner = new DecisionTableLearner();
+				break;
+			case "rdt":
+				rtLearner = new RobustDecisionTableLearner();
 				break;
 			default:
 				System.err.println("Unknown regression tree learner: " + data[0]);
