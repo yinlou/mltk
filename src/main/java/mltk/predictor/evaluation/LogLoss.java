@@ -20,6 +20,11 @@ public class LogLoss extends SimpleMetric {
 		this(false);
 	}
 	
+	/**
+	 * Constructor.
+	 * 
+	 * @param isRawScore <code>true</code> if raw score is expected as input.
+	 */
 	public LogLoss(boolean isRawScore) {
 		super(false);
 		this.isRawScore = isRawScore;
@@ -36,6 +41,7 @@ public class LogLoss extends SimpleMetric {
 		for (int i = 0; i < preds.length; i++) {
 			logLoss += OptimUtils.computeLogLoss(preds[i], instances.get(i).getTarget(), isRawScore);
 		}
+		logLoss /= preds.length;
 		return logLoss;
 	}
 	
