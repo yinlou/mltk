@@ -103,13 +103,13 @@ public class RandomRegressionTreeLearner extends RegressionTreeLearner {
 		for (int i = 0; i < numFeatures; i++) {
 			selected.add(a[i]);
 		}
-		for (int i = 0; i < attributes.size(); i++) {
-			Attribute attribute = attributes.get(i);
-			if (!selected.contains(i)) {
+		for (int j = 0; j < attributes.size(); j++) {
+			int attIndex = attributes.get(j).getIndex();
+			if (!selected.contains(j)) {
 				continue;
 			}
-			int attIndex = attribute.getIndex();
-			List<IntDoublePair> sortedList = dataset.sortedLists.get(i);
+			String attName = attributes.get(j).getName();
+			List<IntDoublePair> sortedList = dataset.sortedLists.get(attName);
 			List<Double> uniqueValues = new ArrayList<>(sortedList.size());
 			List<DoublePair> histogram = new ArrayList<>(sortedList.size());
 			getHistogram(dataset.instances, sortedList, uniqueValues, totalWeights, sum, histogram);
