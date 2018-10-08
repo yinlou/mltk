@@ -93,6 +93,25 @@ public class RandomForest implements Regressor {
 	}
 	
 	/**
+	 * Returns the tree at the specified position in this list.
+	 * 
+	 * @param index the index of the element to return.
+	 * @return the tree at the specified position in this list.
+	 */
+	public RTree get(int index) {
+		return rtList.get(index);
+	}
+	
+	/**
+	 * Returns the list of regression trees.
+	 * 
+	 * @return the list of regression trees.
+	 */
+	public RTreeList getTreeList() {
+		return rtList;
+	}
+	
+	/**
 	 * Returns the size of this random forest.
 	 * 
 	 * @return the size of this random forest.

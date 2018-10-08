@@ -6,7 +6,6 @@ import java.util.List;
 
 import mltk.core.Copyable;
 import mltk.predictor.tree.RTree;
-import mltk.predictor.tree.RegressionTree;
 
 /**
  * Class for regression tree list.
@@ -82,7 +81,7 @@ public class RTreeList implements Iterable<RTree>, Copyable<RTreeList> {
 	 * @param index the index of the element to replace.
 	 * @param rt the regression tree to be stored at the specified position.
 	 */
-	public void set(int index, RegressionTree rt) {
+	public void set(int index, RTree rt) {
 		trees.set(index, rt);
 	}
 
