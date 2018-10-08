@@ -84,7 +84,7 @@ public abstract class Ensemble implements Classifier, Regressor {
 			String line = in.readLine();
 			String predictorName = line.substring(1, line.length() - 1).split(": ")[1];
 			Class<?> clazz = Class.forName(predictorName);
-			Predictor predictor = (Predictor) clazz.newInstance();
+			Predictor predictor = (Predictor) clazz.getDeclaredConstructor().newInstance();
 			predictor.read(in);
 			predictors.add(predictor);
 			in.readLine();

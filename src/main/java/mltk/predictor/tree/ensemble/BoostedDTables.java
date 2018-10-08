@@ -251,7 +251,7 @@ public class BoostedDTables implements Copyable<BoostedDTables> {
 			String line = in.readLine();
 			String predictorName = line.substring(1, line.length() - 1).split(": ")[1];
 			Class<?> clazz = Class.forName(predictorName);
-			DecisionTable dt = (DecisionTable) clazz.newInstance();
+			DecisionTable dt = (DecisionTable) clazz.getDeclaredConstructor().newInstance();
 			dt.read(in);
 			this.dtList.add(dt);
 

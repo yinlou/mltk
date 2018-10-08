@@ -94,7 +94,7 @@ public class GAM implements ProbabilisticClassifier, Regressor {
 			String line = in.readLine();
 			String regressorName = line.substring(1, line.length() - 1).split(": ")[1];
 			Class<?> clazz = Class.forName(regressorName);
-			Regressor regressor = (Regressor) clazz.newInstance();
+			Regressor regressor = (Regressor) clazz.getDeclaredConstructor().newInstance();
 			regressor.read(in);
 			regressors.add(regressor);
 			in.readLine();

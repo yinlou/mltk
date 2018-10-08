@@ -63,7 +63,7 @@ public class BoostedRTrees extends RTreeList {
 			String line = in.readLine();
 			String predictorName = line.substring(1, line.length() - 1).split(": ")[1];
 			Class<?> clazz = Class.forName(predictorName);
-			RTree rt = (RTree) clazz.newInstance();
+			RTree rt = (RTree) clazz.getDeclaredConstructor().newInstance();
 			rt.read(in);
 			this.trees.add(rt);
 

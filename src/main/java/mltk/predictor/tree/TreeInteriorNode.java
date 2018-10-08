@@ -95,13 +95,13 @@ public class TreeInteriorNode extends TreeNode {
 		in.readLine();
 
 		Class<?> clazzLeft = Class.forName(in.readLine());
-		left = (TreeNode) clazzLeft.newInstance();
+		left = (TreeNode) clazzLeft.getDeclaredConstructor().newInstance();
 		left.read(in);
 
 		in.readLine();
 
 		Class<?> clazzRight = Class.forName(in.readLine());
-		right = (TreeNode) clazzRight.newInstance();
+		right = (TreeNode) clazzRight.getDeclaredConstructor().newInstance();
 		right.read(in);
 	}
 
