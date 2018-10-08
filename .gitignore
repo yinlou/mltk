@@ -17,7 +17,7 @@ build/
 **/build/
 classes
 
-#intellij
+# IntelliJ
 .idea/
 *.iml
 *.ipr
