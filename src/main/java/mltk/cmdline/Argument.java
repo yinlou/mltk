@@ -31,7 +31,7 @@ public @interface Argument {
 	/**
 	 * Whether this argument is required.
 	 * 
-	 * @return <code>true</code> if the argument is required.
+	 * @return {@code true} if the argument is required.
 	 */
 	boolean required() default false;
 

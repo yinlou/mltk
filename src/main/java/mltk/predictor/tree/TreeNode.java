@@ -12,9 +12,9 @@ import mltk.core.Writable;
 public abstract class TreeNode implements Writable, Copyable<TreeNode> {
 
 	/**
-	 * Returns <code>true</code> if the node is a leaf.
+	 * Returns {@code true} if the node is a leaf.
 	 * 
-	 * @return <code>true</code> if the node is a leaf.
+	 * @return {@code true} if the node is a leaf.
 	 */
 	public abstract boolean isLeaf();
 

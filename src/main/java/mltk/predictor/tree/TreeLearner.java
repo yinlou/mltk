@@ -23,15 +23,15 @@ import mltk.util.tuple.IntDoublePairComparator;
  */
 public abstract class TreeLearner extends Learner {
 	
-	protected static final Double ZERO = new Double(0.0);
+	protected static final Double ZERO = Double.valueOf(0.0);
 	protected static final IntDoublePairComparator COMP = new IntDoublePairComparator(false);
 	
 	protected Dataset cache;
 	
 	/**
-	 * Returns <code>true</code> if this tree learner can be used in {@link mltk.predictor.tree.ensemble.brt.LogitBoostLearner}.
+	 * Returns {@code true} if this tree learner can be used in {@link mltk.predictor.tree.ensemble.brt.LogitBoostLearner}.
 	 * 
-	 * @return <code>true</code> if this tree learner can be used in {@link mltk.predictor.tree.ensemble.brt.LogitBoostLearner}.
+	 * @return {@code true} if this tree learner can be used in {@link mltk.predictor.tree.ensemble.brt.LogitBoostLearner}.
 	 */
 	public abstract boolean isRobust();
 	

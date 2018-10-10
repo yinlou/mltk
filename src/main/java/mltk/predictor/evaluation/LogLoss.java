@@ -23,7 +23,7 @@ public class LogLoss extends SimpleMetric {
 	/**
 	 * Constructor.
 	 * 
-	 * @param isRawScore <code>true</code> if raw score is expected as input.
+	 * @param isRawScore {@code true} if raw score is expected as input.
 	 */
 	public LogLoss(boolean isRawScore) {
 		super(false);
@@ -46,9 +46,9 @@ public class LogLoss extends SimpleMetric {
 	}
 	
 	/**
-	 * Returns <code>true</code> if raw score is expected as input.
+	 * Returns {@code true} if raw score is expected as input.
 	 * 
-	 * @return <code>true</code> if raw score is expected as input.
+	 * @return {@code true} if raw score is expected as input.
 	 */
 	public boolean isRawScore() {
 		return isRawScore;

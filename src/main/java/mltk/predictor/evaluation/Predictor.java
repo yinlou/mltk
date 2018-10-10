@@ -162,7 +162,7 @@ public class Predictor {
 	 * @param regressor the model.
 	 * @param instances the dataset.
 	 * @param path the output path.
-	 * @param residual <code>true</code> if residuals are the output.
+	 * @param residual {@code true} if residuals are the output.
 	 * @throws IOException
 	 */
 	public static void predict(Regressor regressor, Instances instances, String path, boolean residual)

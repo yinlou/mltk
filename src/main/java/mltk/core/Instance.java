@@ -126,9 +126,9 @@ public class Instance implements Copyable<Instance> {
 	}
 
 	/**
-	 * Returns <code>true</code> if the instance is sparse.
+	 * Returns {@code true} if the instance is sparse.
 	 * 
-	 * @return <code>true</code> if the instance is sparse.
+	 * @return {@code true} if the instance is sparse.
 	 */
 	public boolean isSparse() {
 		return vector.isSparse();
@@ -211,10 +211,10 @@ public class Instance implements Copyable<Instance> {
 	}
 
 	/**
-	 * Returns <code>true</code> if a specific attribute value is missing.
+	 * Returns {@code true} if a specific attribute value is missing.
 	 * 
 	 * @param attIndex the attribute index.
-	 * @return <code>true</code> if a specific attribute value is missing.
+	 * @return {@code true} if a specific attribute value is missing.
 	 */
 	public boolean isMissing(int attIndex) {
 		return Double.isNaN(getValue(attIndex));

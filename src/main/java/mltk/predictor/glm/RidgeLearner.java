@@ -359,7 +359,7 @@ public class RidgeLearner extends GLMLearner {
 	 * Builds an L2-regularized binary classifier.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param lambda the lambda.
 	 * @return an L2-regularized binary classifier.
@@ -482,7 +482,7 @@ public class RidgeLearner extends GLMLearner {
 	 * Builds L2-regularized classifiers for a sequence of regularization parameter lambdas.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param lambdas the lambdas array.
 	 * @return L2-regularized binary classifiers.
@@ -624,7 +624,7 @@ public class RidgeLearner extends GLMLearner {
 	 * Builds an L2 regressor.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param lambda the lambda.
 	 * @return an L2-regularized regressor.
@@ -781,7 +781,7 @@ public class RidgeLearner extends GLMLearner {
 	 * Builds L2-regularized regressors for a sequence of regularization parameter lambdas.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param lambdas the lambdas array.
 	 * @return L2-regularized regressors.

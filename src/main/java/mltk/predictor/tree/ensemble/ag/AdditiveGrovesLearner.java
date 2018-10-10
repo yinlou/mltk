@@ -179,11 +179,11 @@ public class AdditiveGrovesLearner extends Learner {
 		}
 
 		/**
-		 * Returns <code>true</code> if the bagging converges.
+		 * Returns {@code true} if the bagging converges.
 		 *
 		 * @param t the number of trees.
 		 * @param a the index of alpha.
-		 * @return <code>true</code> if the bagging converges.
+		 * @return {@code true} if the bagging converges.
 		 */
 		boolean analyzeBagging(int t, int a) {
 			return OptimUtils.isConverged(perf[t][a], metric.isLargerBetter());

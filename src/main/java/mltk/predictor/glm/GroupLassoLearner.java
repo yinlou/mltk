@@ -658,7 +658,7 @@ public class GroupLassoLearner extends GLMLearner {
 	 * Builds a group-lasso penalized classifier.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param groups the groups of variables.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param lambda the lambda.
@@ -787,7 +787,7 @@ public class GroupLassoLearner extends GLMLearner {
 	 * Builds group-lasso penalized classifiers.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param groups the groups of variables.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param numLambdas the number of lambdas.
@@ -956,7 +956,7 @@ public class GroupLassoLearner extends GLMLearner {
 	 * Builds a group-lasso penalized regressor.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param groups the groups of variables.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param lambda the lambda.
@@ -1220,7 +1220,7 @@ public class GroupLassoLearner extends GLMLearner {
 	 * Builds group-lasso penalized regressors.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param groups the groups of variables.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param numLambdas the number of lambdas.
@@ -1586,9 +1586,9 @@ public class GroupLassoLearner extends GLMLearner {
 	}
 
 	/**
-	 * Returns <code>true</code> if we refit the model.
+	 * Returns {@code true} if we refit the model.
 	 * 
-	 * @return <code>true</code> if we refit the model.
+	 * @return {@code true} if we refit the model.
 	 */
 	public boolean refit() {
 		return refit;
@@ -1597,7 +1597,7 @@ public class GroupLassoLearner extends GLMLearner {
 	/**
 	 * Sets whether we refit the model.
 	 * 
-	 * @param refit <code>true</code> if we refit the model.
+	 * @param refit {@code true} if we refit the model.
 	 */
 	public void refit(boolean refit) {
 		this.refit = refit;

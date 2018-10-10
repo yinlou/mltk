@@ -398,7 +398,7 @@ public class ElasticNetLearner extends GLMLearner {
 	 * Builds an elastic-net penalized classifier.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param lambda the lambda.
 	 * @param l1Ratio the l1 ratio.
@@ -524,7 +524,7 @@ public class ElasticNetLearner extends GLMLearner {
 	 * Builds elastic-net penalized classifiers.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param numLambdas the number of lambdas.
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
@@ -675,7 +675,7 @@ public class ElasticNetLearner extends GLMLearner {
 	 * Builds an elastic-net penalized regressor.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param lambda the lambda.
 	 * @param l1Ratio the L1 ratio.
@@ -845,7 +845,7 @@ public class ElasticNetLearner extends GLMLearner {
 	 * Builds elastic-net penalized regressors for a sequence of regularization parameter lambdas.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param numLambdas the number of lambdas.
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.

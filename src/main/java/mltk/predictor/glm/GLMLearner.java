@@ -30,9 +30,9 @@ public abstract class GLMLearner extends Learner {
 	}
 	
 	/**
-	 * Returns <code>true</code> if we fit intercept.
+	 * Returns {@code true} if we fit intercept.
 	 * 
-	 * @return <code>true</code> if we fit intercept.
+	 * @return {@code true} if we fit intercept.
 	 */
 	public boolean fitIntercept() {
 		return fitIntercept;

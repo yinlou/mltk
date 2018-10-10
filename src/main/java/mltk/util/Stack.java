@@ -55,9 +55,9 @@ public class Stack<T> {
 	}
 
 	/**
-	 * Returns <code>true</code> if the stack is empty.
+	 * Returns {@code true} if the stack is empty.
 	 * 
-	 * @return <code>true</code> if the stack is empty.
+	 * @return {@code true} if the stack is empty.
 	 */
 	public boolean isEmpty() {
 		return list.size() == 0;

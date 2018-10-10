@@ -61,18 +61,18 @@ public class Function1D implements Regressor, UnivariateFunction {
 	}
 
 	/**
-	 * Returns <code>true</code> if the function is 0.
+	 * Returns {@code true} if the function is 0.
 	 * 
-	 * @return <code>true</code> if the function is 0.
+	 * @return {@code true} if the function is 0.
 	 */
 	public boolean isZero() {
 		return ArrayUtils.isConstant(predictions, 0, predictions.length, 0);
 	}
 
 	/**
-	 * Returns <code>true</code> if the function is constant.
+	 * Returns {@code true} if the function is constant.
 	 * 
-	 * @return <code>true</code> if the function is constant.
+	 * @return {@code true} if the function is constant.
 	 */
 	public boolean isConstant() {
 		return ArrayUtils.isConstant(predictions, 1, predictions.length, predictions[0]);

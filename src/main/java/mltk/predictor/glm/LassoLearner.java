@@ -459,7 +459,7 @@ public class LassoLearner extends GLMLearner {
 	 * Builds an L1-regularized classifier.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param lambda the lambda.
 	 * @return an L1-regularized classifer.
@@ -582,7 +582,7 @@ public class LassoLearner extends GLMLearner {
 	 * Builds L1-regularized classifiers for a sequence of regularization parameter lambdas.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param numLambdas the number of lambdas.
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
@@ -746,7 +746,7 @@ public class LassoLearner extends GLMLearner {
 	 * Builds an L1-regularized regressor.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param lambda the lambda.
 	 * @return an L1-regularized regressor.
@@ -919,7 +919,7 @@ public class LassoLearner extends GLMLearner {
 	 * Builds L1-regularized regressors for a sequence of regularization parameter lambdas.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param numLambdas the number of lambdas.
 	 * @param minLambdaRatio the minimum lambda is minLambdaRatio * max lambda.
@@ -1392,9 +1392,9 @@ public class LassoLearner extends GLMLearner {
 	}
 
 	/**
-	 * Returns <code>true</code> if we refit the model.
+	 * Returns {@code true} if we refit the model.
 	 * 
-	 * @return <code>true</code> if we refit the model.
+	 * @return {@code true} if we refit the model.
 	 */
 	public boolean refit() {
 		return refit;
@@ -1403,7 +1403,7 @@ public class LassoLearner extends GLMLearner {
 	/**
 	 * Sets whether we refit the model.
 	 * 
-	 * @param refit <code>true</code> if we refit the model.
+	 * @param refit {@code true} if we refit the model.
 	 */
 	public void refit(boolean refit) {
 		this.refit = refit;

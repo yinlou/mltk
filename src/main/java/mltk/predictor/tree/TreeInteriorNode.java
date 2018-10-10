@@ -78,10 +78,10 @@ public class TreeInteriorNode extends TreeNode {
 	}
 
 	/**
-	 * Returns <code>true</code> if going to left child.
+	 * Returns {@code true} if going to left child.
 	 * 
 	 * @param instance the instance.
-	 * @return <code>true</code> if going to left child.
+	 * @return {@code true} if going to left child.
 	 */
 	public boolean goLeft(Instance instance) {
 		double value = instance.getValue(attIndex);

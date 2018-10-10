@@ -117,7 +117,7 @@ public class OptimUtils {
 	 * 
 	 * @param p the input.
 	 * @param y the class label.
-	 * @param isRawScore <code>true</code> if the input is raw score.
+	 * @param isRawScore {@code true} if the input is raw score.
 	 * @return the log loss.
 	 */
 	public static double computeLogLoss(double p, double y, boolean isRawScore) {
@@ -147,7 +147,7 @@ public class OptimUtils {
 	 * 
 	 * @param p the input.
 	 * @param y the targets
-	 * @param isRawScore <code>true</code> if the input is raw score.
+	 * @param isRawScore {@code true} if the input is raw score.
 	 * @return the log loss.
 	 */
 	public static double computeLogLoss(double[] p, double[] y, boolean isRawScore) {
@@ -212,12 +212,12 @@ public class OptimUtils {
 	}
 	
 	/**
-	 * Returns <code>true</code> if the relative improvement is less than a threshold.
+	 * Returns {@code true} if the relative improvement is less than a threshold.
 	 * 
 	 * @param prevLoss the previous loss.
 	 * @param currLoss the current loss.
 	 * @param epsilon the threshold.
-	 * @return <code>true</code> if the relative improvement is less than a threshold.
+	 * @return {@code true} if the relative improvement is less than a threshold.
 	 */
 	public static boolean isConverged(double prevLoss, double currLoss, double epsilon) {
 		if (prevLoss < MathUtils.EPSILON) {
@@ -228,11 +228,11 @@ public class OptimUtils {
 	}
 	
 	/**
-	 * Returns <code>true</code> if the array of metric values is converged.
+	 * Returns {@code true} if the array of metric values is converged.
 	 * 
 	 * @param p an array of metric values.
-	 * @param isLargerBetter <code>true</code> if larger value is better.
-	 * @return <code>true</code> if the list of metric values is converged.
+	 * @param isLargerBetter {@code true} if larger value is better.
+	 * @return {@code true} if the list of metric values is converged.
 	 */
 	public static boolean isConverged(double[] p, boolean isLargerBetter) {
 		final int bn = p.length;
@@ -262,11 +262,11 @@ public class OptimUtils {
 	}
 	
 	/**
-	 * Returns <code>true</code> if the list of metric values is converged.
+	 * Returns {@code true} if the list of metric values is converged.
 	 * 
 	 * @param list a list of metric values.
-	 * @param isLargerBetter <code>true</code> if larger value is better.
-	 * @return <code>true</code> if the list of metric values is converged.
+	 * @param isLargerBetter {@code true} if larger value is better.
+	 * @return {@code true} if the list of metric values is converged.
 	 */
 	public static boolean isConverged(List<Double> list, boolean isLargerBetter) {
 		if (list.size() <= 20) {

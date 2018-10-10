@@ -46,7 +46,7 @@ public class SquareCutter extends Learner {
 	/**
 	 * Constructor.
 	 * 
-	 * @param lineSearch <code>true</code> if line search is performed in the end.
+	 * @param lineSearch {@code true} if line search is performed in the end.
 	 */
 	public SquareCutter(boolean lineSearch) {
 		this.lineSearch = lineSearch;

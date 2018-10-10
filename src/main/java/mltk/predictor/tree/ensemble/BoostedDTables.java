@@ -221,7 +221,7 @@ public class BoostedDTables implements Copyable<BoostedDTables> {
 	/**
 	 * Copies this object.
 	 * 
-	 * @param copyIndexes <code>true</code> if the indexes are also copied;
+	 * @param copyIndexes {@code true} if the indexes are also copied;
 	 * @return this object.
 	 */
 	public BoostedDTables copy(boolean copyIndexes) {

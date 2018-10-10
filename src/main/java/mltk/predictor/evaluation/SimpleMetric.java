@@ -11,7 +11,7 @@ public abstract class SimpleMetric extends Metric {
 	/**
 	 * Constructor.
 	 * 
-	 * @param isLargerBetter <code>true</code> if larger value is better.
+	 * @param isLargerBetter {@code true} if larger value is better.
 	 */
 	public SimpleMetric(boolean isLargerBetter) {
 		super(isLargerBetter);

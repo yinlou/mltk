@@ -398,7 +398,7 @@ public class SPLAMLearner extends Learner {
 	 * Builds a classifier.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param numKnots the number of knots.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param lambda the lambda.
@@ -513,7 +513,7 @@ public class SPLAMLearner extends Learner {
 	 * Builds a regressor.
 	 * 
 	 * @param trainSet the training set.
-	 * @param isSparse <code>true</code> if the training set is treated as sparse.
+	 * @param isSparse {@code true} if the training set is treated as sparse.
 	 * @param maxNumIters the maximum number of iterations.
 	 * @param numKnots the number of knots.
 	 * @param lambda the lambda.
@@ -832,9 +832,9 @@ public class SPLAMLearner extends Learner {
 	}
 
 	/**
-	 * Returns <code>true</code> if we fit intercept.
+	 * Returns {@code true} if we fit intercept.
 	 * 
-	 * @return <code>true</code> if we fit intercept.
+	 * @return {@code true} if we fit intercept.
 	 */
 	public boolean fitIntercept() {
 		return fitIntercept;
@@ -904,18 +904,18 @@ public class SPLAMLearner extends Learner {
 	}
 
 	/**
-	 * Returns <code>true</code> if we output something during the training.
+	 * Returns {@code true} if we output something during the training.
 	 * 
-	 * @return <code>true</code> if we output something during the training.
+	 * @return {@code true} if we output something during the training.
 	 */
 	public boolean isVerbose() {
 		return verbose;
 	}
 	
 	/**
-	 * Returns <code>true</code> if we refit the model.
+	 * Returns {@code true} if we refit the model.
 	 * 
-	 * @return <code>true</code> if we refit the model.
+	 * @return {@code true} if we refit the model.
 	 */
 	public boolean refit() {
 		return refit;
@@ -924,7 +924,7 @@ public class SPLAMLearner extends Learner {
 	/**
 	 * Sets whether we refit the model.
 	 * 
-	 * @param refit <code>true</code> if we refit the model.
+	 * @param refit {@code true} if we refit the model.
 	 */
 	public void refit(boolean refit) {
 		this.refit = refit;

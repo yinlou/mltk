@@ -48,9 +48,9 @@ public interface Vector extends Copyable<Vector> {
 	public void setValue(int[] indices, double[] v);
 
 	/**
-	 * Returns <code>true</code> if the vector is sparse.
+	 * Returns {@code true} if the vector is sparse.
 	 * 
-	 * @return <code>true</code> if the vector is sparse.
+	 * @return {@code true} if the vector is sparse.
 	 */
 	public boolean isSparse();
 

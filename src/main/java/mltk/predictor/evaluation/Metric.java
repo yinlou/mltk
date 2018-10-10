@@ -18,27 +18,27 @@ public abstract class Metric {
 	/**
 	 * Constructor.
 	 * 
-	 * @param isLargerBetter <code>true</code> if larger value is better.
+	 * @param isLargerBetter {@code true} if larger value is better.
 	 */
 	public Metric(boolean isLargerBetter) {
 		this.isLargerBetter = isLargerBetter;
 	}
 	
 	/**
-	 * Returns <code>true</code> if larger value is better for this metric.
+	 * Returns {@code true} if larger value is better for this metric.
 	 * 
-	 * @return <code>true</code> if larger value is better for this metric.
+	 * @return {@code true} if larger value is better for this metric.
 	 */
 	public boolean isLargerBetter() {
 		return isLargerBetter;
 	}
 
 	/**
-	 * Returns <code>true</code> if the first value is better.
+	 * Returns {@code true} if the first value is better.
 	 * 
 	 * @param a the 1st value.
 	 * @param b the 2nd value.
-	 * @return <code>true</code> if the first value is better.
+	 * @return {@code true} if the first value is better.
 	 */
 	public boolean isFirstBetter(double a, double b) {
 		return MathUtils.isFirstBetter(a, b, isLargerBetter);

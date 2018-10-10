@@ -41,9 +41,9 @@ public class Queue<T> {
 	}
 
 	/**
-	 * Returns <code>true</code> if the queue is empty.
+	 * Returns {@code true} if the queue is empty.
 	 * 
-	 * @return <code>true</code> if the queue is empty.
+	 * @return {@code true} if the queue is empty.
 	 */
 	public boolean isEmpty() {
 		return list.size() == 0;

@@ -28,9 +28,9 @@ public abstract class Learner {
 	protected boolean verbose;
 
 	/**
-	 * Returns <code>true</code> if we output something during the training.
+	 * Returns {@code true} if we output something during the training.
 	 * 
-	 * @return <code>true</code> if we output something during the training.
+	 * @return {@code true} if we output something during the training.
 	 */
 	public boolean isVerbose() {
 		return verbose;
@@ -119,10 +119,10 @@ public abstract class Learner {
 	public abstract Predictor build(Instances instances);
 
 	/**
-	 * Returns <code>true</code> if the instances are treated as sparse.
+	 * Returns {@code true} if the instances are treated as sparse.
 	 * 
 	 * @param instances the instances to test.
-	 * @return <code>true</code> if the instances are treated as sparse.
+	 * @return {@code true} if the instances are treated as sparse.
 	 */
 	protected boolean isSparse(Instances instances) {
 		int numSparseInstances = 0;
@@ -139,7 +139,7 @@ public abstract class Learner {
 	 * close-to-zero variance.
 	 * 
 	 * @param instances the instances.
-	 * @param normalize <code>true</code> if all the columns are normalized.
+	 * @param normalize {@code true} if all the columns are normalized.
 	 * @return the column-oriented format of sparse dataset.
 	 */
 	protected SparseDataset getSparseDataset(Instances instances, boolean normalize) {
@@ -235,7 +235,7 @@ public abstract class Learner {
 	 * close-to-zero variance.
 	 * 
 	 * @param instances the instances.
-	 * @param normalize <code>true</code> if all the columns are normalized.
+	 * @param normalize {@code true} if all the columns are normalized.
 	 * @return the column-oriented format of dense dataset.
 	 */
 	protected DenseDataset getDenseDataset(Instances instances, boolean normalize) {

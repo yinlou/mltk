@@ -342,7 +342,7 @@ public class LineCutter extends Learner {
 	/**
 	 * Constructor.
 	 * 
-	 * @param lineSearch <code>true</code> if line search is performed in the end.
+	 * @param lineSearch {@code true} if line search is performed in the end.
 	 */
 	public LineCutter(boolean lineSearch) {
 		attIndex = -1;
@@ -557,9 +557,9 @@ public class LineCutter extends Learner {
 	}
 
 	/**
-	 * Returns <code>true</code> if line search is performed in the end.
+	 * Returns {@code true} if line search is performed in the end.
 	 * 
-	 * @return <code>true</code> if line search is performed in the end.
+	 * @return {@code true} if line search is performed in the end.
 	 */
 	public boolean doLineSearch() {
 		return lineSearch;
@@ -611,9 +611,9 @@ public class LineCutter extends Learner {
 	}
 
 	/**
-	 * Sets <code>true</code> if line search is performed in the end.
+	 * Sets {@code true} if line search is performed in the end.
 	 * 
-	 * @param lineSearch <code>true</code> if line search is performed in the end.
+	 * @param lineSearch {@code true} if line search is performed in the end.
 	 */
 	public void setLineSearch(boolean lineSearch) {
 		this.lineSearch = lineSearch;

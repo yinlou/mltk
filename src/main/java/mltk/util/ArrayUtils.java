@@ -159,13 +159,13 @@ public class ArrayUtils {
 	}
 
 	/**
-	 * Returns <code>true</code> if the specified range of an array is constant c.
+	 * Returns {@code true} if the specified range of an array is constant c.
 	 * 
 	 * @param a the array.
 	 * @param begin the index of first element (inclusive).
 	 * @param end the index of last element (exclusive).
 	 * @param c the constant to test.
-	 * @return <code>true</code> if the specified range of an array is constant c.
+	 * @return {@code true} if the specified range of an array is constant c.
 	 */
 	public static boolean isConstant(double[] a, int begin, int end, double c) {
 		for (int i = begin; i < end; i++) {
@@ -177,13 +177,13 @@ public class ArrayUtils {
 	}
 
 	/**
-	 * Returns <code>true</code> if the specified range of an array is constant c.
+	 * Returns {@code true} if the specified range of an array is constant c.
 	 * 
 	 * @param a the array.
 	 * @param begin the index of first element (inclusive).
 	 * @param end the index of last element (exclusive).
 	 * @param c the constant to test.
-	 * @return <code>true</code> if the specified range of an array is constant c.
+	 * @return {@code true} if the specified range of an array is constant c.
 	 */
 	public static boolean isConstant(int[] a, int begin, int end, int c) {
 		for (int i = begin; i < end; i++) {
@@ -195,13 +195,13 @@ public class ArrayUtils {
 	}
 
 	/**
-	 * Returns <code>true</code> if the specified range of an array is constant c.
+	 * Returns {@code true} if the specified range of an array is constant c.
 	 * 
 	 * @param a the array.
 	 * @param begin the index of first element (inclusive).
 	 * @param end the index of last element (exclusive).
 	 * @param c the constant to test.
-	 * @return <code>true</code> if the specified range of an array is constant c.
+	 * @return {@code true} if the specified range of an array is constant c.
 	 */
 	public static boolean isConstant(byte[] a, int begin, int end, byte c) {
 		for (int i = begin; i < end; i++) {
