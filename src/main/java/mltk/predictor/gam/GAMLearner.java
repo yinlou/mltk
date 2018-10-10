@@ -19,6 +19,7 @@ import mltk.predictor.BaggedEnsembleLearner;
 import mltk.predictor.BoostedEnsemble;
 import mltk.predictor.HoldoutValidatedLearner;
 import mltk.predictor.Regressor;
+import mltk.predictor.evaluation.ConvergenceTester;
 import mltk.predictor.evaluation.Metric;
 import mltk.predictor.evaluation.MetricFactory;
 import mltk.predictor.evaluation.SimpleMetric;
@@ -99,15 +100,18 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		}
 
 		Random.getInstance().setSeed(opts.seed);
+		
+		ConvergenceTester ct = ConvergenceTester.parse(opts.cc);
 
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
-
+		
 		GAMLearner learner = new GAMLearner();
 		learner.setBaseLearner(opts.baseLearner);
 		learner.setMaxNumIters(opts.maxNumIters);
 		learner.setLearningRate(opts.learningRate);
 		learner.setTask(task);
 		learner.setMetric(metric);
+		learner.setConvergenceTester(ct);
 		learner.setVerbose(opts.verbose);
 
 		if (opts.validPath != null) {
@@ -292,9 +296,9 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		OptimUtils.computePseudoResidual(pTrain, target, rTrain);
 		double[] pValid = new double[validSet.size()];
 
-		List<Double> measureList = new ArrayList<>(maxNumIters * attributes.size());
-
 		// Gradient boosting
+		// Resets the convergence tester
+		ct.setMetric(metric);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			for (int j = 0; j < attributes.size(); j++) {
 				// Derivitive to attribute k
@@ -329,15 +333,18 @@ public class GAMLearner extends HoldoutValidatedLearner {
 				}
 
 				double measure = metric.eval(pValid, validSet);
-				measureList.add(measure);
+				ct.add(measure);
 				if (verbose) {
 					System.out.println("Iteration " + iter + " Feature " + j + ": " + measure);
+				}
+				if (ct.isConverged()) {
+					break;
 				}
 			}
 		}
 
 		// Search the best model on validation set
-		int idx = metric.searchBestMetricValueIndex(measureList);
+		int idx = ct.getBestIndex();
 
 		// Remove trees
 		int n = idx / attributes.size();
@@ -518,9 +525,9 @@ public class GAMLearner extends HoldoutValidatedLearner {
 			rValid[i] = instance.getTarget();
 		}
 
-		List<Double> measureList = new ArrayList<>(maxNumIters * attributes.size());
-
 		// Gradient boosting
+		// Resets the convergence tester
+		ct.setMetric(metric);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			for (int j = 0; j < attributes.size(); j++) {
 				// Derivative to attribute k
@@ -554,15 +561,18 @@ public class GAMLearner extends HoldoutValidatedLearner {
 				}
 
 				double measure = metric.eval(pValid, validSet);
-				measureList.add(measure);
+				ct.add(measure);
 				if (verbose) {
 					System.out.println("Iteration " + iter + " Feature " + j + ": " + measure);
+				}
+				if (ct.isConverged()) {
+					break;
 				}
 			}
 		}
 
 		// Search the best model on validation set
-		int idx = metric.searchBestMetricValueIndex(measureList);
+		int idx = ct.getBestIndex();
 
 		// Prune tree ensembles
 		int n = idx / attributes.size();

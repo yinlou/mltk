@@ -1,7 +1,6 @@
 package mltk.predictor.tree.ensemble.brt;
 
-import mltk.core.Instances;
-import mltk.predictor.evaluation.Metric;
+import mltk.predictor.tree.RegressionTreeLearner.Mode;
 import mltk.predictor.tree.ensemble.TreeEnsembleLearner;
 
 /**
@@ -15,16 +14,21 @@ public abstract class BRTLearner extends TreeEnsembleLearner {
 	protected int maxNumIters;
 	protected double alpha;
 	protected double learningRate;
-	protected Instances validSet;
-	protected Metric metric;
-
+	
 	/**
-	 * Sets the metric. 
-	 * 
-	 * @param metric the metric.
+	 * Constructor.
 	 */
-	public void setMetric(Metric metric) {
-		this.metric = metric;
+	public BRTLearner() {
+		verbose = false;
+		maxNumIters = 3500;
+		learningRate = 0.01;
+		alpha = 1;
+		
+		RobustRegressionTreeLearner rtLearner = new RobustRegressionTreeLearner();
+		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
+		rtLearner.setMaxNumLeaves(100);
+		
+		treeLearner = rtLearner;
 	}
 	
 	/**
@@ -80,33 +84,6 @@ public abstract class BRTLearner extends TreeEnsembleLearner {
 	 */
 	public void setMaxNumIters(int maxNumIters) {
 		this.maxNumIters = maxNumIters;
-	}
-	
-	/**
-	 * Returns the validation set.
-	 * 
-	 * @return the validation set.
-	 */
-	public Instances getValidSet() {
-		return validSet;
-	}
-
-	/**
-	 * Sets the validation set.
-	 * 
-	 * @param validSet the validation set.
-	 */
-	public void setValidSet(Instances validSet) {
-		this.validSet = validSet;
-	}
-	
-	/**
-	 * Returns the metric.
-	 * 
-	 * @return the metric.
-	 */
-	public Metric getMetric() {
-		return metric;
 	}
 	
 }

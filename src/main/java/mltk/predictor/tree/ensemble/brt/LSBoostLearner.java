@@ -1,6 +1,5 @@
 package mltk.predictor.tree.ensemble.brt;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -10,15 +9,14 @@ import mltk.cmdline.options.HoldoutValidatedLearnerOptions;
 import mltk.core.Attribute;
 import mltk.core.Instances;
 import mltk.core.io.InstancesReader;
+import mltk.predictor.evaluation.ConvergenceTester;
 import mltk.predictor.evaluation.Metric;
 import mltk.predictor.evaluation.MetricFactory;
 import mltk.predictor.evaluation.RMSE;
 import mltk.predictor.evaluation.SimpleMetric;
 import mltk.predictor.io.PredictorWriter;
 import mltk.predictor.tree.RTree;
-import mltk.predictor.tree.RegressionTreeLearner;
 import mltk.predictor.tree.TreeLearner;
-import mltk.predictor.tree.RegressionTreeLearner.Mode;
 import mltk.util.Permutation;
 import mltk.util.Random;
 
@@ -53,6 +51,9 @@ public class LSBoostLearner extends BRTLearner {
 	 * Usage: mltk.predictor.tree.ensemble.brt.LSBoostLearner
 	 * -t	train set path
 	 * -m	maximum number of iterations
+	 * [-v]	valid set path
+	 * [-e]	evaluation metric (default: default metric of task)
+	 * [-S]	convergence criteria (default: -1) 
 	 * [-r]	attribute file path
 	 * [-o]	output model path
 	 * [-V]	verbose (default: true)
@@ -83,6 +84,8 @@ public class LSBoostLearner extends BRTLearner {
 		}
 
 		Random.getInstance().setSeed(opts.seed);
+		
+		ConvergenceTester ct = ConvergenceTester.parse(opts.cc);
 
 		Instances trainSet = InstancesReader.read(opts.attPath, opts.trainPath);
 
@@ -92,6 +95,7 @@ public class LSBoostLearner extends BRTLearner {
 		learner.setVerbose(opts.verbose);
 		learner.setMetric(metric);
 		learner.setTreeLearner(rtLearner);
+		learner.setConvergenceTester(ct);
 		
 		if (opts.validPath != null) {
 			Instances validSet = InstancesReader.read(opts.attPath, opts.validPath);
@@ -107,21 +111,12 @@ public class LSBoostLearner extends BRTLearner {
 			PredictorWriter.write(brt, opts.outputModelPath);
 		}
 	}
-
+	
 	/**
 	 * Constructor.
 	 */
 	public LSBoostLearner() {
-		verbose = false;
-		maxNumIters = 3500;
-		learningRate = 0.01;
-		alpha = 1;
-		
-		RegressionTreeLearner rtLearner = new RegressionTreeLearner();
-		rtLearner.setConstructionMode(Mode.NUM_LEAVES_LIMITED);
-		rtLearner.setMaxNumLeaves(100);
-		
-		treeLearner = rtLearner;
+	
 	}
 	
 	@Override
@@ -166,7 +161,8 @@ public class LSBoostLearner extends BRTLearner {
 		}
 		double[] pValid = new double[validSet.size()];
 
-		List<Double> measureList = new ArrayList<>(maxNumIters);
+		// Resets the convergence tester
+		ct.setMetric(metric);
 		for (int iter = 0; iter < maxNumIters; iter++) {
 			// Prepare training set
 			if (alpha < 1) {
@@ -205,14 +201,17 @@ public class LSBoostLearner extends BRTLearner {
 			}
 
 			double measure = metric.eval(pValid, validSet);
-			measureList.add(measure);
+			ct.add(measure);
 			if (verbose) {
 				System.out.println("Iteration " + iter + ": " + measure);
+			}
+			if (ct.isConverged()) {
+				break;
 			}
 		}
 		
 		// Search the best model on validation set
-		int idx = metric.searchBestMetricValueIndex(measureList);
+		int idx = ct.getBestIndex();
 		for (int i = brt.trees[0].size() - 1; i > idx; i--) {
 			brt.trees[0].removeLast();
 		}

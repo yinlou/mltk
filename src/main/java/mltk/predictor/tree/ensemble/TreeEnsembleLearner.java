@@ -1,6 +1,6 @@
 package mltk.predictor.tree.ensemble;
 
-import mltk.predictor.Learner;
+import mltk.predictor.HoldoutValidatedLearner;
 import mltk.predictor.tree.TreeLearner;
 
 /**
@@ -9,7 +9,7 @@ import mltk.predictor.tree.TreeLearner;
  * @author Yin Lou
  *
  */
-public abstract class TreeEnsembleLearner extends Learner {
+public abstract class TreeEnsembleLearner extends HoldoutValidatedLearner {
 
 	protected TreeLearner treeLearner;
 	
