@@ -337,9 +337,9 @@ public class GAMLearner extends HoldoutValidatedLearner {
 				if (verbose) {
 					System.out.println("Iteration " + iter + " Feature " + j + ": " + measure);
 				}
-				if (ct.isConverged()) {
-					break;
-				}
+			}
+			if (ct.isConverged()) {
+				break;
 			}
 		}
 
@@ -565,9 +565,9 @@ public class GAMLearner extends HoldoutValidatedLearner {
 				if (verbose) {
 					System.out.println("Iteration " + iter + " Feature " + j + ": " + measure);
 				}
-				if (ct.isConverged()) {
-					break;
-				}
+			}
+			if (ct.isConverged()) {
+				break;
 			}
 		}
 
