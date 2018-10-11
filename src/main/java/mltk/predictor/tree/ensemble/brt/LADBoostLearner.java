@@ -60,7 +60,6 @@ public class LADBoostLearner extends BRTLearner {
 	 * [-v]	valid set path
 	 * [-e]	evaluation metric (default: default metric of task)
 	 * [-S]	convergence criteria (default: -1)
-	 * [-S]	convergence criteria (default: -1)
 	 * [-r]	attribute file path
 	 * [-o]	output model path
 	 * [-V]	verbose (default: true)

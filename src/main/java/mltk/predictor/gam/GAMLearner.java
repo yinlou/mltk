@@ -70,6 +70,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	 * [-g]	task between classification (c) and regression (r) (default: r)
 	 * [-v]	valid set path
 	 * [-e]	evaluation metric (default: default metric of task)
+	 * [-S]	convergence criteria (default: -1)
 	 * [-r]	attribute file path
 	 * [-o]	output model path
 	 * [-V]	verbose (default: true)
