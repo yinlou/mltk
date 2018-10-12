@@ -11,6 +11,7 @@ import mltk.core.Instance;
 import mltk.predictor.ProbabilisticClassifier;
 import mltk.predictor.Regressor;
 import mltk.util.ArrayUtils;
+import mltk.util.MathUtils;
 
 /**
  * Class for generalized additive models (GAMs).
@@ -144,7 +145,7 @@ public class GAM implements ProbabilisticClassifier, Regressor {
 	@Override
 	public double[] predictProbabilities(Instance instance) {
 		double pred = regress(instance);
-		double prob = 1 / (1 + Math.exp(-pred));
+		double prob = MathUtils.sigmoid(pred);
 		return new double[] { 1 - prob, prob };
 	}
 

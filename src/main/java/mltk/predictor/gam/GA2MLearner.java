@@ -301,7 +301,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		List<BoostedEnsemble> regressors = new ArrayList<>(terms.size());
 		int[] indices = new int[terms.size()];
 		for (int i = 0; i < indices.length; i++) {
-			indices[i] = gam.terms.indexOf(terms.get(i));
+			indices[i] = indexOf(gam.terms, terms.get(i));
 			regressors.add(new BoostedEnsemble());
 		}
 
@@ -456,7 +456,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		List<BoostedEnsemble> regressors = new ArrayList<>();
 		int[] indices = new int[terms.size()];
 		for (int i = 0; i < indices.length; i++) {
-			indices[i] = gam.terms.indexOf(terms.get(i));
+			indices[i] = indexOf(gam.terms, terms.get(i));
 			regressors.add(new BoostedEnsemble());
 		}
 
@@ -578,7 +578,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		List<BoostedEnsemble> regressors = new ArrayList<>();
 		int[] indices = new int[terms.size()];
 		for (int i = 0; i < indices.length; i++) {
-			indices[i] = gam.terms.indexOf(terms.get(i));
+			indices[i] = indexOf(gam.terms, terms.get(i));
 			regressors.add(new BoostedEnsemble());
 		}
 
@@ -731,7 +731,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		List<BoostedEnsemble> regressors = new ArrayList<>();
 		int[] indices = new int[terms.size()];
 		for (int i = 0; i < indices.length; i++) {
-			indices[i] = gam.terms.indexOf(terms.get(i));
+			indices[i] = indexOf(gam.terms, terms.get(i));
 			regressors.add(new BoostedEnsemble());
 		}
 
@@ -871,6 +871,16 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 				break;
 		}
 		return gam;
+	}
+	
+	private int indexOf(List<int[]> terms, IntPair pair) {
+		for (int i = 0; i < terms.size(); i++) {
+			int[] term = terms.get(i);
+			if (term.length == 2 && term[0] == pair.v1 && term[1] == pair.v2) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 }
