@@ -77,4 +77,34 @@ public class ConvergenceTesterTest {
 		Assert.assertTrue(ct.isConverged());
 	}
 	
+	@Test
+	public void testParse() {
+		ConvergenceTester ct = null;
+
+	    // Empty
+	    ct = ConvergenceTester.parse("");
+	    Assert.assertEquals(ct.minNumPoints, -1);
+	    Assert.assertEquals(ct.n, 0);
+	    Assert.assertEquals(ct.c, 1.0, 1e-6);
+
+	    // One parameter
+	    ct = ConvergenceTester.parse("10");
+	    Assert.assertEquals(ct.minNumPoints, 10);
+	    Assert.assertEquals(ct.n, 0);
+	    Assert.assertEquals(ct.c, 1.0, 1e-6);
+	    
+	    // Two parameters
+	    ct = ConvergenceTester.parse("10:5");
+	    Assert.assertEquals(ct.minNumPoints, 10);
+	    Assert.assertEquals(ct.n, 5);
+	    Assert.assertEquals(ct.c, 1.0, 1e-6);
+	    
+
+	    // Three parameters
+	    ct = ConvergenceTester.parse("10:5:0.8");
+	    Assert.assertEquals(ct.minNumPoints, 10);
+	    Assert.assertEquals(ct.n, 5);
+	    Assert.assertEquals(ct.c, 0.8, 1e-6);
+	}
+	
 }

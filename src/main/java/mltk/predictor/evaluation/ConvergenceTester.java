@@ -11,13 +11,13 @@ import java.util.List;
  */
 public class ConvergenceTester {
 
-	private int minNumPoints;
-	private int n;
-	private double c;
-	private double bestSoFar;
-	private int bestIdx;
-	private Metric metric;
-	private List<Double> measureList;
+	protected int minNumPoints;
+	protected int n;
+	protected double c;
+	protected double bestSoFar;
+	protected int bestIdx;
+	protected Metric metric;
+	protected List<Double> measureList;
 	
 	/**
 	 * Parses the convergence criteria string.
@@ -26,18 +26,20 @@ public class ConvergenceTester {
 	 * @return a convergence tester.
 	 */
 	public static ConvergenceTester parse(String cc) {
-		String[] strs = cc.split(":");
 		int minNumPoints = -1;
 		int n = 0;
 		double c = 1.0;
-		if (strs.length > 0) {
-			minNumPoints = Integer.parseInt(strs[0]);
-		}
-		if (strs.length > 1) {
-			n = Integer.parseInt(strs[1]);
-		}
-		if (strs.length > 2) {
-			c = Double.parseDouble(strs[2]);
+		if (cc != null && !cc.equals("")) {
+			String[] strs = cc.split(":");
+			if (strs.length > 0) {
+				minNumPoints = Integer.parseInt(strs[0]);
+			}
+			if (strs.length > 1) {
+				n = Integer.parseInt(strs[1]);
+			}
+			if (strs.length > 2) {
+				c = Double.parseDouble(strs[2]);
+			}
 		}
 		return new ConvergenceTester(minNumPoints, n, c);
 	}
