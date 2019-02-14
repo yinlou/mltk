@@ -86,7 +86,7 @@ public class DecisionTable implements RTree {
 		out.println(Arrays.toString(attIndices));
 		out.println("Splits: " + splits.length);
 		out.println(Arrays.toString(splits));
-		out.println("Prediction Indices: " + predIndices);
+		out.println("Prediction Indices: " + predIndices.length);
 		out.println(Arrays.toString(predIndices));
 		out.println("Prediction Values: " + predValues.length);
 		out.println(Arrays.toString(predValues));
