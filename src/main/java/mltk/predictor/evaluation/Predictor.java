@@ -60,7 +60,7 @@ public class Predictor {
 	 * [-p]	prediction path
 	 * [-R]	residual path
 	 * [-g]	task between classification (c) and regression (r) (default: r)
-	 * [-P]	output probablity (default: false)
+	 * [-P]	output probability (default: false)
 	 * </pre>
 	 * 
 	 * @param args the command line arguments.
