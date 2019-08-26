@@ -21,9 +21,12 @@ import mltk.core.Instances;
 import mltk.core.NominalAttribute;
 import mltk.core.io.InstancesReader;
 import mltk.predictor.Regressor;
+import mltk.predictor.function.Array1D;
 import mltk.predictor.function.CubicSpline;
+import mltk.predictor.function.Function1D;
 import mltk.predictor.gam.GAM;
 import mltk.predictor.io.PredictorReader;
+import mltk.util.MathUtils;
 
 /**
  * Class for visualizing 1D and 2D components in a GAM.
@@ -133,11 +136,27 @@ public class Visualizer {
 					default:
 						break;
 				}
+				Double predictionOnMV = null;
+				if (regressor instanceof Function1D) {
+					double predOnMV = ((Function1D) regressor).getPredictionOnMV();
+					if (!MathUtils.isZero(predOnMV)) {
+						predictionOnMV = predOnMV;
+					}
+				} else if (regressor instanceof Array1D) {
+					double predOnMV = ((Array1D) regressor).getPredictionOnMV();
+					if (!MathUtils.isZero(predOnMV)) {
+						predictionOnMV = predOnMV;
+					}
+				}
 				PrintWriter out = new PrintWriter(dir.getAbsolutePath() + File.separator + f.getName() + ".plt");
 				out.printf("set term %s\n", terminal);
 				out.printf("set output \"%s.%s\"\n", f.getName(), terminal);
 				out.println("set datafile separator \"\t\"");
 				out.println("set grid");
+				if (predictionOnMV != null) {
+					out.println("set multiplot layout 1,2 rowsfirst");
+				}
+				// Plot main function
 				switch (f.getType()) {
 					case BINNED:
 						int numBins = ((BinnedAttribute) f).getNumBins();
@@ -148,36 +167,46 @@ public class Visualizer {
 							start = boundaries[0] - (boundaries[1] - boundaries[0]);
 						}
 						out.printf("set xrange[%f:%f]\n", start, boundaries[boundaries.length - 1]);
-						out.println("plot \"-\" u 1:2 w l t \"\"");
 						List<Double> predList = new ArrayList<>();
 						for (int j = 0; j < numBins; j++) {
 							point.setValue(term[0], j);
 							predList.add(regressor.regress(point));
 						}
 						point.setValue(term[0], 0);
-						out.printf("%f\t%f\n", start, predList.get(0));
-						for (int j = 0; j < numBins; j++) {
-							point.setValue(term[0], j);
-							out.printf("%f\t%f\n", boundaries[j], predList.get(j));
-							if (j < numBins - 1) {
-								out.printf("%f\t%f\n", boundaries[j], predList.get(j + 1));
+						{// Writing plot data to file
+							String fileName = f.getName() + ".dat";
+							out.println("plot \"" + fileName + "\" u 1:2 w l t \"\"");
+							PrintWriter writer = new PrintWriter(dir.getAbsolutePath() + File.separator + fileName);
+							writer.printf("%f\t%f\n", start, predList.get(0));
+							for (int j = 0; j < numBins; j++) {
+								point.setValue(term[0], j);
+								writer.printf("%f\t%f\n", boundaries[j], predList.get(j));
+								if (j < numBins - 1) {
+									writer.printf("%f\t%f\n", boundaries[j], predList.get(j + 1));
+								}
 							}
+							writer.flush();
+							writer.close();
 						}
-						out.println("e");
 						break;
 					case NOMINAL:
 						out.println("set style data histogram");
 						out.println("set style histogram cluster gap 1");
 						out.println("set style fill solid border -1");
 						out.println("set boxwidth 0.9");
-						out.println("plot \"-\" u 2:xtic(1) t \"\"");
 						out.println("set xtic rotate by -90");
 						String[] states = ((NominalAttribute) f).getStates();
-						for (int j = 0; j < states.length; j++) {
-							point.setValue(term[0], j);
-							out.printf("%s\t%f\n", states[j], regressor.regress(point));
+						{// Writing plot data to file
+							String fileName = f.getName() + ".dat";
+							out.println("plot \"" + fileName + "\" u 2:xtic(1) t \"\"");
+							PrintWriter writer = new PrintWriter(dir.getAbsolutePath() + File.separator + fileName);
+							for (int j = 0; j < states.length; j++) {
+								point.setValue(term[0], j);
+								writer.printf("%s\t%f\n", states[j], regressor.regress(point));
+							}
+							writer.flush();
+							writer.close();
 						}
-						out.println("e");
 						break;
 					default:
 						Set<Double> values = new HashSet<>();
@@ -210,8 +239,17 @@ public class Visualizer {
 								point.setValue(term[0], v);
 								out.printf("%f\t%f\n", v, regressor.regress(point));
 							}
+							out.println("e");
 						}
 						break;
+				}
+				// Plot prediction on missing value
+				if (predictionOnMV != null) {
+					out.println("set style fill solid border -1");
+					out.println("set xtic rotate by 0");
+					out.println("plot \"-\" using 2:xtic(1) with histogram t \"\"");
+					out.println("missing value\t" + predictionOnMV);
+					out.println("e");
 				}
 				out.flush();
 				out.close();

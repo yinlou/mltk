@@ -25,6 +25,11 @@ public class Array1D implements Regressor, UnivariateFunction {
 	 * Predictions.
 	 */
 	protected double[] predictions;
+	
+	/**
+	 * Prediction on missing value.
+	 */
+	protected double predictionOnMV;
 
 	/**
 	 * Constructor.
@@ -32,7 +37,7 @@ public class Array1D implements Regressor, UnivariateFunction {
 	public Array1D() {
 
 	}
-
+	
 	/**
 	 * Constructs a 1D lookup table.
 	 * 
@@ -40,8 +45,20 @@ public class Array1D implements Regressor, UnivariateFunction {
 	 * @param predictions the prediction array.
 	 */
 	public Array1D(int attIndex, double[] predictions) {
+		this(attIndex, predictions, 0.0);
+	}
+
+	/**
+	 * Constructs a 1D lookup table.
+	 * 
+	 * @param attIndex the attribute index. The attribute must be discretized or nominal.
+	 * @param predictions the prediction array.
+	 * @param predictionOnMV the prediction on missing value.
+	 */
+	public Array1D(int attIndex, double[] predictions, double predictionOnMV) {
 		this.attIndex = attIndex;
 		this.predictions = predictions;
+		this.predictionOnMV = predictionOnMV;
 	}
 
 	/**
@@ -79,12 +96,34 @@ public class Array1D implements Regressor, UnivariateFunction {
 	public void setPredictions(double[] predictions) {
 		this.predictions = predictions;
 	}
+	
+	/**
+	 * Returns the prediction on missing value.
+	 * 
+	 * @return the prediction on missing value.
+	 */
+	public double getPredictionOnMV() {
+		return predictionOnMV;
+	}
+	
+	/**
+	 * Sets prediction on missing value.
+	 * 
+	 * @param predictionOnMV the prediction on missing value.
+	 */
+	public void setPredictionOnMV(double predictionOnMV) {
+		this.predictionOnMV = predictionOnMV;
+	}
 
 	@Override
 	public void read(BufferedReader in) throws Exception {
 		String line = in.readLine();
 		String[] data = line.split(": ");
 		attIndex = Integer.parseInt(data[1]);
+		
+		line = in.readLine();
+		data = line.split(": ");
+		predictionOnMV = Double.parseDouble(data[1]);
 
 		in.readLine();
 		line = in.readLine();
@@ -95,14 +134,20 @@ public class Array1D implements Regressor, UnivariateFunction {
 	public void write(PrintWriter out) throws Exception {
 		out.printf("[Predictor: %s]\n", this.getClass().getCanonicalName());
 		out.println("AttIndex: " + attIndex);
+		out.println("PredictionOnMV: " + predictionOnMV);
 		out.println("Predictions: " + predictions.length);
 		out.println(Arrays.toString(predictions));
 	}
 
 	@Override
 	public double regress(Instance instance) {
-		int idx = (int) instance.getValue(attIndex);
-		return predictions[idx];
+		double v = instance.getValue(attIndex);
+		if (!Double.isNaN(v)) {
+			int idx = (int) v;
+			return predictions[idx];
+		} else {
+			return predictionOnMV;
+		}
 	}
 
 	/**
@@ -118,18 +163,23 @@ public class Array1D implements Regressor, UnivariateFunction {
 		for (int i = 0; i < predictions.length; i++) {
 			predictions[i] += ary.predictions[i];
 		}
+		predictionOnMV += ary.predictionOnMV;
 		return this;
 	}
 
 	@Override
 	public double evaluate(double x) {
-		return predictions[(int) x];
+		if (!Double.isNaN(x)) {
+			return predictions[(int) x];
+		} else {
+			return predictionOnMV;
+		}
 	}
 
 	@Override
 	public Array1D copy() {
 		double[] predictionsCopy = Arrays.copyOf(predictions, predictions.length);
-		return new Array1D(attIndex, predictionsCopy);
+		return new Array1D(attIndex, predictionsCopy, predictionOnMV);
 	}
 
 }

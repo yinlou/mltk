@@ -126,66 +126,11 @@ public class Discretizer {
 	public static Bins computeBins(double[] x, int maxNumBins) {
 		List<Element<Double>> list = new ArrayList<>();
 		for (double v : x) {
-			list.add(new Element<Double>(1.0, v));
+			if (!Double.isNaN(v)) {
+				list.add(new Element<Double>(1.0, v));
+			}
 		}
-		Collections.sort(list);
-		List<DoublePair> stats = new ArrayList<>();
-		getStats(list, stats);
-		if (stats.size() <= maxNumBins) {
-			double[] a = new double[stats.size()];
-			for (int i = 0; i < a.length; i++) {
-				a[i] = stats.get(i).v1;
-			}
-			return new Bins(a, a);
-		} else {
-			double totalWeight = 0;
-			for (DoublePair stat : stats) {
-				totalWeight += stat.v2;
-			}
-			double binSize = totalWeight / maxNumBins;
-			List<Double> boundaryList = new ArrayList<>();
-			List<Double> medianList = new ArrayList<>();
-			int start = 0;
-			double weight = 0;
-			for (int i = 0; i < stats.size(); i++) {
-				weight += stats.get(i).v2;
-				totalWeight -= stats.get(i).v2;
-				if (weight >= binSize) {
-					if (i == start) {
-						boundaryList.add(stats.get(start).v1);
-						medianList.add(stats.get(start).v1);
-						weight = 0;
-						start = i + 1;
-					} else {
-						double d1 = weight - binSize;
-						double d2 = stats.get(i).v2 - d1;
-						if (d1 < d2) {
-							boundaryList.add(stats.get(i).v1);
-							medianList.add(getMedian(stats, start, weight / 2));
-							start = i + 1;
-							weight = 0;
-						} else {
-							weight -= stats.get(i).v2;
-							boundaryList.add(stats.get(i - 1).v1);
-							medianList.add(getMedian(stats, start, weight / 2));
-							start = i;
-							weight = stats.get(i).v2;
-						}
-					}
-					binSize = (totalWeight + weight) / (maxNumBins - boundaryList.size());
-				} else if (i == stats.size() - 1) {
-					boundaryList.add(stats.get(i).v1);
-					medianList.add(getMedian(stats, start, weight / 2));
-				}
-			}
-			double[] boundaries = new double[boundaryList.size()];
-			double[] medians = new double[medianList.size()];
-			for (int i = 0; i < boundaries.length; i++) {
-				boundaries[i] = boundaryList.get(i);
-				medians[i] = medianList.get(i);
-			}
-			return new Bins(boundaries, medians);
-		}
+		return computeBins(list, maxNumBins);
 	}
 
 	/**
@@ -200,66 +145,11 @@ public class Discretizer {
 		Attribute attribute = instances.getAttributes().get(attIndex);
 		List<Element<Double>> list = new ArrayList<>();
 		for (Instance instance : instances) {
-			list.add(new Element<Double>(instance.getWeight(), instance.getValue(attribute)));
+			if (!instance.isMissing(attribute.getIndex())) {
+				list.add(new Element<Double>(instance.getWeight(), instance.getValue(attribute)));
+			}
 		}
-		Collections.sort(list);
-		List<DoublePair> stats = new ArrayList<>();
-		getStats(list, stats);
-		if (stats.size() <= maxNumBins) {
-			double[] a = new double[stats.size()];
-			for (int i = 0; i < a.length; i++) {
-				a[i] = stats.get(i).v1;
-			}
-			return new Bins(a, a);
-		} else {
-			double totalWeight = 0;
-			for (DoublePair stat : stats) {
-				totalWeight += stat.v2;
-			}
-			double binSize = totalWeight / maxNumBins;
-			List<Double> boundaryList = new ArrayList<>();
-			List<Double> medianList = new ArrayList<>();
-			int start = 0;
-			double weight = 0;
-			for (int i = 0; i < stats.size(); i++) {
-				weight += stats.get(i).v2;
-				totalWeight -= stats.get(i).v2;
-				if (weight >= binSize) {
-					if (i == start) {
-						boundaryList.add(stats.get(start).v1);
-						medianList.add(stats.get(start).v1);
-						weight = 0;
-						start = i + 1;
-					} else {
-						double d1 = weight - binSize;
-						double d2 = stats.get(i).v2 - d1;
-						if (d1 < d2) {
-							boundaryList.add(stats.get(i).v1);
-							medianList.add(getMedian(stats, start, weight / 2));
-							start = i + 1;
-							weight = 0;
-						} else {
-							weight -= stats.get(i).v2;
-							boundaryList.add(stats.get(i - 1).v1);
-							medianList.add(getMedian(stats, start, weight / 2));
-							start = i;
-							weight = stats.get(i).v2;
-						}
-					}
-					binSize = (totalWeight + weight) / (maxNumBins - boundaryList.size());
-				} else if (i == stats.size() - 1) {
-					boundaryList.add(stats.get(i).v1);
-					medianList.add(getMedian(stats, start, weight / 2));
-				}
-			}
-			double[] boundaries = new double[boundaryList.size()];
-			double[] medians = new double[medianList.size()];
-			for (int i = 0; i < boundaries.length; i++) {
-				boundaries[i] = boundaryList.get(i);
-				medians[i] = medianList.get(i);
-			}
-			return new Bins(boundaries, medians);
-		}
+		return computeBins(list, maxNumBins);
 	}
 
 	/**
@@ -343,8 +233,10 @@ public class Discretizer {
 		binnedAttribute.setIndex(attribute.getIndex());
 		instances.getAttributes().set(attIndex, binnedAttribute);
 		for (Instance instance : instances) {
-			int v = bins.getIndex(instance.getValue(attribute.getIndex()));
-			instance.setValue(attribute.getIndex(), v);
+			if (!instance.isMissing(attribute.getIndex())) {
+				int v = bins.getIndex(instance.getValue(attribute.getIndex()));
+				instance.setValue(attribute.getIndex(), v);
+			}
 		}
 	}
 

@@ -198,19 +198,18 @@ public class InstancesReader {
 	 * @param classIndex the class index.
 	 * @return a dense instance from strings.
 	 */
-	private static Instance parseDenseInstance(String[] data, int classIndex) {
+	static Instance parseDenseInstance(String[] data, int classIndex) {
+		double classValue = Double.NaN;
 		if (classIndex < 0) {
 			double[] vector = new double[data.length];
-			double classValue = Double.NaN;
 			for (int i = 0; i < data.length; i++) {
-				vector[i] = Double.parseDouble(data[i]);
+				vector[i] = parseDouble(data[i]);
 			}
 			return new Instance(vector, classValue);
 		} else {
 			double[] vector = new double[data.length - 1];
-			double classValue = Double.NaN;
 			for (int i = 0; i < data.length; i++) {
-				double value = Double.parseDouble(data[i]);
+				double value = parseDouble(data[i]);
 				if (i < classIndex) {
 					vector[i] = value;
 				} else if (i > classIndex) {
@@ -288,6 +287,20 @@ public class InstancesReader {
 			instances.setTargetAttribute(new NominalAttribute("target", states));
 		} else {
 			instances.setTargetAttribute(new NumericalAttribute("target"));
+		}
+	}
+	
+	/**
+	 * Parses double value from a string. Missing value is supported.
+	 * 
+	 * @param s the string to parse.
+	 * @return double value.
+	 */
+	private static double parseDouble(String s) {
+		if (s.equals("?")) {
+			return Double.NaN;
+		} else {
+			return Double.parseDouble(s);
 		}
 	}
 

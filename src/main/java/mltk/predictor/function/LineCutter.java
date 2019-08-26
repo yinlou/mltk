@@ -13,6 +13,7 @@ import mltk.core.NominalAttribute;
 import mltk.predictor.Learner;
 import mltk.util.Random;
 import mltk.util.Element;
+import mltk.util.MathUtils;
 import mltk.util.OptimUtils;
 import mltk.util.tuple.DoublePair;
 
@@ -81,7 +82,11 @@ public class LineCutter extends Learner {
 
 	}
 
-	protected static void build(Function1D func, List<Double> uniqueValues, List<DoublePair> stats, double limit) {
+	protected static void build(Function1D func, List<Double> uniqueValues, List<DoublePair> stats, DoublePair mv, double limit) {
+		if (!MathUtils.isZero(mv.v2)) {
+			func.predictionOnMV = mv.v1 / mv.v2;
+		}
+		
 		// 1. Check basic leaf conditions
 		if (uniqueValues.size() == 1) {
 			func.splits = new double[] { Double.POSITIVE_INFINITY };
@@ -131,7 +136,11 @@ public class LineCutter extends Learner {
 		func.splits[func.splits.length - 1] = Double.POSITIVE_INFINITY;
 	}
 
-	protected static void build(Function1D func, List<Double> uniqueValues, List<DoublePair> stats, int numIntervals) {
+	protected static void build(Function1D func, List<Double> uniqueValues, List<DoublePair> stats, DoublePair mv, int numIntervals) {
+		if (!MathUtils.isZero(mv.v2)) {
+			func.predictionOnMV = mv.v1 / mv.v2;
+		}
+		
 		// 1. Check basic leaf conditions
 		if (uniqueValues.size() == 1) {
 			func.splits = new double[] { Double.POSITIVE_INFINITY };
@@ -240,16 +249,23 @@ public class LineCutter extends Learner {
 	 */
 	public static void lineSearch(Instances instances, Function1D func) {
 		double[] predictions = func.getPredictions();
-		double[] numerator = new double[predictions.length];
+		// Last element for missing values.
+		double[] numerator = new double[predictions.length + 1];
 		double[] denominator = new double[numerator.length];
 		for (Instance instance : instances) {
-			int idx = func.getSegmentIndex(instance);
+			int idx = numerator.length - 1;
+			if (!instance.isMissing(func.getAttributeIndex())) {
+				idx = func.getSegmentIndex(instance);
+			}
 			numerator[idx] += instance.getTarget() * instance.getWeight();
 			double t = Math.abs(instance.getTarget());
 			denominator[idx] += t * (1 - t) * instance.getWeight();
 		}
 		for (int i = 0; i < predictions.length; i++) {
-			predictions[i] = denominator[i] == 0 ? 0 : numerator[i] / denominator[i];
+			predictions[i] = MathUtils.isZero(denominator[i]) ? 0 : numerator[i] / denominator[i];
+		}
+		if (!MathUtils.isZero(denominator[denominator.length - 1])) {
+			func.predictionOnMV = numerator[numerator.length - 1] / denominator[denominator.length - 1];
 		}
 	}
 
@@ -369,6 +385,9 @@ public class LineCutter extends Learner {
 		func.attIndex = attribute.getIndex();
 		// TODO potential bugs
 		double limit = alpha * instances.size();
+		
+		double sumRespOnMV = 0.0;
+		double sumWeightOnMV = 0.0;
 
 		if (attribute.getType() == Attribute.Type.NUMERIC) {
 			// weight: attribute value
@@ -379,7 +398,13 @@ public class LineCutter extends Learner {
 				double weight = instance.getWeight();
 				double value = instance.getValue(func.attIndex);
 				double target = instance.getTarget();
-				pairs.add(new Element<DoublePair>(new DoublePair(target, weight), value));
+				if (!Double.isNaN(value)) {
+					pairs.add(new Element<DoublePair>(new DoublePair(target, weight), value));
+				} else {
+					sumRespOnMV += target * weight;
+					sumWeightOnMV += weight;
+				}
+				
 			}
 			Collections.sort(pairs);
 
@@ -387,42 +412,29 @@ public class LineCutter extends Learner {
 			List<DoublePair> stats = new ArrayList<>();
 			getStats(pairs, uniqueValues, stats);
 
-			build(func, uniqueValues, stats, limit);
-		} else if (attribute.getType() == Attribute.Type.BINNED) {
-			// Building histograms
-			BinnedAttribute attr = (BinnedAttribute) attribute;
-			DoublePair[] histogram = new DoublePair[attr.getNumBins()];
-			for (int i = 0; i < histogram.length; i++) {
-				histogram[i] = new DoublePair(0, 0);
-			}
-			for (Instance instance : instances) {
-				int idx = (int) instance.getValue(func.attIndex);
-				histogram[idx].v2 += instance.getTarget() * instance.getWeight();
-				histogram[idx].v1 += instance.getWeight();
-			}
-
-			List<Double> uniqueValues = new ArrayList<>(histogram.length);
-			List<DoublePair> stats = new ArrayList<>(histogram.length);
-			for (int i = 0; i < histogram.length; i++) {
-				if (histogram[i].v1 != 0) {
-					stats.add(histogram[i]);
-					uniqueValues.add((double) i);
-				}
-			}
-
-			build(func, uniqueValues, stats, limit);
+			build(func, uniqueValues, stats, new DoublePair(sumRespOnMV, sumWeightOnMV), limit);
 		} else {
-			// Nominal attributes
-			// Building histograms
-			NominalAttribute attr = (NominalAttribute) attribute;
-			DoublePair[] histogram = new DoublePair[attr.getStates().length];
+			int size = 0;
+			if (attribute.getType() == Attribute.Type.BINNED) {
+				size = ((BinnedAttribute) attribute).getNumBins();
+			} else {
+				size = ((NominalAttribute) attribute).getCardinality();
+			}
+			DoublePair[] histogram = new DoublePair[size];
 			for (int i = 0; i < histogram.length; i++) {
 				histogram[i] = new DoublePair(0, 0);
 			}
 			for (Instance instance : instances) {
-				int idx = (int) instance.getValue(func.attIndex);
-				histogram[idx].v2 += instance.getTarget() * instance.getWeight();
-				histogram[idx].v1 += instance.getWeight();
+				double value = instance.getValue(func.attIndex);
+				if (!Double.isNaN(value)) {
+					int idx = (int) value;
+					histogram[idx].v2 += instance.getTarget() * instance.getWeight();
+					histogram[idx].v1 += instance.getWeight();
+				} else {
+					sumRespOnMV += instance.getTarget() * instance.getWeight();
+					sumWeightOnMV += instance.getWeight();
+				}
+				
 			}
 
 			List<Double> uniqueValues = new ArrayList<>(histogram.length);
@@ -434,7 +446,7 @@ public class LineCutter extends Learner {
 				}
 			}
 
-			build(func, uniqueValues, stats, limit);
+			build(func, uniqueValues, stats, new DoublePair(sumRespOnMV, sumWeightOnMV), limit);
 		}
 
 		if (lineSearch) {
@@ -455,6 +467,9 @@ public class LineCutter extends Learner {
 	public Function1D build(Instances instances, Attribute attribute, int numIntervals) {
 		Function1D func = new Function1D();
 		func.attIndex = attribute.getIndex();
+		
+		double sumRespOnMV = 0.0;
+		double sumWeightOnMV = 0.0;
 
 		if (attribute.getType() == Attribute.Type.NUMERIC) {
 			// weight: attribute value
@@ -465,7 +480,12 @@ public class LineCutter extends Learner {
 				double weight = instance.getWeight();
 				double value = instance.getValue(func.attIndex);
 				double target = instance.getTarget();
-				pairs.add(new Element<DoublePair>(new DoublePair(target, weight), value));
+				if (!Double.isNaN(value)) {
+					pairs.add(new Element<DoublePair>(new DoublePair(target, weight), value));
+				} else {
+					sumRespOnMV += target * weight;
+					sumWeightOnMV += weight;
+				}			
 			}
 			Collections.sort(pairs);
 
@@ -473,42 +493,28 @@ public class LineCutter extends Learner {
 			List<DoublePair> stats = new ArrayList<>();
 			getStats(pairs, uniqueValues, stats);
 
-			build(func, uniqueValues, stats, numIntervals);
-		} else if (attribute.getType() == Attribute.Type.BINNED) {
-			// Building histograms
-			BinnedAttribute attr = (BinnedAttribute) attribute;
-			DoublePair[] histogram = new DoublePair[attr.getNumBins()];
-			for (int i = 0; i < histogram.length; i++) {
-				histogram[i] = new DoublePair(0, 0);
-			}
-			for (Instance instance : instances) {
-				int idx = (int) instance.getValue(func.attIndex);
-				histogram[idx].v2 += instance.getTarget() * instance.getWeight();
-				histogram[idx].v1 += instance.getWeight();
-			}
-
-			List<Double> uniqueValues = new ArrayList<>(histogram.length);
-			List<DoublePair> stats = new ArrayList<>(histogram.length);
-			for (int i = 0; i < histogram.length; i++) {
-				if (histogram[i].v1 != 0) {
-					stats.add(histogram[i]);
-					uniqueValues.add((double) i);
-				}
-			}
-
-			build(func, uniqueValues, stats, numIntervals);
+			build(func, uniqueValues, stats, new DoublePair(sumRespOnMV, sumWeightOnMV), numIntervals);
 		} else {
-			// Nominal attributes
-			// Building histograms
-			NominalAttribute attr = (NominalAttribute) attribute;
-			DoublePair[] histogram = new DoublePair[attr.getStates().length];
+			int size = 0;
+			if (attribute.getType() == Attribute.Type.BINNED) {
+				size = ((BinnedAttribute) attribute).getNumBins();
+			} else {
+				size = ((NominalAttribute) attribute).getCardinality();
+			}
+			DoublePair[] histogram = new DoublePair[size];
 			for (int i = 0; i < histogram.length; i++) {
 				histogram[i] = new DoublePair(0, 0);
 			}
 			for (Instance instance : instances) {
-				int idx = (int) instance.getValue(func.attIndex);
-				histogram[idx].v2 += instance.getTarget() * instance.getWeight();
-				histogram[idx].v1 += instance.getWeight();
+				double value = instance.getValue(func.attIndex);
+				if (!Double.isNaN(value)) {
+					int idx = (int) value;
+					histogram[idx].v2 += instance.getTarget() * instance.getWeight();
+					histogram[idx].v1 += instance.getWeight();
+				} else {
+					sumRespOnMV += instance.getTarget() * instance.getWeight();
+					sumWeightOnMV += instance.getWeight();
+				}
 			}
 
 			List<Double> uniqueValues = new ArrayList<>(histogram.length);
@@ -520,7 +526,7 @@ public class LineCutter extends Learner {
 				}
 			}
 
-			build(func, uniqueValues, stats, numIntervals);
+			build(func, uniqueValues, stats, new DoublePair(sumRespOnMV, sumWeightOnMV), numIntervals);
 		}
 
 		if (lineSearch) {

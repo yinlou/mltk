@@ -9,6 +9,8 @@ public class InstancesTestHelper {
 	
 	private Instances denseClaDataset;
 	private Instances denseRegDataset;
+	private Instances denseClaDatasetWMissing;
+	private Instances denseRegDatasetWMissing;
 	
 	public static InstancesTestHelper getInstance() {
 		if (instance == null) {
@@ -23,6 +25,14 @@ public class InstancesTestHelper {
 	
 	public Instances getDenseRegressionDataset() {
 		return denseRegDataset;
+	}
+	
+	public Instances getDenseClassificationDatasetWMissing() {
+		return denseClaDatasetWMissing;
+	}
+	
+	public Instances getDenseRegressionDatasetWMissing() {
+		return denseRegDatasetWMissing;
 	}
 	
 	private InstancesTestHelper() {
@@ -56,6 +66,13 @@ public class InstancesTestHelper {
 		
 		denseRegDataset = denseClaDataset.copy();
 		denseRegDataset.setTargetAttribute(regTarget);
+		
+		denseClaDatasetWMissing = denseClaDataset.copy();
+		for (int i = 0; i < 10; i++) {
+			denseClaDatasetWMissing.get(i).setValue(0, Double.NaN);
+		}
+		denseRegDatasetWMissing = denseClaDatasetWMissing.copy();
+		denseRegDatasetWMissing.setTargetAttribute(regTarget);
 	}
 	
 }

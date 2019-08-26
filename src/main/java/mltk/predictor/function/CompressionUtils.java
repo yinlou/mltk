@@ -72,7 +72,7 @@ public class CompressionUtils {
 		for (int i = 0; i < predictions.length; i++) {
 			predictions[i] = function.evaluate(i);
 		}
-		return new Array1D(function.getAttributeIndex(), predictions);
+		return new Array1D(function.getAttributeIndex(), predictions, function.predictionOnMV);
 	}
 
 	/**

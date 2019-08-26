@@ -7,6 +7,7 @@ import java.util.Arrays;
 import mltk.core.Instance;
 import mltk.predictor.Regressor;
 import mltk.util.ArrayUtils;
+import mltk.util.MathUtils;
 import mltk.util.VectorUtils;
 
 /**
@@ -38,6 +39,11 @@ public class Function1D implements Regressor, UnivariateFunction {
 	 * Corresponding predictions for segments defined in splits.
 	 */
 	protected double[] predictions;
+	
+	/**
+	 * Prediction on missing value.
+	 */
+	protected double predictionOnMV;
 
 	/**
 	 * Returns a constant 1D function.
@@ -58,6 +64,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	public void setZero() {
 		splits = new double[] { Double.POSITIVE_INFINITY };
 		predictions = new double[] { 0 };
+		predictionOnMV = 0.0;
 	}
 
 	/**
@@ -66,7 +73,8 @@ public class Function1D implements Regressor, UnivariateFunction {
 	 * @return {@code true} if the function is 0.
 	 */
 	public boolean isZero() {
-		return ArrayUtils.isConstant(predictions, 0, predictions.length, 0);
+		return ArrayUtils.isConstant(predictions, 0, predictions.length, 0)
+				&& MathUtils.isZero(predictionOnMV);
 	}
 
 	/**
@@ -75,7 +83,8 @@ public class Function1D implements Regressor, UnivariateFunction {
 	 * @return {@code true} if the function is constant.
 	 */
 	public boolean isConstant() {
-		return ArrayUtils.isConstant(predictions, 1, predictions.length, predictions[0]);
+		return ArrayUtils.isConstant(predictions, 1, predictions.length, predictions[0])
+				&& MathUtils.isZero(predictionOnMV - predictions[0]);
 	}
 
 	/**
@@ -86,6 +95,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	 */
 	public Function1D multiply(double c) {
 		VectorUtils.multiply(predictions, c);
+		predictionOnMV *= c;
 		return this;
 	}
 
@@ -97,6 +107,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	 */
 	public Function1D divide(double c) {
 		VectorUtils.divide(predictions, c);
+		predictionOnMV /= c;
 		return this;
 	}
 
@@ -108,6 +119,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	 */
 	public Function1D add(double c) {
 		VectorUtils.add(predictions, c);
+		predictionOnMV += c;
 		return this;
 	}
 
@@ -119,6 +131,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	 */
 	public Function1D subtract(double c) {
 		VectorUtils.subtract(predictions, c);
+		predictionOnMV -= c;
 		return this;
 	}
 
@@ -128,7 +141,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	public Function1D() {
 
 	}
-
+	
 	/**
 	 * Constructor.
 	 * 
@@ -137,9 +150,22 @@ public class Function1D implements Regressor, UnivariateFunction {
 	 * @param predictions the predictions.
 	 */
 	public Function1D(int attIndex, double[] splits, double[] predictions) {
+		this(attIndex, splits, predictions, 0.0);
+	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param attIndex the attribute index.
+	 * @param splits the splits.
+	 * @param predictions the predictions.
+	 * @param predictionOnMissing prediction on missing value;
+	 */
+	public Function1D(int attIndex, double[] splits, double[] predictions, double predictionOnMissing) {
 		this.attIndex = attIndex;
 		this.splits = splits;
 		this.predictions = predictions;
+		this.predictionOnMV = predictionOnMissing;
 	}
 
 	/**
@@ -182,6 +208,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 				predictions[i] += func.evaluate(splits[i]);
 			}
 		}
+		this.predictionOnMV += func.predictionOnMV;
 		return this;
 	}
 
@@ -238,6 +265,24 @@ public class Function1D implements Regressor, UnivariateFunction {
 	public void setPredictions(double[] predictions) {
 		this.predictions = predictions;
 	}
+	
+	/**
+	 * Returns the prediction on missing value.
+	 * 
+	 * @return the prediction on missing value.
+	 */
+	public double getPredictionOnMV() {
+		return predictionOnMV;
+	}
+	
+	/**
+	 * Sets the prediction on missing value.
+	 * 
+	 * @param predictionOnMV the prediction on missing value.
+	 */
+	public void setPredictionOnMV(double predictionOnMV) {
+		this.predictionOnMV = predictionOnMV;
+	}
 
 	@Override
 	public void read(BufferedReader in) throws Exception {
@@ -245,6 +290,10 @@ public class Function1D implements Regressor, UnivariateFunction {
 		String[] data = line.split(": ");
 		attIndex = Integer.parseInt(data[1]);
 
+		line = in.readLine();
+		data = line.split(": ");
+		predictionOnMV = Double.parseDouble(data[1]);
+		
 		in.readLine();
 		line = in.readLine();
 		splits = ArrayUtils.parseDoubleArray(line);
@@ -258,6 +307,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	public void write(PrintWriter out) throws Exception {
 		out.printf("[Predictor: %s]\n", this.getClass().getCanonicalName());
 		out.println("AttIndex: " + attIndex);
+		out.println("PredictinOnMV: " + predictionOnMV);
 		out.println("Splits: " + splits.length);
 		out.println(Arrays.toString(splits));
 		out.println("Predictions: " + predictions.length);
@@ -292,19 +342,27 @@ public class Function1D implements Regressor, UnivariateFunction {
 
 	@Override
 	public double regress(Instance instance) {
-		return predictions[getSegmentIndex(instance)];
+		if (instance.isMissing(attIndex)) {
+			return predictionOnMV;
+		} else {
+			return predictions[getSegmentIndex(instance)];
+		}
 	}
 
 	@Override
 	public double evaluate(double x) {
-		return predictions[getSegmentIndex(x)];
+		if (Double.isNaN(x)) {
+			return predictionOnMV;
+		} else {
+			return predictions[getSegmentIndex(x)];
+		}
 	}
 
 	@Override
 	public Function1D copy() {
 		double[] splitsCopy = Arrays.copyOf(splits, splits.length);
 		double[] predictionsCopy = Arrays.copyOf(predictions, predictions.length);
-		return new Function1D(attIndex, splitsCopy, predictionsCopy);
+		return new Function1D(attIndex, splitsCopy, predictionsCopy, predictionOnMV);
 	}
 
 }
