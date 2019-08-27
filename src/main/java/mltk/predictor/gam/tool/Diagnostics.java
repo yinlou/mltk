@@ -26,6 +26,50 @@ import mltk.util.Element;
  * 
  */
 public class Diagnostics {
+	
+	/**
+	 * Enumeration of methods for calculating term importance.
+	 * 
+	 * @author Yin Lou
+	 * 
+	 */
+	public enum Mode {
+
+		/**
+		 * L1.
+		 */
+		L1("L1"),
+		/**
+		 * PDF terminal.
+		 */
+		L2("L2");
+
+		String mode;
+
+		Mode(String mode) {
+			this.mode = mode;
+		}
+
+		public String toString() {
+			return mode;
+		}
+
+		/**
+		 * Parses an enumeration from a string.
+		 * 
+		 * @param term the string.
+		 * @return a parsed terminal.
+		 */
+		public static Mode getEnum(String mode) {
+			for (Mode re : Mode.values()) {
+				if (re.mode.compareTo(mode) == 0) {
+					return re;
+				}
+			}
+			throw new IllegalArgumentException("Invalid mode: " + mode);
+		}
+
+	}
 
 	/**
 	 * Computes the weights for each term in a GAM.
@@ -35,6 +79,17 @@ public class Diagnostics {
 	 * @return the list of weights for each term in a GAM.
 	 */
 	public static List<Element<int[]>> diagnose(GAM gam, Instances instances) {
+		return diagnose(gam, instances, Mode.L2);
+	}
+	
+	/**
+	 * Computes the weights for each term in a GAM.
+	 * 
+	 * @param gam the GAM model.
+	 * @param instances the training set.
+	 * @return the list of weights for each term in a GAM.
+	 */
+	public static List<Element<int[]>> diagnose(GAM gam, Instances instances, Mode mode) {
 		List<Element<int[]>> list = new ArrayList<>();
 		Map<int[], List<Regressor>> map = new HashMap<>();
 		List<int[]> terms = gam.getTerms();
@@ -58,7 +113,14 @@ public class Diagnostics {
 					predictions[i] += regressor.regress(instance);
 				}
 			}
-			double weight = StatUtils.variance(predictions);
+			double weight = 0;
+			if (mode == Mode.L2) {
+				weight = StatUtils.variance(predictions);
+			} else {
+				double mean = StatUtils.mean(predictions);
+				weight = StatUtils.mad(predictions, mean);
+			}
+			
 			list.add(new Element<int[]>(term, weight));
 		}
 
@@ -72,6 +134,9 @@ public class Diagnostics {
 
 		@Argument(name = "-d", description = "dataset path", required = true)
 		String datasetPath = null;
+		
+		@Argument(name = "-m", description = "mode (L1 or L2, default: L2)")
+		String mode = null;
 
 		@Argument(name = "-i", description = "input model path", required = true)
 		String inputModelPath = null;
@@ -90,6 +155,7 @@ public class Diagnostics {
 	 * -i	input model path
 	 * -o	output path
 	 * [-r]	attribute file path
+	 * [-m]	mode (L1 or L2, default: L2)
 	 * </pre>
 	 * 
 	 * @param args the command line arguments.
@@ -107,7 +173,7 @@ public class Diagnostics {
 		Instances dataset = InstancesReader.read(opts.attPath, opts.datasetPath);
 		GAM gam = PredictorReader.read(opts.inputModelPath, GAM.class);
 
-		List<Element<int[]>> list = Diagnostics.diagnose(gam, dataset);
+		List<Element<int[]>> list = Diagnostics.diagnose(gam, dataset, Mode.getEnum(opts.mode));
 		Collections.sort(list);
 		Collections.reverse(list);
 

@@ -271,5 +271,20 @@ public class StatUtils {
 		rms /= a.length;
 		return Math.sqrt(rms);
 	}
+	
+	/**
+	 * Returns the mean absolute deviation around a central point.
+	 * 
+	 * @param a the array.
+	 * @param centralPoint the central point.
+	 * @return the mean absolute deviation around a central point.
+	 */
+	public static double mad(double[] a, double centralPoint) {
+		double mad = 0.0;
+		for (double v : a) {
+			mad += Math.abs(v - centralPoint);
+		}
+		return mad / a.length;
+	}
 
 }
