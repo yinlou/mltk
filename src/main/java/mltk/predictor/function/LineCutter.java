@@ -12,7 +12,6 @@ import mltk.core.Instances;
 import mltk.core.NominalAttribute;
 import mltk.predictor.Learner;
 import mltk.util.Random;
-import mltk.util.ArrayUtils;
 import mltk.util.Element;
 import mltk.util.MathUtils;
 import mltk.util.OptimUtils;
@@ -256,7 +255,7 @@ public class LineCutter extends Learner {
 		for (Instance instance : instances) {
 			int idx = numerator.length - 1;
 			if (!instance.isMissing(func.getAttributeIndex())) {
-				idx = ArrayUtils.findInsertionPoint(func.splits, instance.getValue(func.getAttributeIndex()));
+				idx = func.getSegmentIndex(instance.getValue(func.getAttributeIndex()));
 			}
 			numerator[idx] += instance.getTarget() * instance.getWeight();
 			double t = Math.abs(instance.getTarget());

@@ -324,8 +324,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 		if (Double.isNaN(x)) {
 			return predictionOnMV;
 		} else {
-			int idx = ArrayUtils.findInsertionPoint(splits, x);
-			return predictions[idx];
+			return predictions[getSegmentIndex(x)];
 		}
 	}
 
@@ -334,6 +333,11 @@ public class Function1D implements Regressor, UnivariateFunction {
 		double[] splitsCopy = Arrays.copyOf(splits, splits.length);
 		double[] predictionsCopy = Arrays.copyOf(predictions, predictions.length);
 		return new Function1D(attIndex, splitsCopy, predictionsCopy, predictionOnMV);
+	}
+	
+	protected int getSegmentIndex(double x) {
+		// Assume x is not NaN
+		return ArrayUtils.findInsertionPoint(splits, x);
 	}
 
 }
