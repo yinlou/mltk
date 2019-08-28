@@ -335,6 +335,12 @@ public class Function1D implements Regressor, UnivariateFunction {
 		return new Function1D(attIndex, splitsCopy, predictionsCopy, predictionOnMV);
 	}
 	
+	/**
+	 * Returns the segment index given x.
+	 * 
+	 * @param x the search key.
+	 * @return the segment index given x.
+	 */
 	protected int getSegmentIndex(double x) {
 		// Assume x is not NaN
 		return ArrayUtils.findInsertionPoint(splits, x);
