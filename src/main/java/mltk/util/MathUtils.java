@@ -116,5 +116,17 @@ public class MathUtils {
 			return 0;
 		}
 	}
+	
+	/**
+	 * Performs division and returns default value when division by zero.
+	 * 
+	 * @param a the numerator.
+	 * @param b the denominator.
+	 * @param dv the default value.
+	 * @return a / b or default value when division by zero.
+	 */
+	public static double divide(double a, double b, double dv) {
+		return isZero(b) ? dv : a / b;
+	}
 
 }

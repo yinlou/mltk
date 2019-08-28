@@ -20,6 +20,7 @@ import mltk.core.processor.Discretizer;
 import mltk.predictor.function.CHistogram;
 import mltk.predictor.function.Histogram2D;
 import mltk.util.Element;
+import mltk.util.MathUtils;
 import mltk.util.tuple.IntPair;
 
 /**
@@ -60,10 +61,23 @@ public class FAST {
 
 		double[][][] resp;
 		double[][][] count;
+		double[][] respOnMV1;
+		double[][] countOnMV1;
+		double[][] respOnMV2;
+		double[][] countOnMV2;
+		double respOnMV12;
+		double countOnMV12;
+		
 
 		Table(int n, int m) {
 			resp = new double[n][m][4];
 			count = new double[n][m][4];
+			respOnMV1 = new double[m][2];
+			countOnMV1 = new double[m][2];
+			respOnMV2 = new double[n][2];
+			countOnMV2 = new double[n][2];
+			respOnMV12 = 0.0;
+			countOnMV12 = 0.0;
 		}
 	}
 
@@ -225,9 +239,14 @@ public class FAST {
 			double resp = instance.getTarget();
 			for (int j = 0; j < instances.getAttributes().size(); j++) {
 				if (used[j]) {
-					int idx = (int) instance.getValue(j);
-					cHist[j].sum[idx] += resp * instance.getWeight();
-					cHist[j].count[idx] += instance.getWeight();
+					if (!instance.isMissing(j)) {
+						int idx = (int) instance.getValue(j);
+						cHist[j].sum[idx] += resp * instance.getWeight();
+						cHist[j].count[idx] += instance.getWeight();
+					} else {
+						cHist[j].sumOnMV += resp * instance.getWeight();
+						cHist[j].countOnMV += instance.getWeight();
+					}
 				}
 			}
 			ySq += resp * resp * instance.getWeight();
@@ -246,10 +265,26 @@ public class FAST {
 
 	protected static void computeHistogram2D(Instances instances, int f1, int f2, Histogram2D hist2d) {
 		for (Instance instance : instances) {
-			int idx1 = (int) instance.getValue(f1);
-			int idx2 = (int) instance.getValue(f2);
-			hist2d.resp[idx1][idx2] += instance.getTarget() * instance.getWeight();
-			hist2d.count[idx1][idx2] += instance.getWeight();
+			double rSquared = instance.getTarget() * instance.getWeight();
+			double weight = instance.getWeight();
+			if (!instance.isMissing(f1) && !instance.isMissing(f2)) {
+				int idx1 = (int) instance.getValue(f1);
+				int idx2 = (int) instance.getValue(f2);
+				hist2d.resp[idx1][idx2] += rSquared;
+				hist2d.count[idx1][idx2] += weight;
+			} else if (instance.isMissing(f1) && !instance.isMissing(f2)) {
+				int idx2 = (int) instance.getValue(f2);
+				hist2d.respOnMV1[idx2] += rSquared;
+				hist2d.countOnMV1[idx2] += weight;
+			} else if (!instance.isMissing(f1) && instance.isMissing(f2)) {
+				int idx1 = (int) instance.getValue(f1);
+				hist2d.respOnMV2[idx1] += rSquared;
+				hist2d.countOnMV2[idx1] += weight;
+			} else {
+				hist2d.respOnMV12 += rSquared;
+				hist2d.countOnMV12 += weight;
+			}
+			
 		}
 	}
 
@@ -273,6 +308,31 @@ public class FAST {
 				fillTable(table, i, j, cHist1, cHist2);
 			}
 		}
+		
+		double respOnMV1 = 0;
+		double countOnMV1 = 0;
+		for (int j = 0; j < hist2d.respOnMV1.length; j++) {
+			respOnMV1 += hist2d.respOnMV1[j];
+			countOnMV1 += hist2d.countOnMV1[j];
+			table.respOnMV1[j][0] = respOnMV1;
+			table.respOnMV1[j][1] = cHist1.sumOnMV - respOnMV1;
+			table.countOnMV1[j][0] = countOnMV1;
+			table.countOnMV1[j][1] = cHist1.countOnMV - countOnMV1;
+		}
+		
+		double respOnMV2 = 0;
+		double countOnMV2 = 0;
+		for (int i = 0; i < hist2d.respOnMV2.length; i++) {
+			respOnMV2 += hist2d.respOnMV2[i];
+			countOnMV2 += hist2d.countOnMV2[i];
+			table.respOnMV2[i][0] = respOnMV2;
+			table.respOnMV2[i][1] = cHist2.sumOnMV - respOnMV2;
+			table.countOnMV2[i][0] = countOnMV2;
+			table.countOnMV2[i][1] = cHist2.countOnMV - countOnMV2;
+		}
+		
+		table.respOnMV12 = hist2d.respOnMV12;
+		table.countOnMV12 = hist2d.countOnMV12;
 	}
 
 	protected static void fillTable(Table table, int i, int j, CHistogram cHist1, CHistogram cHist2) {
@@ -296,10 +356,13 @@ public class FAST {
 		computeTable(hist2d, cHist[f1], cHist[f2], table);
 		double bestRSS = Double.POSITIVE_INFINITY;
 		double[] predInt = new double[4];
+		double[] predOnMV1 = new double[2];
+		double[] predOnMV2 = new double[2];
+		double predOnMV12 = MathUtils.divide(hist2d.respOnMV12, hist2d.countOnMV12, 0);
 		for (int v1 = 0; v1 < size1 - 1; v1++) {
 			for (int v2 = 0; v2 < size2 - 1; v2++) {
-				getPredictor(table, v1, v2, predInt);
-				double rss = getRSS(table, v1, v2, ySq, predInt);
+				getPredictor(table, v1, v2, predInt, predOnMV1, predOnMV2);
+				double rss = getRSS(table, v1, v2, ySq, predInt, predOnMV1, predOnMV2, predOnMV12);
 				if (rss < bestRSS) {
 					bestRSS = rss;
 				}
@@ -308,18 +371,31 @@ public class FAST {
 		pair.weight = bestRSS;
 	}
 
-	protected static void getPredictor(Table table, int v1, int v2, double[] pred) {
+	protected static void getPredictor(Table table, int v1, int v2,
+			double[] pred, double[] predOnMV1, double[] predOnMV2) {
 		double[] count = table.count[v1][v2];
 		double[] resp = table.resp[v1][v2];
 		for (int i = 0; i < pred.length; i++) {
-			pred[i] = count[i] == 0 ? 0 : resp[i] / count[i];
+			pred[i] = MathUtils.divide(resp[i], count[i], 0);
+		}
+		for (int i = 0; i < predOnMV1.length; i++) {
+			predOnMV1[i] = MathUtils.divide(table.respOnMV1[v2][i], table.countOnMV1[v2][i], 0);
+		}
+		for (int i = 0; i < predOnMV2.length; i++) {
+			predOnMV2[i] = MathUtils. divide(table.respOnMV2[v1][i], table.countOnMV2[v1][i], 0);
 		}
 	}
 
-	protected static double getRSS(Table table, int v1, int v2, double ySq, double[] pred) {
+	protected static double getRSS(Table table, int v1, int v2, double ySq,
+			double[] pred, double[] predOnMV1, double[] predOnMV2, double predOnMV12) {
 		double[] count = table.count[v1][v2];
 		double[] resp = table.resp[v1][v2];
+		double[] respOnMV1 = table.respOnMV1[v2];
+		double[] countOnMV1 = table.countOnMV1[v2];
+		double[] respOnMV2 = table.respOnMV2[v1];
+		double[] countOnMV2 = table.countOnMV2[v1];
 		double rss = ySq;
+		// Compute main area
 		double t = 0;
 		for (int i = 0; i < pred.length; i++) {
 			t += pred[i] * pred[i] * count[i];
@@ -328,6 +404,28 @@ public class FAST {
 		t = 0;
 		for (int i = 0; i < pred.length; i++) {
 			t += pred[i] * resp[i];
+		}
+		rss -= 2 * t;
+		// Compute on mv1
+		t = 0;
+		for (int i = 0; i < predOnMV1.length; i++) {
+			t += predOnMV1[i] * predOnMV1[i] * countOnMV1[i];
+		}
+		rss += t;
+		t = 0;
+		for (int i = 0; i < predOnMV1.length; i++) {
+			t += predOnMV1[i] * respOnMV1[i];
+		}
+		rss -= 2 * t;
+		// Compute on mv2
+		t = 0;
+		for (int i = 0; i < predOnMV2.length; i++) {
+			t += predOnMV2[i] * predOnMV2[i] * countOnMV2[i];
+		}
+		rss += t;
+		t = 0;
+		for (int i = 0; i < predOnMV2.length; i++) {
+			t += predOnMV2[i] * respOnMV2[i];
 		}
 		rss -= 2 * t;
 		return rss;

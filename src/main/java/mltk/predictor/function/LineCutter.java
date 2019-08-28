@@ -262,10 +262,9 @@ public class LineCutter extends Learner {
 			denominator[idx] += t * (1 - t) * instance.getWeight();
 		}
 		for (int i = 0; i < predictions.length; i++) {
-			predictions[i] = MathUtils.isZero(denominator[i]) ? 0 : numerator[i] / denominator[i];
+			predictions[i] = MathUtils.divide(numerator[i], denominator[i], 0);
 		}
-		func.predictionOnMV = MathUtils.isZero(denominator[denominator.length - 1]) ? 0 :
-			numerator[numerator.length - 1] / denominator[denominator.length - 1];
+		func.predictionOnMV = MathUtils.divide(numerator[numerator.length - 1], denominator[denominator.length - 1], 0);
 	}
 
 	protected static void split(List<Double> uniqueValues, List<DoublePair> stats, Interval parent) {
