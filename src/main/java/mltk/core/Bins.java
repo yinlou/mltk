@@ -1,7 +1,5 @@
 package mltk.core;
 
-import java.util.Arrays;
-
 import mltk.util.ArrayUtils;
 
 /**
