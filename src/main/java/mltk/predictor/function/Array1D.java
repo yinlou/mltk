@@ -126,8 +126,7 @@ public class Array1D implements Regressor, UnivariateFunction {
 		predictionOnMV = Double.parseDouble(data[1]);
 
 		in.readLine();
-		line = in.readLine();
-		predictions = ArrayUtils.parseDoubleArray(line);
+		predictions = ArrayUtils.parseDoubleArray(in.readLine());
 	}
 
 	@Override
@@ -143,8 +142,7 @@ public class Array1D implements Regressor, UnivariateFunction {
 	public double regress(Instance instance) {
 		double v = instance.getValue(attIndex);
 		if (!Double.isNaN(v)) {
-			int idx = (int) v;
-			return predictions[idx];
+			return predictions[(int) v];
 		} else {
 			return predictionOnMV;
 		}
