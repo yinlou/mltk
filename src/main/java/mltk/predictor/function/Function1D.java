@@ -333,11 +333,7 @@ public class Function1D implements Regressor, UnivariateFunction {
 	 * @return the segment index given a real value.
 	 */
 	public int getSegmentIndex(double x) {
-		int idx = Arrays.binarySearch(splits, x);
-		if (idx < 0) {
-			idx = -idx - 1;
-		}
-		return idx;
+		return ArrayUtils.findInsertionPoint(splits, x);
 	}
 
 	@Override

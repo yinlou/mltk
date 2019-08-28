@@ -231,5 +231,20 @@ public class ArrayUtils {
 			return (ary[mid - 1] + ary[mid]) / 2;
 		}
 	}
+	
+	/**
+	 * Returns the index of the search key if it is contained in the array, otherwise returns the insertion point.
+	 * 
+	 * @param a the array.
+	 * @param key the search key.
+	 * @return the index of the search key if it is contained in the array, otherwise returns the insertion point.
+	 */
+	public static int findInsertionPoint(double[] a, double key) {
+		int idx = Arrays.binarySearch(a, key);
+		if (idx < 0) {
+			idx = -idx - 1;
+		}
+		return idx;
+	}
 
 }

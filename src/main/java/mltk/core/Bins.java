@@ -2,6 +2,8 @@ package mltk.core;
 
 import java.util.Arrays;
 
+import mltk.util.ArrayUtils;
+
 /**
  * Class for bins. Each bin is defined as its upper bound and median.
  * 
@@ -59,11 +61,7 @@ public class Bins {
 		} else if (value >= boundaries[boundaries.length - 1]) {
 			return boundaries.length - 1;
 		} else {
-			int idx = Arrays.binarySearch(boundaries, value);
-			if (idx < 0) {
-				idx = -idx - 1;
-			}
-			return idx;
+			return ArrayUtils.findInsertionPoint(boundaries, value);
 		}
 	}
 
