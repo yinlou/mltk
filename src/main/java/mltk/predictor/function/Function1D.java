@@ -314,35 +314,9 @@ public class Function1D implements Regressor, UnivariateFunction {
 		out.println(Arrays.toString(predictions));
 	}
 
-	/**
-	 * Returns the segment index given an instance.
-	 * 
-	 * @param instance the instance.
-	 * @return the segment index given an instance.
-	 */
-	public int getSegmentIndex(Instance instance) {
-		// TODO missing value is currently not supported
-		double key = instance.getValue(attIndex);
-		return getSegmentIndex(key);
-	}
-
-	/**
-	 * Returns the segment index given a real value.
-	 * 
-	 * @param x the real value.
-	 * @return the segment index given a real value.
-	 */
-	public int getSegmentIndex(double x) {
-		return ArrayUtils.findInsertionPoint(splits, x);
-	}
-
 	@Override
 	public double regress(Instance instance) {
-		if (instance.isMissing(attIndex)) {
-			return predictionOnMV;
-		} else {
-			return predictions[getSegmentIndex(instance)];
-		}
+		return evaluate(instance.getValue(attIndex));
 	}
 
 	@Override
@@ -350,7 +324,8 @@ public class Function1D implements Regressor, UnivariateFunction {
 		if (Double.isNaN(x)) {
 			return predictionOnMV;
 		} else {
-			return predictions[getSegmentIndex(x)];
+			int idx = ArrayUtils.findInsertionPoint(splits, x);
+			return predictions[idx];
 		}
 	}
 

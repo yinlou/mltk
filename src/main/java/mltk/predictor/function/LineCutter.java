@@ -12,6 +12,7 @@ import mltk.core.Instances;
 import mltk.core.NominalAttribute;
 import mltk.predictor.Learner;
 import mltk.util.Random;
+import mltk.util.ArrayUtils;
 import mltk.util.Element;
 import mltk.util.MathUtils;
 import mltk.util.OptimUtils;
@@ -255,7 +256,7 @@ public class LineCutter extends Learner {
 		for (Instance instance : instances) {
 			int idx = numerator.length - 1;
 			if (!instance.isMissing(func.getAttributeIndex())) {
-				idx = func.getSegmentIndex(instance);
+				idx = ArrayUtils.findInsertionPoint(func.splits, instance.getValue(func.getAttributeIndex()));
 			}
 			numerator[idx] += instance.getTarget() * instance.getWeight();
 			double t = Math.abs(instance.getTarget());
@@ -264,9 +265,8 @@ public class LineCutter extends Learner {
 		for (int i = 0; i < predictions.length; i++) {
 			predictions[i] = MathUtils.isZero(denominator[i]) ? 0 : numerator[i] / denominator[i];
 		}
-		if (!MathUtils.isZero(denominator[denominator.length - 1])) {
-			func.predictionOnMV = numerator[numerator.length - 1] / denominator[denominator.length - 1];
-		}
+		func.predictionOnMV = MathUtils.isZero(denominator[denominator.length - 1]) ? 0 :
+			numerator[numerator.length - 1] / denominator[denominator.length - 1];
 	}
 
 	protected static void split(List<Double> uniqueValues, List<DoublePair> stats, Interval parent) {
