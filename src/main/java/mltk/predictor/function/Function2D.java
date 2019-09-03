@@ -33,18 +33,34 @@ public class Function2D implements Regressor, BivariateFunction {
 	 * Second attribute index.
 	 */
 	protected int attIndex2;
-
-	/**
-	 * Predictions.
-	 */
-	protected double[][] predictions;
-
+	
 	/**
 	 * Last value is always Double.POSITIVE_INFINITY. e.g. [3, 5, +INF] defines three segments: (-INF, 3], (3, 5], (5,
 	 * +INF)
 	 */
 	protected double[] splits1;
 	protected double[] splits2;
+
+	/**
+	 * Predictions.
+	 */
+	protected double[][] predictions;
+	
+	/**
+	 * Predictions on missing value for attribute 1.
+	 */
+	protected double[] predictionsOnMV1;
+	
+	/**
+	 * Predictions on missing value for attribute 2.
+	 */
+	protected double[] predictionsOnMV2;
+	
+	/**
+	 * Prediction when both attribute 1 and 2 are missing.
+	 */
+	protected double predictionOnMV12;
+	
 
 	/**
 	 * Constructor.
@@ -63,11 +79,32 @@ public class Function2D implements Regressor, BivariateFunction {
 	 * @param predictions the prediction matrix.
 	 */
 	public Function2D(int attIndex1, int attIndex2, double[] splits1, double[] splits2, double[][] predictions) {
+		this(attIndex1, attIndex2, splits1, splits2, predictions, new double[splits2.length], new double[splits1.length], 0.0);
+	}
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param attIndex1 the 1st attribute index.
+	 * @param attIndex2 the 2nd attribute index.
+	 * @param splits1 the split array for the 1st attribute.
+	 * @param splits2 the split array for the 2nd attribute.
+	 * @param predictions the prediction matrix.
+	 * @param predictionsOnMV1 the prediction array when the 1st attribute is missing.
+	 * @param predictionsOnMV2 the prediction array when the 2nd attribute is missing.
+	 * @param predictionOnMV12 the prediction when both attributes are missing.
+	 */
+	public Function2D(int attIndex1, int attIndex2,
+			double[] splits1, double[] splits2, double[][] predictions,
+			double[] predictionsOnMV1, double[] predictionsOnMV2, double predictionOnMV12) {
 		this.attIndex1 = attIndex1;
 		this.attIndex2 = attIndex2;
 		this.predictions = predictions;
 		this.splits1 = splits1;
 		this.splits2 = splits2;
+		this.predictionsOnMV1 = predictionsOnMV1;
+		this.predictionsOnMV2 = predictionsOnMV2;
+		this.predictionOnMV12 = predictionOnMV12;
 	}
 
 	/**
@@ -121,6 +158,78 @@ public class Function2D implements Regressor, BivariateFunction {
 		this.attIndex1 = attIndex1;
 		this.attIndex2 = attIndex2;
 	}
+	
+	/**
+	 * Returns the internal prediction matrix.
+	 * 
+	 * @return the internal prediction matrix.
+	 */
+	public double[][] getPredictions() {
+		return predictions;
+	}
+	
+	/**
+	 * Sets the prediction matrix.
+	 * 
+	 * @param predictions the new prediction matrix.
+	 */
+	public void setPredictions(double[][] predictions) {
+		this.predictions = predictions;
+	}
+	
+	/**
+	 * Returns the prediction array when the 1st attribute is missing.
+	 * 
+	 * @return the prediction array when the 1st attribute is missing.
+	 */
+	public double[] getPredictionsOnMV1() {
+		return predictionsOnMV1;
+	}
+	
+	/**
+	 * Sets the prediction array when the 1st attribute is missing.
+	 * 
+	 * @param predictionsOnMV1 the new prediction array.
+	 */
+	public void setPredictionsOnMV1(double[] predictionsOnMV1) {
+		this.predictionsOnMV1 = predictionsOnMV1;
+	}
+	
+	/**
+	 * Returns the prediction array when the 2nd attribute is missing.
+	 * 
+	 * @return the prediction array when the 2nd attribute is missing.
+	 */
+	public double[] getPredictionsOnMV2() {
+		return predictionsOnMV2;
+	}
+	
+	/**
+	 * Sets the prediction array when the 2nd attribute is missing.
+	 * 
+	 * @param predictionsOnMV2 the new prediction array.
+	 */
+	public void setPredictionsOnMV2(double[] predictionsOnMV2) {
+		this.predictionsOnMV2 = predictionsOnMV2;
+	}
+	
+	/**
+	 * Returns the prediction when both attributes are missing.
+	 * 
+	 * @return the prediction when both attributes are missing.
+	 */
+	public double getPredictionOnMV12() {
+		return predictionOnMV12;
+	}
+	
+	/**
+	 * Sets the prediction when both attributes are missing.
+	 * 
+	 * @param predictionOnMV12 the new prediction.
+	 */
+	public void setPredictionOnMV12(double predictionOnMV12) {
+		this.predictionOnMV12 = predictionOnMV12;
+	}
 
 	/**
 	 * Multiplies this function with a constant.
@@ -132,6 +241,9 @@ public class Function2D implements Regressor, BivariateFunction {
 		for (double[] preds : predictions) {
 			VectorUtils.multiply(preds, c);
 		}
+		VectorUtils.multiply(predictionsOnMV1, c);
+		VectorUtils.multiply(predictionsOnMV2, c);
+		predictionOnMV12 *= c;
 		return this;
 	}
 
@@ -145,6 +257,9 @@ public class Function2D implements Regressor, BivariateFunction {
 		for (double[] preds : predictions) {
 			VectorUtils.divide(preds, c);
 		}
+		VectorUtils.divide(predictionsOnMV1, c);
+		VectorUtils.divide(predictionsOnMV2, c);
+		predictionOnMV12 /= c;
 		return this;
 	}
 
@@ -158,6 +273,9 @@ public class Function2D implements Regressor, BivariateFunction {
 		for (double[] preds : predictions) {
 			VectorUtils.add(preds, c);
 		}
+		VectorUtils.add(predictionsOnMV1, c);
+		VectorUtils.add(predictionsOnMV2, c);
+		predictionOnMV12 += c;
 		return this;
 	}
 
@@ -171,6 +289,9 @@ public class Function2D implements Regressor, BivariateFunction {
 		for (double[] preds : predictions) {
 			VectorUtils.subtract(preds, c);
 		}
+		VectorUtils.subtract(predictionsOnMV1, c);
+		VectorUtils.subtract(predictionsOnMV2, c);
+		predictionOnMV12 -= c;
 		return this;
 	}
 
@@ -208,9 +329,9 @@ public class Function2D implements Regressor, BivariateFunction {
 		double[] s2 = splits2;
 		int[] insertionPoints2 = new int[func.splits2.length - 1];
 		int newElements2 = 0;
-		for (int i = 0; i < insertionPoints2.length; i++) {
-			insertionPoints2[i] = Arrays.binarySearch(splits2, func.splits2[i]);
-			if (insertionPoints2[i] < 0) {
+		for (int j = 0; j < insertionPoints2.length; j++) {
+			insertionPoints2[j] = Arrays.binarySearch(splits2, func.splits2[j]);
+			if (insertionPoints2[j] < 0) {
 				newElements2++;
 			}
 		}
@@ -218,9 +339,9 @@ public class Function2D implements Regressor, BivariateFunction {
 			double[] newSplits2 = new double[splits2.length + newElements2];
 			System.arraycopy(splits2, 0, newSplits2, 0, splits2.length);
 			int k = splits2.length;
-			for (int i = 0; i < insertionPoints2.length; i++) {
-				if (insertionPoints2[i] < 0) {
-					newSplits2[k++] = func.splits2[i];
+			for (int j = 0; j < insertionPoints2.length; j++) {
+				if (insertionPoints2[j] < 0) {
+					newSplits2[k++] = func.splits2[j];
 				}
 			}
 			Arrays.sort(newSplits2);
@@ -229,21 +350,36 @@ public class Function2D implements Regressor, BivariateFunction {
 
 		if (newElements1 == 0 && newElements2 == 0) {
 			for (int i = 0; i < splits1.length; i++) {
+				predictionsOnMV2[i] += func.evaluate(splits1[i], Double.NaN);
+				
+				double[] ps = predictions[i];
 				for (int j = 0; j < splits2.length; j++) {
-					predictions[i][j] += func.evaluate(splits1[i], splits2[j]);
+					predictionsOnMV1[j] += func.evaluate(Double.NaN, splits2[j]);
+					
+					ps[j] += func.evaluate(splits1[i], splits2[j]);
 				}
 			}
+			predictionOnMV12 += func.predictionOnMV12;
 		} else {
 			double[][] newPredictions = new double[s1.length][s2.length];
+			predictionsOnMV1 = new double[s2.length];
+			predictionsOnMV2 = new double[s1.length];
 			for (int i = 0; i < s1.length; i++) {
+				predictionsOnMV2[i] = this.evaluate(s1[i], Double.NaN) + func.evaluate(s1[i], Double.NaN);
+				
+				double[] ps = newPredictions[i];
 				for (int j = 0; j < s2.length; j++) {
-					newPredictions[i][j] = this.evaluate(s1[i], s2[j]) + func.evaluate(s1[i], s2[j]);
+					predictionsOnMV1[j] = this.evaluate(Double.NaN, s2[j]) + func.evaluate(Double.NaN, s2[j]);
+					
+					ps[j] = this.evaluate(s1[i], s2[j]) + func.evaluate(s1[i], s2[j]);
 				}
 			}
 			splits1 = s1;
 			splits2 = s2;
 			predictions = newPredictions;
+			predictionOnMV12 = this.predictionOnMV12 + func.predictionOnMV12;
 		}
+		
 		return this;
 	}
 
@@ -269,6 +405,15 @@ public class Function2D implements Regressor, BivariateFunction {
 		for (int i = 0; i < predictions.length; i++) {
 			predictions[i] = ArrayUtils.parseDoubleArray(in.readLine());
 		}
+		
+		in.readLine();
+		predictionsOnMV1 = ArrayUtils.parseDoubleArray(in.readLine());
+		
+		in.readLine();
+		predictionsOnMV2 = ArrayUtils.parseDoubleArray(in.readLine());
+		
+		data = in.readLine().split(": ");
+		predictionOnMV12 = Double.parseDouble(data[1]);
 	}
 
 	@Override
@@ -284,49 +429,32 @@ public class Function2D implements Regressor, BivariateFunction {
 		for (int i = 0; i < predictions.length; i++) {
 			out.println(Arrays.toString(predictions[i]));
 		}
-	}
-
-	/**
-	 * Returns the segment indices pair given (x1, x2).
-	 * 
-	 * @param x1 the 1st argument.
-	 * @param x2 the 2nd argument.
-	 * @return segment indices pair at (x1, x2).
-	 */
-	public IntPair getSegmentIndex(double x1, double x2) {
-		int idx1 = Arrays.binarySearch(splits1, x1);
-		if (idx1 < 0) {
-			idx1 = -idx1 - 1;
-		}
-		int idx2 = Arrays.binarySearch(splits2, x2);
-		if (idx2 < 0) {
-			idx2 = -idx2 - 1;
-		}
-		return new IntPair(idx1, idx2);
-	}
-
-	/**
-	 * Returns the segment indices pair.
-	 * 
-	 * @param instance the instance.
-	 * @return the segment indices pair.
-	 */
-	public IntPair getSegmentIndex(Instance instance) {
-		int key1 = (int) instance.getValue(attIndex1);
-		int key2 = (int) instance.getValue(attIndex2);
-		return getSegmentIndex(key1, key2);
+		out.println("PredictionsOnMV1: " + predictionsOnMV1.length);
+		out.println(Arrays.toString(predictionsOnMV1));
+		out.println("PredictionsOnMV2: " + predictionsOnMV2.length);
+		out.println(Arrays.toString(predictionsOnMV2));
+		out.println("PredictionOnMV12: " + predictionOnMV12);
 	}
 
 	@Override
 	public double regress(Instance instance) {
-		IntPair idx = getSegmentIndex(instance);
-		return predictions[idx.v1][idx.v2];
+		return evaluate(instance.getValue(attIndex1), instance.getValue(attIndex2));
 	}
 
 	@Override
 	public double evaluate(double x, double y) {
-		IntPair idx = getSegmentIndex(x, y);
-		return predictions[idx.v1][idx.v2];
+		if (!Double.isNaN(x) && !Double.isNaN(y)) {
+			IntPair idx = getSegmentIndex(x, y);
+			return predictions[idx.v1][idx.v2];
+		} else if (Double.isNaN(x) && !Double.isNaN(y)) {
+			int idx = ArrayUtils.findInsertionPoint(splits2, y);
+			return predictionsOnMV1[idx];
+		} else if (!Double.isNaN(x) && Double.isNaN(y)) {
+			int idx = ArrayUtils.findInsertionPoint(splits1, x);
+			return predictionsOnMV2[idx];
+		} else {
+			return predictionOnMV12;
+		}
 	}
 
 	@Override
@@ -337,7 +465,23 @@ public class Function2D implements Regressor, BivariateFunction {
 		for (int i = 0; i < predictionsCopy.length; i++) {
 			predictionsCopy[i] = Arrays.copyOf(predictions[i], predictions[i].length);
 		}
-		return new Function2D(attIndex1, attIndex2, splits1Copy, splits2Copy, predictionsCopy);
+		double[] predictionsOnMV1Copy = Arrays.copyOf(predictionsOnMV1, predictionsOnMV1.length);
+		double[] predictionsOnMV2Copy = Arrays.copyOf(predictionsOnMV2, predictionsOnMV2.length);
+		return new Function2D(attIndex1, attIndex2, splits1Copy, splits2Copy, predictionsCopy,
+				predictionsOnMV1Copy, predictionsOnMV2Copy, predictionOnMV12);
+	}
+	
+	/**
+	 * Returns the segment indices pair given (x1, x2). Assume x1 and x2 are not missing values.
+	 * 
+	 * @param x1 the 1st search key.
+	 * @param x2 the 2nd search key.
+	 * @return segment indices pair at (x1, x2).
+	 */
+	protected IntPair getSegmentIndex(double x1, double x2) {
+		int idx1 = ArrayUtils.findInsertionPoint(splits1, x1);
+		int idx2 = ArrayUtils.findInsertionPoint(splits2, x2);
+		return new IntPair(idx1, idx2);
 	}
 
 }

@@ -1,5 +1,6 @@
 package mltk.predictor.function;
 
+import mltk.core.Instance;
 import mltk.predictor.BaggedEnsemble;
 import mltk.predictor.BoostedEnsemble;
 import mltk.predictor.Predictor;
@@ -84,6 +85,7 @@ public class CompressionUtils {
 	 * @return a single compressed 2D functions.
 	 */
 	public static Function2D compress(int attIndex1, int attIndex2, BaggedEnsemble baggedEnsemble) {
+		// TODO check consistency problem when missing values are present.
 		Function2D function = Function2D.getConstantFunction(attIndex1, attIndex2, 0);
 		for (int i = 0; i < baggedEnsemble.size(); i++) {
 			Predictor predictor = baggedEnsemble.get(i);
@@ -108,6 +110,7 @@ public class CompressionUtils {
 	 * @return a single compressed 2D function.
 	 */
 	public static Function2D compress(int attIndex1, int attIndex2, BoostedEnsemble boostedEnsemble) {
+		// TODO check consistency problem when missing values are present.
 		Function2D function = Function2D.getConstantFunction(attIndex1, attIndex2, 0);
 		for (int i = 0; i < boostedEnsemble.size(); i++) {
 			Predictor predictor = boostedEnsemble.get(i);
@@ -123,6 +126,41 @@ public class CompressionUtils {
 		}
 		return function;
 	}
+	
+	/**
+	 * Compresses and converts a boosted ensemble to a single 2D lookup table.
+	 * 
+	 * @param attIndex1 the 1st attribute index.
+	 * @param attIndex2 the 2nd attribute index.
+	 * @param boostedEnsemble the boosted ensemble.
+	 * @return a 2D lookup table.
+	 */
+	public static Array2D compress(int attIndex1, int attIndex2, int n1, int n2, BoostedEnsemble boostedEnsemble) {
+		double[][] predictions = new double[n1][n2];
+		double[] predictionsOnMV1 = new double[n2];
+		double[] predictionsOnMV2 = new double[n1];
+		double[] vector = new double[Math.max(attIndex1, attIndex2) + 1];
+		Instance instance = new Instance(vector);
+		for (int i = 0; i < n1; i++) {
+			vector[attIndex1] = i;
+			vector[attIndex2] = Double.NaN;
+			predictionsOnMV2[i] = boostedEnsemble.regress(instance);
+			
+			double[] preds = predictions[i];
+			for (int j = 0; j < n2; j++) {
+				vector[attIndex1] = Double.NaN;
+				vector[attIndex2] = j;
+				predictionsOnMV1[j] = boostedEnsemble.regress(instance);
+				
+				vector[attIndex1] = i;
+				preds[j] = boostedEnsemble.regress(instance);
+			}
+		}
+		vector[attIndex1] = Double.NaN;
+		vector[attIndex2] = Double.NaN;
+		return new Array2D(attIndex1, attIndex2, predictions,
+				predictionsOnMV1, predictionsOnMV2, boostedEnsemble.regress(instance));
+	}
 
 	/**
 	 * Converts a 2D function to 2D lookup table.
@@ -134,14 +172,21 @@ public class CompressionUtils {
 	 */
 	public static Array2D convert(int n1, int n2, Function2D function) {
 		double[][] predictions = new double[n1][n2];
+		double[] predictionsOnMV1 = new double[n2];
+		double[] predictionsOnMV2 = new double[n1];
 		for (int i = 0; i < n1; i++) {
+			predictionsOnMV2[i] = function.evaluate(i, Double.NaN);
+			
 			double[] preds = predictions[i];
 			for (int j = 0; j < n2; j++) {
+				predictionsOnMV1[j] = function.evaluate(Double.NaN, j);
+				
 				preds[j] = function.evaluate(i, j);
 			}
 		}
 		IntPair attIndices = function.getAttributeIndices();
-		return new Array2D(attIndices.v1, attIndices.v2, predictions);
+		return new Array2D(attIndices.v1, attIndices.v2, predictions,
+				predictionsOnMV1, predictionsOnMV2, function.predictionOnMV12);
 	}
 
 }

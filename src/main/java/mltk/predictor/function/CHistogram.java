@@ -10,6 +10,8 @@ public class CHistogram {
 
 	public double[] sum;
 	public double[] count;
+	public double sumOnMV;
+	public double countOnMV;
 
 	/**
 	 * Constructor.
@@ -19,6 +21,8 @@ public class CHistogram {
 	public CHistogram(int n) {
 		sum = new double[n];
 		count = new double[n];
+		sumOnMV = 0.0;
+		countOnMV = 0.0;
 	}
 
 	/**
@@ -28,6 +32,15 @@ public class CHistogram {
 	 */
 	public int size() {
 		return sum.length;
+	}
+	
+	/**
+	 * Returns {@code true} if missing values are present.
+	 * 
+	 * @return {@code true} if missing values are present.
+	 */
+	public boolean hasMissingValue() {
+		return countOnMV > 0;
 	}
 
 }

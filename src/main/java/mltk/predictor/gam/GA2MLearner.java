@@ -22,6 +22,7 @@ import mltk.predictor.BoostedEnsemble;
 import mltk.predictor.HoldoutValidatedLearner;
 import mltk.predictor.Regressor;
 import mltk.predictor.evaluation.ConvergenceTester;
+import mltk.predictor.evaluation.Evaluator;
 import mltk.predictor.evaluation.Metric;
 import mltk.predictor.evaluation.MetricFactory;
 import mltk.predictor.evaluation.SimpleMetric;
@@ -383,6 +384,7 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 		// Search the best model on validation set
 		int idx = ct.getBestIndex();
+		System.out.println("Best metric on valid: " + ct.getBestMetricValue());
 
 		// Remove trees
 		int n = idx / terms.size();
@@ -401,13 +403,21 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		for (int i = 0; i < target.length; i++) {
 			trainSet.get(i).setTarget(target[i]);
 		}
+		
+		boolean[] hasMissingValue = new boolean[trainSet.dimension()];
+		for (Instance instance : trainSet) {
+			for (int j = 0; j < hasMissingValue.length; j++) {
+				if (instance.isMissing(j)) {
+					hasMissingValue[j] = true;
+				}
+			}
+		}
 
 		// Compress model
 		List<Attribute> attributes = trainSet.getAttributes();
 		for (int i = 0; i < regressors.size(); i++) {
 			BoostedEnsemble boostedEnsemble = regressors.get(i);
 			IntPair term = terms.get(i);
-			Function2D function = CompressionUtils.compress(term.v1, term.v2, boostedEnsemble);
 			Attribute f1 = attributes.get(term.v1);
 			Attribute f2 = attributes.get(term.v2);
 			int n1 = -1;
@@ -419,28 +429,25 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 			int n2 = -1;
 			if (f2.getType() == Type.BINNED) {
 				n2 = ((BinnedAttribute) f2).getNumBins();
-			} else if (f1.getType() == Type.NOMINAL) {
+			} else if (f2.getType() == Type.NOMINAL) {
 				n2 = ((NominalAttribute) f2).getCardinality();
 			}
-			Regressor newRegressor = function;
-			if (n1 > 0 && n2 > 0) {
-				newRegressor = CompressionUtils.convert(n1, n2, function);
-			}
+			Array2D newRegressor = CompressionUtils.compress(term.v1, term.v2, n1, n2, boostedEnsemble);
 			if (indices[i] < 0) {
 				gam.add(new int[] { term.v1, term.v2 }, newRegressor);
 			} else {
 				Regressor regressor = gam.regressors.get(indices[i]);
-				if (regressor instanceof Function2D) {
-					Function2D func = (Function2D) regressor;
-					func.add(function);
-				} else if (regressor instanceof Array2D) {
+				if (regressor instanceof Array2D) {
 					Array2D ary = (Array2D) regressor;
-					ary.add((Array2D) newRegressor);
+					ary.add(newRegressor);
 				} else {
 					throw new RuntimeException("Failed to add new regressor");
 				}
 			}
 		}
+		
+		double measure = Evaluator.evalAreaUnderROC(gam, validSet);
+		System.out.println("Evaluator After compression: " + measure);
 	}
 
 	/**
@@ -529,7 +536,6 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		for (int i = 0; i < regressors.size(); i++) {
 			BoostedEnsemble boostedEnsemble = regressors.get(i);
 			IntPair term = terms.get(i);
-			Function2D function = CompressionUtils.compress(term.v1, term.v2, boostedEnsemble);
 			Attribute f1 = attributes.get(term.v1);
 			Attribute f2 = attributes.get(term.v2);
 			int n1 = -1;
@@ -541,23 +547,17 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 			int n2 = -1;
 			if (f2.getType() == Type.BINNED) {
 				n2 = ((BinnedAttribute) f2).getNumBins();
-			} else if (f1.getType() == Type.NOMINAL) {
+			} else if (f2.getType() == Type.NOMINAL) {
 				n2 = ((NominalAttribute) f2).getCardinality();
 			}
-			Regressor newRegressor = function;
-			if (n1 > 0 && n2 > 0) {
-				newRegressor = CompressionUtils.convert(n1, n2, function);
-			}
+			Array2D newRegressor = CompressionUtils.compress(term.v1, term.v2, n1, n2, boostedEnsemble);
 			if (indices[i] < 0) {
 				gam.add(new int[] { term.v1, term.v2 }, newRegressor);
 			} else {
 				Regressor regressor = gam.regressors.get(indices[i]);
-				if (regressor instanceof Function2D) {
-					Function2D func = (Function2D) regressor;
-					func.add(function);
-				} else if (regressor instanceof Array2D) {
+				if (regressor instanceof Array2D) {
 					Array2D ary = (Array2D) regressor;
-					ary.add((Array2D) newRegressor);
+					ary.add(newRegressor);
 				} else {
 					throw new RuntimeException("Failed to add new regressor");
 				}
@@ -682,7 +682,6 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		for (int i = 0; i < regressors.size(); i++) {
 			BoostedEnsemble boostedEnsemble = regressors.get(i);
 			IntPair term = terms.get(i);
-			Function2D function = CompressionUtils.compress(term.v1, term.v2, boostedEnsemble);
 			Attribute f1 = attributes.get(term.v1);
 			Attribute f2 = attributes.get(term.v2);
 			int n1 = -1;
@@ -694,23 +693,17 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 			int n2 = -1;
 			if (f2.getType() == Type.BINNED) {
 				n2 = ((BinnedAttribute) f2).getNumBins();
-			} else if (f1.getType() == Type.NOMINAL) {
+			} else if (f2.getType() == Type.NOMINAL) {
 				n2 = ((NominalAttribute) f2).getCardinality();
 			}
-			Regressor newRegressor = function;
-			if (n1 > 0 && n2 > 0) {
-				newRegressor = CompressionUtils.convert(n1, n2, function);
-			}
+			Array2D newRegressor = CompressionUtils.compress(term.v1, term.v2, n1, n2, boostedEnsemble);
 			if (indices[i] < 0) {
 				gam.add(new int[] { term.v1, term.v2 }, newRegressor);
 			} else {
 				Regressor regressor = gam.regressors.get(indices[i]);
-				if (regressor instanceof Function2D) {
-					Function2D func = (Function2D) regressor;
-					func.add(function);
-				} else if (regressor instanceof Array2D) {
+				if (regressor instanceof Array2D) {
 					Array2D ary = (Array2D) regressor;
-					ary.add((Array2D) newRegressor);
+					ary.add(newRegressor);
 				} else {
 					throw new RuntimeException("Failed to add new regressor");
 				}
@@ -802,7 +795,6 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		for (int i = 0; i < regressors.size(); i++) {
 			BoostedEnsemble boostedEnsemble = regressors.get(i);
 			IntPair term = terms.get(i);
-			Function2D function = CompressionUtils.compress(term.v1, term.v2, boostedEnsemble);
 			Attribute f1 = attributes.get(term.v1);
 			Attribute f2 = attributes.get(term.v2);
 			int n1 = -1;
@@ -814,23 +806,17 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 			int n2 = -1;
 			if (f2.getType() == Type.BINNED) {
 				n2 = ((BinnedAttribute) f2).getNumBins();
-			} else if (f1.getType() == Type.NOMINAL) {
+			} else if (f2.getType() == Type.NOMINAL) {
 				n2 = ((NominalAttribute) f2).getCardinality();
 			}
-			Regressor newRegressor = function;
-			if (n1 > 0 && n2 > 0) {
-				newRegressor = CompressionUtils.convert(n1, n2, function);
-			}
+			Array2D newRegressor = CompressionUtils.compress(term.v1, term.v2, n1, n2, boostedEnsemble);
 			if (indices[i] < 0) {
 				gam.add(new int[] { term.v1, term.v2 }, newRegressor);
 			} else {
 				Regressor regressor = gam.regressors.get(indices[i]);
-				if (regressor instanceof Function2D) {
-					Function2D func = (Function2D) regressor;
-					func.add(function);
-				} else if (regressor instanceof Array2D) {
+				if (regressor instanceof Array2D) {
 					Array2D ary = (Array2D) regressor;
-					ary.add((Array2D) newRegressor);
+					ary.add(newRegressor);
 				} else {
 					throw new RuntimeException("Failed to add new regressor");
 				}
