@@ -22,7 +22,6 @@ import mltk.predictor.BoostedEnsemble;
 import mltk.predictor.HoldoutValidatedLearner;
 import mltk.predictor.Regressor;
 import mltk.predictor.evaluation.ConvergenceTester;
-import mltk.predictor.evaluation.Evaluator;
 import mltk.predictor.evaluation.Metric;
 import mltk.predictor.evaluation.MetricFactory;
 import mltk.predictor.evaluation.SimpleMetric;
@@ -384,7 +383,6 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 
 		// Search the best model on validation set
 		int idx = ct.getBestIndex();
-		System.out.println("Best metric on valid: " + ct.getBestMetricValue());
 
 		// Remove trees
 		int n = idx / terms.size();
@@ -402,15 +400,6 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 		// Restore targets
 		for (int i = 0; i < target.length; i++) {
 			trainSet.get(i).setTarget(target[i]);
-		}
-		
-		boolean[] hasMissingValue = new boolean[trainSet.dimension()];
-		for (Instance instance : trainSet) {
-			for (int j = 0; j < hasMissingValue.length; j++) {
-				if (instance.isMissing(j)) {
-					hasMissingValue[j] = true;
-				}
-			}
 		}
 
 		// Compress model
@@ -445,9 +434,6 @@ public class GA2MLearner extends HoldoutValidatedLearner {
 				}
 			}
 		}
-		
-		double measure = Evaluator.evalAreaUnderROC(gam, validSet);
-		System.out.println("Evaluator After compression: " + measure);
 	}
 
 	/**
