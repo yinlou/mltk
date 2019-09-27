@@ -491,8 +491,6 @@ public class LineCutter extends Learner {
 			uniqueValues = new ArrayList<>();
 			stats = new ArrayList<>();
 			getStats(pairs, uniqueValues, stats);
-
-			build(func, uniqueValues, stats, new DoublePair(sumRespOnMV, sumWeightOnMV), numIntervals);
 		} else {
 			int size = 0;
 			if (attribute.getType() == Attribute.Type.BINNED) {
@@ -524,9 +522,9 @@ public class LineCutter extends Learner {
 					uniqueValues.add((double) i);
 				}
 			}
-
-			build(func, uniqueValues, stats, new DoublePair(sumRespOnMV, sumWeightOnMV), numIntervals);
 		}
+		
+		build(func, uniqueValues, stats, new DoublePair(sumRespOnMV, sumWeightOnMV), numIntervals);
 
 		if (lineSearch) {
 			lineSearch(instances, func);
