@@ -387,6 +387,8 @@ public class LineCutter extends Learner {
 		double sumRespOnMV = 0.0;
 		double sumWeightOnMV = 0.0;
 
+		List<Double> uniqueValues;
+		List<DoublePair> stats;
 		if (attribute.getType() == Attribute.Type.NUMERIC) {
 			// weight: attribute value
 			// DoublePair.v1: target value
@@ -405,12 +407,9 @@ public class LineCutter extends Learner {
 				
 			}
 			Collections.sort(pairs);
-
-			List<Double> uniqueValues = new ArrayList<>();
-			List<DoublePair> stats = new ArrayList<>();
+			uniqueValues = new ArrayList<>();
+			stats = new ArrayList<>();
 			getStats(pairs, uniqueValues, stats);
-
-			build(func, uniqueValues, stats, new DoublePair(sumRespOnMV, sumWeightOnMV), limit);
 		} else {
 			int size = 0;
 			if (attribute.getType() == Attribute.Type.BINNED) {
@@ -435,17 +434,17 @@ public class LineCutter extends Learner {
 				
 			}
 
-			List<Double> uniqueValues = new ArrayList<>(histogram.length);
-			List<DoublePair> stats = new ArrayList<>(histogram.length);
+			uniqueValues = new ArrayList<>(histogram.length);
+			stats = new ArrayList<>(histogram.length);
 			for (int i = 0; i < histogram.length; i++) {
 				if (histogram[i].v1 != 0) {
 					stats.add(histogram[i]);
 					uniqueValues.add((double) i);
 				}
 			}
-
-			build(func, uniqueValues, stats, new DoublePair(sumRespOnMV, sumWeightOnMV), limit);
 		}
+		
+		build(func, uniqueValues, stats, new DoublePair(sumRespOnMV, sumWeightOnMV), limit);
 
 		if (lineSearch) {
 			lineSearch(instances, func);
@@ -469,6 +468,8 @@ public class LineCutter extends Learner {
 		double sumRespOnMV = 0.0;
 		double sumWeightOnMV = 0.0;
 
+		List<Double> uniqueValues;
+		List<DoublePair> stats;
 		if (attribute.getType() == Attribute.Type.NUMERIC) {
 			// weight: attribute value
 			// DoublePair.v1: target value
@@ -483,12 +484,12 @@ public class LineCutter extends Learner {
 				} else {
 					sumRespOnMV += target * weight;
 					sumWeightOnMV += weight;
-				}			
+				}
 			}
 			Collections.sort(pairs);
 
-			List<Double> uniqueValues = new ArrayList<>();
-			List<DoublePair> stats = new ArrayList<>();
+			uniqueValues = new ArrayList<>();
+			stats = new ArrayList<>();
 			getStats(pairs, uniqueValues, stats);
 
 			build(func, uniqueValues, stats, new DoublePair(sumRespOnMV, sumWeightOnMV), numIntervals);
@@ -515,8 +516,8 @@ public class LineCutter extends Learner {
 				}
 			}
 
-			List<Double> uniqueValues = new ArrayList<>(histogram.length);
-			List<DoublePair> stats = new ArrayList<>(histogram.length);
+			uniqueValues = new ArrayList<>(histogram.length);
+			stats = new ArrayList<>(histogram.length);
 			for (int i = 0; i < histogram.length; i++) {
 				if (histogram[i].v1 != 0) {
 					stats.add(histogram[i]);

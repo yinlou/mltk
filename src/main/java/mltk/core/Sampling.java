@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import mltk.util.Permutation;
 import mltk.util.Random;
 
 /**
@@ -66,24 +67,63 @@ public class Sampling {
 	}
 
 	/**
+	 * Returns a subsample.
+	 * 
+	 * @param instances the dataset.
+	 * @param n the sample size.
+	 * @return a subsample.
+	 */
+	public static Instances createSubsample(Instances instances, int n) {
+		Permutation perm = new Permutation(instances.size());
+		perm.permute();
+		int[] a = perm.getPermutation();
+		Instances sample = new Instances(instances.getAttributes(), instances.getTargetAttribute(), n);
+		for (int i = 0; i < n; i++) {
+			sample.add(instances.get(a[i]));
+		}
+		return sample;
+	}
+
+	/**
 	 * Returns a set of bags.
 	 * 
 	 * @param instances the dataset.
-	 * @param baggingIter the number of bagging iterations.
+	 * @param b the number of bagging iterations.
 	 * @return a set of bags.
 	 */
-	public static Instances[] createBags(Instances instances, int baggingIter) {
+	public static Instances[] createBags(Instances instances, int b) {
 		Instances[] bags = null;
-		if (baggingIter <= 0) {
+		if (b <= 0) {
 			// No bagging
 			bags = new Instances[] { instances };
 		} else {
-			bags = new Instances[baggingIter];
-			for (int i = 0; i < baggingIter; i++) {
+			bags = new Instances[b];
+			for (int i = 0; i < b; i++) {
 				bags[i] = Sampling.createBootstrapSample(instances);
 			}
 		}
 		return bags;
+	}
+
+	/**
+	 * Returns a set of subags.
+	 * 
+	 * @param instances the dataset.
+	 * @param n the sample size.
+	 * @param b the number of bagging iterations.
+	 * @return a set of subags.
+	 */
+	public static Instances[] createSubags(Instances instances, int n, int b) {
+		Instances[] subags = null;
+		if (b <= 0) {
+			subags = new Instances[] { instances };
+		} else {
+			subags = new Instances[b];
+			for (int i = 0; i < b; i++) {
+				subags[i] = createSubsample(instances, n);
+			}
+		}
+		return subags;
 	}
 
 }
