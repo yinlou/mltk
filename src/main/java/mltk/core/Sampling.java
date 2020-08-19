@@ -6,6 +6,7 @@ import java.util.Map;
 
 import mltk.util.Permutation;
 import mltk.util.Random;
+import mltk.util.tuple.IntPair;
 
 /**
  * Class for creating samples.
@@ -65,6 +66,27 @@ public class Sampling {
 			}
 		}
 	}
+	
+	/**
+	 * Returns a bootstrap sample of indices and weights.
+	 * 
+	 * @param n the size of the dataset to sample.
+	 * @return a bootstrap sample of indices and weights.
+	 */
+	public static IntPair[] createBootstrapSampleIndices(int n) {
+		Random rand = Random.getInstance();
+		Map<Integer, Integer> map = new HashMap<>();
+		for (int i = 0; i < n; i++) {
+			int idx = rand.nextInt(n);
+			map.put(idx, map.getOrDefault(idx, 0) + 1);
+		}
+		IntPair[] indices = new IntPair[map.size()];
+		int k = 0;
+		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
+			indices[k++] = new IntPair(entry.getKey(), entry.getValue());
+		}
+		return indices;
+	}
 
 	/**
 	 * Returns a subsample.
@@ -103,27 +125,6 @@ public class Sampling {
 			}
 		}
 		return bags;
-	}
-
-	/**
-	 * Returns a set of subags.
-	 * 
-	 * @param instances the dataset.
-	 * @param n the sample size.
-	 * @param b the number of bagging iterations.
-	 * @return a set of subags.
-	 */
-	public static Instances[] createSubags(Instances instances, int n, int b) {
-		Instances[] subags = null;
-		if (b <= 0) {
-			subags = new Instances[] { instances };
-		} else {
-			subags = new Instances[b];
-			for (int i = 0; i < b; i++) {
-				subags[i] = createSubsample(instances, n);
-			}
-		}
-		return subags;
 	}
 
 }

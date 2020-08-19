@@ -70,6 +70,18 @@ public class OptimUtils {
 			residual[i] = getPseudoResidual(prediction[i], y[i]);
 		}
 	}
+	
+	/**
+	 * Computes the probabilities.
+	 * 
+	 * @param pred the prediction array.
+	 * @param prob the probability array.
+	 */
+	public static void computeProbabilities(double[] pred, double[] prob) {
+		for (int i = 0; i < pred.length; i++) {
+			prob[i] = getProbability(pred[i]);
+		}
+	}
 
 	/**
 	 * Computes the logistic loss for binary classification problems.

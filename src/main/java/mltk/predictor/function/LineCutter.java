@@ -65,7 +65,7 @@ public class LineCutter extends Learner {
 		}
 
 		double getPrediction() {
-			return sum / weight;
+			return MathUtils.divide(sum, weight, 0.0);
 		}
 
 		boolean isFinalized() {
@@ -83,9 +83,7 @@ public class LineCutter extends Learner {
 	}
 
 	protected static void build(Function1D func, List<Double> uniqueValues, List<DoublePair> stats, DoublePair mv, double limit) {
-		if (!MathUtils.isZero(mv.v2)) {
-			func.predictionOnMV = mv.v1 / mv.v2;
-		}
+		func.predictionOnMV = MathUtils.divide(mv.v1, mv.v2, 0.0);
 		
 		// 1. Check basic leaf conditions
 		if (uniqueValues.size() == 1) {
@@ -137,9 +135,7 @@ public class LineCutter extends Learner {
 	}
 
 	protected static void build(Function1D func, List<Double> uniqueValues, List<DoublePair> stats, DoublePair mv, int numIntervals) {
-		if (!MathUtils.isZero(mv.v2)) {
-			func.predictionOnMV = mv.v1 / mv.v2;
-		}
+		func.predictionOnMV = MathUtils.divide(mv.v1, mv.v2, 0.0);
 		
 		// 1. Check basic leaf conditions
 		if (uniqueValues.size() == 1) {

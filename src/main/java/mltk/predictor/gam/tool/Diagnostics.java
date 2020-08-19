@@ -55,9 +55,9 @@ public class Diagnostics {
 		}
 
 		/**
-		 * Parses an enumeration from a string.
+		 * Parses a mode from a string.
 		 * 
-		 * @param term the string.
+		 * @param mode the mode.
 		 * @return a parsed terminal.
 		 */
 		public static Mode getEnum(String mode) {
