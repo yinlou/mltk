@@ -15,13 +15,12 @@ import mltk.util.Random;
 import mltk.util.Element;
 import mltk.util.MathUtils;
 import mltk.util.OptimUtils;
-import mltk.util.tuple.DoublePair;
 
 /**
  * Class for cutting lines.
  * 
  * @author Yin Lou
- * 
+ *
  */
 public class LineCutter extends Learner {
 
@@ -34,8 +33,8 @@ public class LineCutter extends Learner {
 		// NaN: Declared as leaf
 		// Other: Split point
 		double split;
-		double weight;
 		double sum;
+		double weight;
 		double value; // mean * sum, or sum * sum /weight; negative gain
 		double gain;
 		Interval left;
@@ -45,12 +44,12 @@ public class LineCutter extends Learner {
 			split = Double.POSITIVE_INFINITY;
 		}
 
-		Interval(int start, int end, double weight, double sum) {
+		Interval(int start, int end, double sum, double weight) {
 			this.start = start;
 			this.end = end;
 			this.split = Double.POSITIVE_INFINITY;
-			this.weight = weight;
 			this.sum = sum;
+			this.weight = weight;
 		}
 
 		@Override
@@ -82,74 +81,241 @@ public class LineCutter extends Learner {
 
 	}
 
-	protected static void build(Function1D func, List<Double> uniqueValues, List<DoublePair> stats, DoublePair mv, double limit) {
-		func.predictionOnMV = MathUtils.divide(mv.v1, mv.v2, 0.0);
-		
-		// 1. Check basic leaf conditions
-		if (uniqueValues.size() == 1) {
-			func.splits = new double[] { Double.POSITIVE_INFINITY };
-			DoublePair stat = stats.get(0);
-			func.predictions = new double[] { stat.v2 / stat.v1 };
-			return;
-		}
+	private int attIndex;
 
-		// 2. Cut the line
-		// 2.1 First cut
-		DoublePair pair = sumUp(stats, 0, stats.size());
-		Interval root = new Interval(0, stats.size(), pair.v1, pair.v2);
-		split(uniqueValues, stats, root, limit);
+	private int numIntervals;
 
-		PriorityQueue<Interval> q = new PriorityQueue<>();
-		if (!root.isLeaf()) {
-			q.add(root);
-		}
+	private boolean isClassification;
 
-		int numSplits = 0;
-		while (!q.isEmpty()) {
-			Interval parent = q.remove();
-			parent.finalized = true;
-			split(uniqueValues, stats, parent.left, limit);
-			split(uniqueValues, stats, parent.right, limit);
-
-			if (!parent.left.isLeaf()) {
-				q.add(parent.left);
-			}
-			if (!parent.right.isLeaf()) {
-				q.add(parent.right);
-			}
-			numSplits++;
-		}
-
-		List<Double> splits = new ArrayList<>(numSplits);
-		List<Double> predictions = new ArrayList<>(numSplits + 1);
-		inorder(root, splits, predictions);
-		func.splits = new double[predictions.size()];
-		func.predictions = new double[predictions.size()];
-		for (int i = 0; i < func.predictions.length; i++) {
-			func.predictions[i] = predictions.get(i);
-		}
-		for (int i = 0; i < func.splits.length - 1; i++) {
-			func.splits[i] = splits.get(i);
-		}
-		func.splits[func.splits.length - 1] = Double.POSITIVE_INFINITY;
+	/**
+	 * Constructor.
+	 */
+	public LineCutter() {
+		this(false);
 	}
 
-	protected static void build(Function1D func, List<Double> uniqueValues, List<DoublePair> stats, DoublePair mv, int numIntervals) {
-		func.predictionOnMV = MathUtils.divide(mv.v1, mv.v2, 0.0);
+	/**
+	 * Constructor.
+	 * 
+	 * @param isClassification {@code true} if it is a classification problem.
+	 */
+	public LineCutter(boolean isClassification) {
+		attIndex = -1;
+		this.isClassification = isClassification;
+	}
+
+	@Override
+	public Function1D build(Instances instances) {
+		return build(instances, attIndex, numIntervals);
+	}
+
+	/**
+	 * Builds a 1D function.
+	 * 
+	 * @param instances the training set.
+	 * @param attribute the attribute.
+	 * @param numIntervals the number of intervals.
+	 * @return a 1D function.
+	 */
+	public Function1D build(Instances instances, Attribute attribute, int numIntervals) {
+		int attIndex = attribute.getIndex();
+		
+		double sumRespOnMV = 0.0;
+		double sumWeightOnMV = 0.0;
+
+		List<double[]> histograms;
+		if (attribute.getType() == Attribute.Type.NUMERIC) {
+			// weight: attribute value
+			// [feature value, sum, weight]
+			List<Element<double[]>> pairs = new ArrayList<>(instances.size());
+			for (Instance instance : instances) {
+				double weight = instance.getWeight();
+				double value = instance.getValue(attIndex);
+				double target = instance.getTarget();
+				if (!Double.isNaN(value)) {
+					if (isClassification) {
+						pairs.add(new Element<>(new double[] { target, weight }, value));
+					} else {
+						pairs.add(new Element<>(new double[] { target * weight, weight }, value));
+					}
+				} else {
+					if (isClassification) {
+						sumRespOnMV += target;
+					} else {
+						sumRespOnMV += target * weight;
+					}
+					sumWeightOnMV += weight;
+				}
+			}
+			Collections.sort(pairs);
+
+			histograms = new ArrayList<>(pairs.size() + 1);
+			getHistograms(pairs, histograms);
+			histograms.add(new double[] { Double.NaN, sumRespOnMV, sumWeightOnMV });
+		} else {
+			int size = 0;
+			if (attribute.getType() == Attribute.Type.BINNED) {
+				size = ((BinnedAttribute) attribute).getNumBins();
+			} else {
+				size = ((NominalAttribute) attribute).getCardinality();
+			}
+			double[][] histogram = new double[size][2];
+			for (Instance instance : instances) {
+				double weight = instance.getWeight();
+				double value = instance.getValue(attIndex);
+				double target = instance.getTarget();
+				if (!Double.isNaN(value)) {
+					int idx = (int) value;
+					if (isClassification) {
+						histogram[idx][0] += target;
+					} else {
+						histogram[idx][0] += target * weight;
+					}
+					
+					histogram[idx][1] += weight;
+				} else {
+					if (isClassification) {
+						sumRespOnMV += target;
+					} else {
+						sumRespOnMV += target * weight;
+					}
+					
+					sumWeightOnMV += weight;
+				}
+			}
+
+			histograms = new ArrayList<>(histogram.length + 1);
+			for (int i = 0; i < histogram.length; i++) {
+				if (!MathUtils.isZero(histogram[i][1])) {
+					double[] hist = histogram[i];
+					histograms.add(new double[] {i, hist[0], hist[1]});
+				}
+			}
+			histograms.add(new double[] { Double.NaN, sumRespOnMV, sumWeightOnMV });
+		}
+		
+		return build(attIndex, histograms, numIntervals);
+	}
+
+	/**
+	 * Builds a 1D function.
+	 * 
+	 * @param instances the training set.
+	 * @param attIndex the index in the attribute list of the training set.
+	 * @param numIntervals the number of intervals.
+	 * @return a 1D function.
+	 */
+	public Function1D build(Instances instances, int attIndex, int numIntervals) {
+		Attribute attribute = instances.getAttributes().get(attIndex);
+		return build(instances, attribute, numIntervals);
+	}
+
+	/**
+	 * Returns the index in the attribute list of the training set.
+	 * 
+	 * @return the index in the attribute list of the training set.
+	 */
+	public int getAttributeIndex() {
+		return attIndex;
+	}
+	
+	/**
+	 * Sets the index in the attribute list of the training set.
+	 * 
+	 * @param attIndex the attribute index.
+	 */
+	public void setAttributeIndex(int attIndex) {
+		this.attIndex = attIndex;
+	}
+	
+	/**
+	 * Returns {@code true} if it is a classification problem.
+	 * 
+	 * @return {@code true} if it is a classification problem.
+	 */
+	public boolean isClassification() {
+		return isClassification;
+	}
+	
+	/**
+	 * Sets {@code true} if it is a classification problem.
+	 * 
+	 * @param isClassification {@code true} if it is a classification problem.
+	 */
+	public void setClassification(boolean isClassification) {
+		this.isClassification = isClassification;
+	}
+
+	/**
+	 * Returns the number of intervals.
+	 * 
+	 * @return the number of intervals.
+	 */
+	public int getNumIntervals() {
+		return numIntervals;
+	}
+
+	/**
+	 * Sets the number of intervals.
+	 * 
+	 * @param numIntervals the number of intervals.
+	 */
+	public void setNumIntervals(int numIntervals) {
+		this.numIntervals = numIntervals;
+	}
+	
+	protected static void getHistograms(List<Element<double[]>> pairs, List<double[]> histograms) {
+		if (pairs.size() == 0) {
+			return;
+		}
+		// Element(new double[] {sum, weight}, value)
+		double[] hist = pairs.get(0).element;
+		double lastValue = pairs.get(0).weight;
+		double sum = hist[0];
+		double weight = hist[1];
+		for (int i = 1; i < pairs.size(); i++) {
+			Element<double[]> element = pairs.get(i);
+			hist = element.element;
+			double value = element.weight;
+			double s = hist[0];
+			double w = hist[1];
+			if (value != lastValue) {
+				histograms.add(new double[] { lastValue, sum, weight });
+				lastValue = value;
+				sum = s;
+				weight = w;
+			} else {
+				sum += s;
+				weight += w;
+			}
+		}
+		histograms.add(new double[] { lastValue, sum, weight });
+	}
+	
+	protected static Function1D build(int attIndex, List<double[]> histograms, int numIntervals) {
+		Function1D func = new Function1D();
+		func.attIndex = attIndex;
+		// [feature value, sum, weight]
+		double[] histOnMV = histograms.get(histograms.size() - 1);
+		func.predictionOnMV = MathUtils.divide(histOnMV[1], histOnMV[2], 0.0);
 		
 		// 1. Check basic leaf conditions
-		if (uniqueValues.size() == 1) {
+		if (histograms.size() <= 2) {
 			func.splits = new double[] { Double.POSITIVE_INFINITY };
-			DoublePair stat = stats.get(0);
-			func.predictions = new double[] { stat.v2 / stat.v1 };
-			return;
+			double prediction = 0.0;
+			if (histograms.size() == 2) {
+				double[] hist = histograms.get(0);
+				prediction = MathUtils.divide(hist[1], hist[2], 0.0);
+			}
+			func.predictions = new double[] { prediction };
+			return func;
 		}
 
 		// 2. Cut the line
 		// 2.1 First cut
-		DoublePair pair = sumUp(stats, 0, stats.size());
-		Interval root = new Interval(0, stats.size(), pair.v1, pair.v2);
-		split(uniqueValues, stats, root);
+		double[] stats = sumUp(histograms, 0, histograms.size() - 1);
+		Interval root = new Interval(0, histograms.size() - 1, stats[0], stats[1]);
+		split(histograms, root);
 
 		if (numIntervals == 2) {
 			func.splits = new double[] { root.split, Double.POSITIVE_INFINITY };
@@ -164,8 +330,8 @@ public class LineCutter extends Learner {
 			while (!q.isEmpty()) {
 				Interval parent = q.remove();
 				parent.finalized = true;
-				split(uniqueValues, stats, parent.left);
-				split(uniqueValues, stats, parent.right);
+				split(histograms, parent.left);
+				split(histograms, parent.right);
 
 				if (!parent.left.isLeaf()) {
 					q.add(parent.left);
@@ -193,81 +359,25 @@ public class LineCutter extends Learner {
 			}
 			func.splits[func.splits.length - 1] = Double.POSITIVE_INFINITY;
 		}
+		return func;
+	}
+	
+	protected static double[] sumUp(List<double[]> histograms, int start, int end) {
+		double sum = 0;
+		double weight = 0;
+		for (int i = start; i < end; i++) {
+			double[] hist = histograms.get(i);
+			sum += hist[1];
+			weight += hist[2];
+		}
+		return new double[] { sum, weight };
 	}
 
-	protected static void getStats(List<Element<DoublePair>> pairs, List<Double> uniqueValues, List<DoublePair> stats) {
-		if (pairs.size() == 0) {
-			return;
-		}
-		double lastValue = pairs.get(0).weight;
-		double totalWeight = pairs.get(0).element.v2;
-		double sum = pairs.get(0).element.v1 * totalWeight;
-		double lastResp = pairs.get(0).element.v1;
-		boolean isStd0 = true;
-		for (int i = 1; i < pairs.size(); i++) {
-			Element<DoublePair> element = pairs.get(i);
-			double value = element.weight;
-			double weight = element.element.v2;
-			double resp = element.element.v1;
-			if (value != lastValue) {
-				uniqueValues.add(lastValue);
-				stats.add(new DoublePair(totalWeight, sum));
-				lastValue = value;
-				totalWeight = weight;
-				sum = resp * weight;
-				lastResp = resp;
-				isStd0 = true;
-			} else {
-				totalWeight += weight;
-				sum += weight * resp;
-				isStd0 = isStd0 && (lastResp == resp);
-			}
-		}
-		uniqueValues.add(lastValue);
-		stats.add(new DoublePair(totalWeight, sum));
+	protected static void split(List<double[]> histograms, Interval parent) {
+		split(histograms, parent, 5);
 	}
 
-	protected static void inorder(Interval parent, List<Double> splits, List<Double> predictions) {
-		if (parent.isFinalized()) {
-			inorder(parent.left, splits, predictions);
-			splits.add(parent.split);
-			inorder(parent.right, splits, predictions);
-		} else {
-			predictions.add(parent.getPrediction());
-		}
-	}
-
-	/**
-	 * Performs a line search for a function for classification.
-	 * 
-	 * @param instances the training set.
-	 * @param func the function.
-	 */
-	public static void lineSearch(Instances instances, Function1D func) {
-		double[] predictions = func.getPredictions();
-		// Last element for missing values.
-		double[] numerator = new double[predictions.length + 1];
-		double[] denominator = new double[numerator.length];
-		for (Instance instance : instances) {
-			int idx = numerator.length - 1;
-			if (!instance.isMissing(func.getAttributeIndex())) {
-				idx = func.getSegmentIndex(instance.getValue(func.getAttributeIndex()));
-			}
-			numerator[idx] += instance.getTarget() * instance.getWeight();
-			double t = Math.abs(instance.getTarget());
-			denominator[idx] += t * (1 - t) * instance.getWeight();
-		}
-		for (int i = 0; i < predictions.length; i++) {
-			predictions[i] = MathUtils.divide(numerator[i], denominator[i], 0);
-		}
-		func.predictionOnMV = MathUtils.divide(numerator[numerator.length - 1], denominator[denominator.length - 1], 0);
-	}
-
-	protected static void split(List<Double> uniqueValues, List<DoublePair> stats, Interval parent) {
-		split(uniqueValues, stats, parent, 5);
-	}
-
-	protected static void split(List<Double> uniqueValues, List<DoublePair> stats, Interval parent, double limit) {
+	protected static void split(List<double[]> histograms, Interval parent, double limit) {
 		// Test if we need to split
 		if (parent.weight <= limit || parent.end - parent.start <= 1) {
 			parent.split = Double.NaN; // Declared as leaf
@@ -276,35 +386,36 @@ public class LineCutter extends Learner {
 			parent.right = new Interval();
 			int start = parent.left.start = parent.start;
 			int end = parent.right.end = parent.end;
-			final double totalWeight = parent.weight;
 			final double sum = parent.sum;
+			final double totalWeight = parent.weight;
 
-			double weight1 = stats.get(start).v1;
-			double weight2 = totalWeight - weight1;
-			double sum1 = stats.get(start).v2;
+			double sum1 = histograms.get(start)[1];
 			double sum2 = sum - sum1;
+			double weight1 = histograms.get(start)[2];
+			double weight2 = totalWeight - weight1;
 
 			double bestEval = -(OptimUtils.getGain(sum1, weight1) + OptimUtils.getGain(sum2, weight2));
 			List<double[]> splits = new ArrayList<>();
-			splits.add(new double[] { (uniqueValues.get(start) + uniqueValues.get(start + 1)) / 2, start, weight1,
-					sum1, weight2, sum2 });
+			splits.add(new double[] { (histograms.get(start)[0] + histograms.get(start + 1)[0]) / 2, start, sum1,
+					weight1, sum2, weight2 });
 			for (int i = start + 1; i < end - 1; i++) {
-				final double w = stats.get(i).v1;
-				final double s = stats.get(i).v2;
-				weight1 += w;
-				weight2 -= w;
+				double[] hist = histograms.get(i);
+				final double s = hist[1];
+				final double w = hist[2];
 				sum1 += s;
 				sum2 -= s;
+				weight1 += w;
+				weight2 -= w;
 				double eval1 = OptimUtils.getGain(sum1, weight1);
 				double eval2 = OptimUtils.getGain(sum2, weight2);
 				double eval = -(eval1 + eval2);
 				if (eval <= bestEval) {
-					double split = (uniqueValues.get(i) + uniqueValues.get(i + 1)) / 2;
+					double split = (histograms.get(i)[0] + histograms.get(i + 1)[0]) / 2;
 					if (eval < bestEval) {
 						bestEval = eval;
 						splits.clear();
 					}
-					splits.add(new double[] { split, i, weight1, sum1, weight2, sum2 });
+					splits.add(new double[] { split, i, sum1, weight1, sum2, weight2 });
 				}
 			}
 			Random rand = Random.getInstance();
@@ -312,319 +423,24 @@ public class LineCutter extends Learner {
 			parent.split = split[0];
 			parent.left.end = (int) split[1] + 1;
 			parent.right.start = (int) split[1] + 1;
-			parent.left.weight = split[2];
-			parent.left.sum = split[3];
-			parent.right.weight = split[4];
-			parent.right.sum = split[5];
-			parent.gain = (split[3] / split[2]) * split[3] + (split[5] / split[4]) * split[5];
+			parent.left.sum = split[2];
+			parent.left.weight = split[3];
+			parent.right.sum = split[4];
+			parent.right.weight = split[5];
+			parent.gain = OptimUtils.getGain(parent.left.sum, parent.left.weight)
+					+ OptimUtils.getGain(parent.right.sum, parent.right.weight);
 			parent.value = -parent.gain + (sum / totalWeight * sum);
 		}
 	}
-
-	protected static DoublePair sumUp(List<DoublePair> stats, int start, int end) {
-		double weight = 0;
-		double sum = 0;
-		for (int i = start; i < end; i++) {
-			DoublePair stat = stats.get(i);
-			weight += stat.v1;
-			sum += stat.v2;
-		}
-		return new DoublePair(weight, sum);
-	}
-
-	private int attIndex;
-
-	private int numIntervals;
-
-	private boolean lineSearch;
-
-	private boolean leafLimited;
-
-	private double alpha;
-
-	/**
-	 * Constructor.
-	 */
-	public LineCutter() {
-		this(false);
-	}
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param lineSearch {@code true} if line search is performed in the end.
-	 */
-	public LineCutter(boolean lineSearch) {
-		attIndex = -1;
-		this.lineSearch = lineSearch;
-		leafLimited = true;
-	}
-
-	@Override
-	public Function1D build(Instances instances) {
-		Function1D func = leafLimited ? build(instances, attIndex, numIntervals) : build(instances, attIndex, alpha);
-		return func;
-	}
-
-	/**
-	 * Builds a 1D function.
-	 * 
-	 * @param instances the training set.
-	 * @param attribute the attribute.
-	 * @param alpha the alpha.
-	 * @return a 1D function.
-	 */
-	public Function1D build(Instances instances, Attribute attribute, double alpha) {
-		Function1D func = new Function1D();
-		func.attIndex = attribute.getIndex();
-		// TODO potential bugs
-		double limit = alpha * instances.size();
-		
-		double sumRespOnMV = 0.0;
-		double sumWeightOnMV = 0.0;
-
-		List<Double> uniqueValues;
-		List<DoublePair> stats;
-		if (attribute.getType() == Attribute.Type.NUMERIC) {
-			// weight: attribute value
-			// DoublePair.v1: target value
-			// DoublePair.v2: instance weight
-			List<Element<DoublePair>> pairs = new ArrayList<>(instances.size());
-			for (Instance instance : instances) {
-				double weight = instance.getWeight();
-				double value = instance.getValue(func.attIndex);
-				double target = instance.getTarget();
-				if (!Double.isNaN(value)) {
-					pairs.add(new Element<DoublePair>(new DoublePair(target, weight), value));
-				} else {
-					sumRespOnMV += target * weight;
-					sumWeightOnMV += weight;
-				}
-				
-			}
-			Collections.sort(pairs);
-			uniqueValues = new ArrayList<>();
-			stats = new ArrayList<>();
-			getStats(pairs, uniqueValues, stats);
+	
+	protected static void inorder(Interval parent, List<Double> splits, List<Double> predictions) {
+		if (parent.isFinalized()) {
+			inorder(parent.left, splits, predictions);
+			splits.add(parent.split);
+			inorder(parent.right, splits, predictions);
 		} else {
-			int size = 0;
-			if (attribute.getType() == Attribute.Type.BINNED) {
-				size = ((BinnedAttribute) attribute).getNumBins();
-			} else {
-				size = ((NominalAttribute) attribute).getCardinality();
-			}
-			DoublePair[] histogram = new DoublePair[size];
-			for (int i = 0; i < histogram.length; i++) {
-				histogram[i] = new DoublePair(0, 0);
-			}
-			for (Instance instance : instances) {
-				double value = instance.getValue(func.attIndex);
-				if (!Double.isNaN(value)) {
-					int idx = (int) value;
-					histogram[idx].v2 += instance.getTarget() * instance.getWeight();
-					histogram[idx].v1 += instance.getWeight();
-				} else {
-					sumRespOnMV += instance.getTarget() * instance.getWeight();
-					sumWeightOnMV += instance.getWeight();
-				}
-				
-			}
-
-			uniqueValues = new ArrayList<>(histogram.length);
-			stats = new ArrayList<>(histogram.length);
-			for (int i = 0; i < histogram.length; i++) {
-				if (histogram[i].v1 != 0) {
-					stats.add(histogram[i]);
-					uniqueValues.add((double) i);
-				}
-			}
+			predictions.add(parent.getPrediction());
 		}
-		
-		build(func, uniqueValues, stats, new DoublePair(sumRespOnMV, sumWeightOnMV), limit);
-
-		if (lineSearch) {
-			lineSearch(instances, func);
-		}
-
-		return func;
-	}
-
-	/**
-	 * Builds a 1D function.
-	 * 
-	 * @param instances the training set.
-	 * @param attribute the attribute.
-	 * @param numIntervals the number of intervals.
-	 * @return a 1D function.
-	 */
-	public Function1D build(Instances instances, Attribute attribute, int numIntervals) {
-		Function1D func = new Function1D();
-		func.attIndex = attribute.getIndex();
-		
-		double sumRespOnMV = 0.0;
-		double sumWeightOnMV = 0.0;
-
-		List<Double> uniqueValues;
-		List<DoublePair> stats;
-		if (attribute.getType() == Attribute.Type.NUMERIC) {
-			// weight: attribute value
-			// DoublePair.v1: target value
-			// DoublePair.v2: instance weight
-			List<Element<DoublePair>> pairs = new ArrayList<>(instances.size());
-			for (Instance instance : instances) {
-				double weight = instance.getWeight();
-				double value = instance.getValue(func.attIndex);
-				double target = instance.getTarget();
-				if (!Double.isNaN(value)) {
-					pairs.add(new Element<DoublePair>(new DoublePair(target, weight), value));
-				} else {
-					sumRespOnMV += target * weight;
-					sumWeightOnMV += weight;
-				}
-			}
-			Collections.sort(pairs);
-
-			uniqueValues = new ArrayList<>();
-			stats = new ArrayList<>();
-			getStats(pairs, uniqueValues, stats);
-		} else {
-			int size = 0;
-			if (attribute.getType() == Attribute.Type.BINNED) {
-				size = ((BinnedAttribute) attribute).getNumBins();
-			} else {
-				size = ((NominalAttribute) attribute).getCardinality();
-			}
-			DoublePair[] histogram = new DoublePair[size];
-			for (int i = 0; i < histogram.length; i++) {
-				histogram[i] = new DoublePair(0, 0);
-			}
-			for (Instance instance : instances) {
-				double value = instance.getValue(func.attIndex);
-				if (!Double.isNaN(value)) {
-					int idx = (int) value;
-					histogram[idx].v2 += instance.getTarget() * instance.getWeight();
-					histogram[idx].v1 += instance.getWeight();
-				} else {
-					sumRespOnMV += instance.getTarget() * instance.getWeight();
-					sumWeightOnMV += instance.getWeight();
-				}
-			}
-
-			uniqueValues = new ArrayList<>(histogram.length);
-			stats = new ArrayList<>(histogram.length);
-			for (int i = 0; i < histogram.length; i++) {
-				if (histogram[i].v1 != 0) {
-					stats.add(histogram[i]);
-					uniqueValues.add((double) i);
-				}
-			}
-		}
-		
-		build(func, uniqueValues, stats, new DoublePair(sumRespOnMV, sumWeightOnMV), numIntervals);
-
-		if (lineSearch) {
-			lineSearch(instances, func);
-		}
-
-		return func;
-	}
-
-	/**
-	 * Builds a 1D function.
-	 * 
-	 * @param instances the training set.
-	 * @param attIndex the index in the attribute list of training set.
-	 * @param alpha the alpha.
-	 * @return a 1D function.
-	 */
-	public Function1D build(Instances instances, int attIndex, double alpha) {
-		Attribute attribute = instances.getAttributes().get(attIndex);
-		return build(instances, attribute, alpha);
-	}
-
-	/**
-	 * Builds a 1D function.
-	 * 
-	 * @param instances the training set.
-	 * @param attIndex the index in the attribute list of the training set.
-	 * @param numIntervals the number of intervals.
-	 * @return a 1D function.
-	 */
-	public Function1D build(Instances instances, int attIndex, int numIntervals) {
-		Attribute attribute = instances.getAttributes().get(attIndex);
-		return build(instances, attribute, numIntervals);
-	}
-
-	/**
-	 * Returns {@code true} if line search is performed in the end.
-	 * 
-	 * @return {@code true} if line search is performed in the end.
-	 */
-	public boolean doLineSearch() {
-		return lineSearch;
-	}
-
-	/**
-	 * Returns the index in the attribute list of the training set.
-	 * 
-	 * @return the index in the attribute list of the training set.
-	 */
-	public int getAttributeIndex() {
-		return attIndex;
-	}
-
-	/**
-	 * Returns the number of intervals.
-	 * 
-	 * @return the number of intervals.
-	 */
-	public int getNumIntervals() {
-		return numIntervals;
-	}
-
-	/**
-	 * Sets the alpha.
-	 * 
-	 * @param alpha the minimum percentage of points in each interval.
-	 */
-	public void setAlpha(double alpha) {
-		this.alpha = alpha;
-	}
-
-	/**
-	 * Sets the index in the attribute list of the training set.
-	 * 
-	 * @param attIndex the attribute index.
-	 */
-	public void setAttributeIndex(int attIndex) {
-		this.attIndex = attIndex;
-	}
-
-	/**
-	 * Sets whether we cut lines according to number of leaves or alpha.
-	 * 
-	 * @param leafLimited whether we cut lines according to number of leaves or alpha.
-	 */
-	public void setLeafLimited(boolean leafLimited) {
-		this.leafLimited = leafLimited;
-	}
-
-	/**
-	 * Sets {@code true} if line search is performed in the end.
-	 * 
-	 * @param lineSearch {@code true} if line search is performed in the end.
-	 */
-	public void setLineSearch(boolean lineSearch) {
-		this.lineSearch = lineSearch;
-	}
-
-	/**
-	 * Sets the number of intervals.
-	 * 
-	 * @param numIntervals the number of intervals.
-	 */
-	public void setNumIntervals(int numIntervals) {
-		this.numIntervals = numIntervals;
 	}
 
 }
