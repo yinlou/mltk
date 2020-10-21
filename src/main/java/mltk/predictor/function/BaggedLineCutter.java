@@ -48,7 +48,7 @@ public class BaggedLineCutter extends EnsembledLineCutter {
 	 * @param n the size of the dataset to sample.
 	 * @param baggingIters the number of bagging iterations.
 	 */
-	public void createBootstrapSamples(int n, int baggingIters) {
+	public void createBags(int n, int baggingIters) {
 		samples = new ArrayList<>(baggingIters);
 		if (baggingIters <= 0) {
 			// No bagging
@@ -74,7 +74,7 @@ public class BaggedLineCutter extends EnsembledLineCutter {
 		int attIndex = attribute.getIndex();
 		
 		if (samples == null) {
-			createBootstrapSamples(instances.size(), baggingIters);
+			createBags(instances.size(), baggingIters);
 		}
 		
 		BaggedEnsemble ensemble = new BaggedEnsemble(samples.size());

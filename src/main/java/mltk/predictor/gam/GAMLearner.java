@@ -23,7 +23,9 @@ import mltk.predictor.evaluation.MetricFactory;
 import mltk.predictor.evaluation.SimpleMetric;
 import mltk.predictor.function.BaggedLineCutter;
 import mltk.predictor.function.CompressionUtils;
+import mltk.predictor.function.EnsembledLineCutter;
 import mltk.predictor.function.Function1D;
+import mltk.predictor.function.SubaggedLineCutter;
 import mltk.predictor.io.PredictorWriter;
 import mltk.util.OptimUtils;
 import mltk.util.Random;
@@ -34,7 +36,11 @@ import mltk.util.Random;
  * <p>
  * Reference:<br>
  * Y. Lou, R. Caruana and J. Gehrke. Intelligible models for classification and regression. In <i>Proceedings of the
- * 18th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD)</i>, Beijing, China, 2012.
+ * 18th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD)</i>, Beijing, China, 2012.<br>
+ * 
+ * Y. Lou, Y. Wang, S. Liang and Y. Dong. Efficiently Training Intelligible Models for Global Explanations. 
+ * In <i>Proceedings of the 29th ACM International Conference on Information and Knowledge Management (CIKM)</i>, 
+ * Virtual Event, Ireland, 2020.
  * </p>
  * 
  * @author Yin Lou
@@ -44,8 +50,8 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	
 	static class Options extends HoldoutValidatedLearnerWithTaskOptions {
 
-		@Argument(name = "-b", description = "base learner (default: tr:3:100)")
-		String baseLearner = "tr:3:100";
+		@Argument(name = "-b", description = "base learner (default: tr:3:100:0.65)")
+		String baseLearner = "tr:3:100:0.65";
 
 		@Argument(name = "-m", description = "maximum number of iterations", required = true)
 		int maxNumIters = -1;
@@ -132,6 +138,7 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	private int maxNumIters;
 	private int maxNumLeaves;
 	private Task task;
+	private double alpha;
 	private double learningRate;
 
 	/**
@@ -142,7 +149,8 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		baggingIters = 100;
 		maxNumIters = -1;
 		maxNumLeaves = 3;
-		learningRate = 1;
+		alpha = 0.65;
+		learningRate = 0.01;
 		task = Task.REGRESSION;
 		metric = task.getDefaultMetric();
 	}
@@ -218,6 +226,24 @@ public class GAMLearner extends HoldoutValidatedLearner {
 	public void setLearningRate(double learningRate) {
 		this.learningRate = learningRate;
 	}
+	
+	/**
+	 * Returns the subsampling ratio.
+	 * 
+	 * @return the subsampling ratio.
+	 */
+	public double getSubsamplingRatio() {
+		return alpha;
+	}
+	
+	/**
+	 * Sets the subsampling ratio.
+	 * 
+	 * @param alpha the subsampling ratio.
+	 */
+	public void setSubsamplingRatio(double alpha) {
+		this.alpha = alpha;
+	}
 
 	/**
 	 * Returns the task of this learner.
@@ -250,6 +276,12 @@ public class GAMLearner extends HoldoutValidatedLearner {
 				int baggingIters = Integer.parseInt(opts[2]);
 				setMaxNumLeaves(maxNumLeaves);
 				setBaggingIters(baggingIters);
+				if (opts.length > 3) {
+					double alpha = Double.parseDouble(opts[3]);
+					setSubsamplingRatio(alpha);
+				} else {
+					setSubsamplingRatio(-1);
+				}
 				break;
 			case "cs":
 				break;
@@ -286,9 +318,17 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		}
 
 		// Create bags
-		BaggedLineCutter blc = new BaggedLineCutter(true);
-		blc.createBootstrapSamples(trainSet.size(), baggingIters);
-		blc.setNumIntervals(maxNumLeaves);
+		EnsembledLineCutter elc = null;
+		if (0 <= alpha & alpha <= 1) {
+			SubaggedLineCutter slc = new SubaggedLineCutter(true);
+			slc.createSubags(trainSet.size(), alpha, baggingIters);
+			elc = slc;
+		} else {
+			BaggedLineCutter blc = new BaggedLineCutter(true);
+			blc.createBags(trainSet.size(), baggingIters);
+			elc = blc;
+		}
+		elc.setNumIntervals(maxNumLeaves);
 
 		// Initialize predictions and residuals
 		double[] predTrain = new double[trainSet.size()];
@@ -316,8 +356,8 @@ public class GAMLearner extends HoldoutValidatedLearner {
 				BoostedEnsemble boostedEnsemble = regressors.get(j);
 
 				// Train model
-				blc.setAttributeIndex(j);
-				BaggedEnsemble baggedEnsemble = blc.build(trainSet);
+				elc.setAttributeIndex(j);
+				BaggedEnsemble baggedEnsemble = elc.build(trainSet);
 				Function1D func = CompressionUtils.compress(attributes.get(j).getIndex(), baggedEnsemble);
 				if (learningRate != 1) {
 					func.multiply(learningRate);
@@ -421,9 +461,17 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		}
 
 		// Create bags
-		BaggedLineCutter blc = new BaggedLineCutter(true);
-		blc.createBootstrapSamples(trainSet.size(), baggingIters);
-		blc.setNumIntervals(maxNumLeaves);
+		EnsembledLineCutter elc = null;
+		if (0 <= alpha & alpha <= 1) {
+			SubaggedLineCutter slc = new SubaggedLineCutter(true);
+			slc.createSubags(trainSet.size(), alpha, baggingIters);
+			elc = slc;
+		} else {
+			BaggedLineCutter blc = new BaggedLineCutter(true);
+			blc.createBags(trainSet.size(), baggingIters);
+			elc = blc;
+		}
+		elc.setNumIntervals(maxNumLeaves);
 
 		// Initialize predictions and residuals
 		double[] predTrain = new double[trainSet.size()];
@@ -448,8 +496,8 @@ public class GAMLearner extends HoldoutValidatedLearner {
 				BoostedEnsemble boostedEnsemble = regressors.get(j);
 
 				// Train model
-				blc.setAttributeIndex(j);
-				BaggedEnsemble baggedEnsemble = blc.build(trainSet);
+				elc.setAttributeIndex(j);
+				BaggedEnsemble baggedEnsemble = elc.build(trainSet);
 				Function1D func = CompressionUtils.compress(attributes.get(j).getIndex(), baggedEnsemble);
 				if (learningRate != 1) {
 					func.multiply(learningRate);
@@ -524,9 +572,17 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		}
 
 		// Create bags
-		BaggedLineCutter blc = new BaggedLineCutter(false);
-		blc.createBootstrapSamples(trainSet.size(), baggingIters);
-		blc.setNumIntervals(maxNumLeaves);
+		EnsembledLineCutter elc = null;
+		if (0 <= alpha & alpha <= 1) {
+			SubaggedLineCutter slc = new SubaggedLineCutter(false);
+			slc.createSubags(trainSet.size(), alpha, baggingIters);
+			elc = slc;
+		} else {
+			BaggedLineCutter blc = new BaggedLineCutter(false);
+			blc.createBags(trainSet.size(), baggingIters);
+			elc = blc;
+		}
+		elc.setNumIntervals(maxNumLeaves);
 
 		// Initialize predictions and residuals
 		double[] rTrain = new double[trainSet.size()];
@@ -554,8 +610,8 @@ public class GAMLearner extends HoldoutValidatedLearner {
 					trainSet.get(i).setTarget(rTrain[i]);
 				}
 				// Train model
-				blc.setAttributeIndex(j);
-				BaggedEnsemble baggedEnsemble = blc.build(trainSet);
+				elc.setAttributeIndex(j);
+				BaggedEnsemble baggedEnsemble = elc.build(trainSet);
 				Function1D func = CompressionUtils.compress(attributes.get(j).getIndex(), baggedEnsemble);
 				if (learningRate != 1) {
 					func.multiply(learningRate);
@@ -653,9 +709,17 @@ public class GAMLearner extends HoldoutValidatedLearner {
 		}
 
 		// Create bags
-		BaggedLineCutter blc = new BaggedLineCutter(false);
-		blc.createBootstrapSamples(trainSet.size(), baggingIters);
-		blc.setNumIntervals(maxNumLeaves);
+		EnsembledLineCutter elc = null;
+		if (0 <= alpha & alpha <= 1) {
+			SubaggedLineCutter slc = new SubaggedLineCutter(true);
+			slc.createSubags(trainSet.size(), alpha, baggingIters);
+			elc = slc;
+		} else {
+			BaggedLineCutter blc = new BaggedLineCutter(true);
+			blc.createBags(trainSet.size(), baggingIters);
+			elc = blc;
+		}
+		elc.setNumIntervals(maxNumLeaves);
 
 		// Initialize predictions and residuals
 		double[] pTrain = new double[trainSet.size()];
@@ -676,8 +740,8 @@ public class GAMLearner extends HoldoutValidatedLearner {
 					trainSet.get(i).setTarget(rTrain[i]);
 				}
 				// Train model
-				blc.setAttributeIndex(j);
-				BaggedEnsemble baggedEnsemble = blc.build(trainSet);
+				elc.setAttributeIndex(j);
+				BaggedEnsemble baggedEnsemble = elc.build(trainSet);
 				Function1D func = CompressionUtils.compress(attributes.get(j).getIndex(), baggedEnsemble);
 				if (learningRate != 1) {
 					func.multiply(learningRate);
